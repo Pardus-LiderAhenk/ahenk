@@ -1,0 +1,29 @@
+#!/bin/sh
+# postinst script for ahenk
+#
+# see: dh_installdeb(1)
+
+set -e
+
+
+case "$1" in
+    configure)
+	
+        systemctl --system daemon-reload
+        systemctl enable ahenk.service
+
+        update-rc.d ahenk defaults
+        /etc/init.d/ahenk start
+
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
