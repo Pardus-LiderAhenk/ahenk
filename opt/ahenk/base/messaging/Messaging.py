@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Author: Volkan Şahin <basaran.ismaill@gmail.com>
+# Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 import configparser
-import logging
 import slixmpp
 from slixmpp.exceptions import IqError, IqTimeout
 
@@ -23,21 +24,21 @@ from slixmpp.exceptions import IqError, IqTimeout
 
 class Messaging(slixmpp.ClientXMPP):
 
-    def __init__(self):
+    def __init__(self,configurationManager,logger):
 
-        # configuration reading
-        conf = configparser.ConfigParser()
-        conf._interpolation = configparser.ExtendedInterpolation()
-        conf.read('conf.ini')
-        logging.info('Configuration parameters were read')
+        # logger comes from ahenk deamon
+        self.logger = logger
+
+        # configurationManager comes from ahenk deamon
+        self.configurationManager = configurationManager
 
         #set parameters
-        slixmpp.ClientXMPP.__init__(self, conf.get('Connection_Param', 'jid'), conf.get('Connection_Param', 'password'))
-        self.nick = conf.get('Connection_Param', 'nick')
-        self.receiver=conf.get('Receiver_Param','jid')
-        self.sendfile=open(conf.get('Send_File_Param','path'), 'rb')
-        self.receivefile=conf.get('Receive_File_Param', 'path')
-        logging.info('Parameters were established')
+        slixmpp.ClientXMPP.__init__(self, self.configurationManager.get('CONNECTION', 'jid'), self.configurationManager.get('Connection_Param', 'password'))
+        self.nick = self.configurationManager.get('CONNECTION', 'nick')
+        self.receiver=self.configurationManager.get('CONNECTION','receiverJid')
+        self.sendfile=open(self.configurationManager.get('CONNECTION','sendFilePath'), 'rb')
+        self.receivefile=self.configurationManager.get('CONNECTION', 'receiveFileParam')
+        self.logger.info('Parameters were established')
 
         self.add_event_handler("session_start", self.start)
         self.room=self.add_event_handler("groupchat_invite", self.invite_auto_accept)
@@ -56,19 +57,19 @@ class Messaging(slixmpp.ClientXMPP):
         #self.add_event_handler("socks5_data", self.stream_data)
         #self.add_event_handler("socks5_closed", self.stream_closed)
 
-        logging.info('Listeners were added')
+        self.logger.info('Listeners were added')
 
 
     def stream_opened(self, sid):
-        logging.info('Stream opened. %s', sid)
+        self.logger.info('Stream opened. %s', sid)
         return open(self.receivefile, 'wb')
 
     def stream_data(self, data):
-        logging.info('Stream data.')
+        self.logger.info('Stream data.')
         self.file.write(data)
 
     def stream_closed(self, exception):
-        logging.info('Stream closed. %s', exception)
+        self.logger.info('Stream closed. %s', exception)
         self.file.close()
         #self.disconnect()
 
@@ -123,17 +124,32 @@ class Messaging(slixmpp.ClientXMPP):
         if msg['type'] in ('chat', 'normal'):
             print ("%s : %s" % (msg['from'], msg['body']))
 
+    def connectToServer(self):
+        try:
+            self.register_plugin('xep_0030') # Service Discovery
+            self.register_plugin('xep_0045') # Multi-User Chat
+            self.register_plugin('xep_0199') # XMPP Ping
+            self.register_plugin('xep_0065') # SOCKS5 Bytestreams
+
+            self.logger.info('Plugins were registered: xep_0030,xep_0045,xep_0199,xep_0065')
+
+            self.connect()
+            self.process()
+            return True
+        except Exception as e:
+            self.logger.error('Connection to server failed!')
+            return False
 
 
 if __name__ == '__main__':
 
-    xmpp = Messaging()
+    xmpp = Messaging(None,None)
     xmpp.register_plugin('xep_0030') # Service Discovery
     xmpp.register_plugin('xep_0045') # Multi-User Chat
     xmpp.register_plugin('xep_0199') # XMPP Ping
     xmpp.register_plugin('xep_0065') # SOCKS5 Bytestreams
 
-    logging.info('Plugins were registered: xep_0030,xep_0045,xep_0199,xep_0065')
+    self.logger.info('Plugins were registered: xep_0030,xep_0045,xep_0199,xep_0065')
 
     # Connect to the XMPP server and start processing XMPP stanzas.
     xmpp.connect()
