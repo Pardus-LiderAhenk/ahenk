@@ -4,17 +4,29 @@
 
 import logging
 import logging.config
+from ahenkd import AhenkDeamon
 
 class Logger(object):
 	"""docstring for Logger"""
-	def __init__(self, logfilepath, loglevel):
+	def __init__(self):
 		super(Logger, self).__init__()
-		logging.config.fileConfig('logging.conf')
-		self.logger = logging.basicConfig(filename=logfilepath,level=loglevel)
-	
+		scope = AhenkDeamon.scope()
+		configManager = scope.getConfigurationManager()
+
+		logging.config.fileConfig(configManager.get('BASE','logConfigurationFilePath'))
+		self.logger = logging.getLogger()
+
+	def getLogger(self):
+		return self.logger
 
 	def info(self,logstring):
 		self.logger.info(logstring)
 
 	def warning(self,logstring):
 		self.logger.warning(logstring)
+
+	def error(self,logstring):
+		self.logger.error(logstring)
+
+	def debug(self,logstring):
+		self.logger.debug(logstring)

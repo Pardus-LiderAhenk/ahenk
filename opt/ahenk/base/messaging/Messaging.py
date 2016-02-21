@@ -6,6 +6,7 @@
 import configparser
 import slixmpp
 from slixmpp.exceptions import IqError, IqTimeout
+from ahenkd import AhenkDeamon
 
 """
 --fetch parameters of connection  from conf file
@@ -24,13 +25,16 @@ from slixmpp.exceptions import IqError, IqTimeout
 
 class Messaging(slixmpp.ClientXMPP):
 
-    def __init__(self,configurationManager,logger):
+    def __init__(self):
+
+        # global scope of ahenk
+        scope = AhenkDeamon.scope()
 
         # logger comes from ahenk deamon
-        self.logger = logger
+        self.logger = scope.getLogger()
 
         # configurationManager comes from ahenk deamon
-        self.configurationManager = configurationManager
+        self.configurationManager = scope.getConfigurationManager()
 
         #set parameters
         slixmpp.ClientXMPP.__init__(self, self.configurationManager.get('CONNECTION', 'jid'), self.configurationManager.get('Connection_Param', 'password'))
