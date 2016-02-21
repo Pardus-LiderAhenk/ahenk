@@ -23,7 +23,7 @@ class Scope(object):
     def getConfigurationManager(self):
         return self.configurationManager
 
-    def serConfigurationManager(self,configurationManager):
+    def setConfigurationManager(self,configurationManager):
         self.configurationManager = configurationManager
 
     def getLogger(self):

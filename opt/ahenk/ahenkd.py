@@ -5,30 +5,49 @@
 from base.config.ConfigManager import ConfigManager
 from base.deamon.BaseDeamon import BaseDeamon
 from base.logging.AhenkLogger import Logger
+from base.Scope import Scope
 import sys,logging
 
 
 class AhenkDeamon(BaseDeamon):
 	"""docstring for AhenkDeamon"""
+	globalscope=None
 	def __init__(self, arg):
 		super(AhenkDeamon, self).__init__()
 		self.arg = arg
+		global globalscope
+		globalscope=Scope()
+
+	@staticmethod
+	def scope():
+		return globalscope
+
+	def run(self):
+		global globalscope
+		configFilePath='/etc/ahenk/ahenk.conf'
+		configfileFolderPath='/etc/ahenk/config.d/'
+
+		#configuration manager must be first load
+		configManager = ConfigManager(configFilePath,configfileFolderPath)
+		config = configManager.read()
+		globalscope.setConfigurationManager(config)
+
+		logger = Logger()
+		logger.info("obaraaa")
+		globalscope.setLogger(logger)
+
+		
+
+
+
+
 
 if __name__ == '__main__':
 
-	configFilePath='/etc/ahenk/ahenk.conf'
-	configfileFolderPath='/etc/ahenk/config.d/'
 	pidfilePath='/var/run/ahenk.pid'
 
-	configManager = ConfigManager(configFilePath,configfileFolderPath)
-	config = configManager.read()
-
-	logger = Logger('/tmp/ahenk.log',logging.DEBUG)
-	logger.info("obaraaa")
-
-"""
 	deamon = AhenkDeamon(pidfilePath)
-	
+
 	if len(sys.argv) == 2:
 		if sys.argv[1] == "start":
 			deamon.start()
@@ -46,4 +65,3 @@ if __name__ == '__main__':
 	else:
 		print 'Usage : %s start|stop|restart|status' % sys.argv[0]
 		sys.exit(2)
-"""
