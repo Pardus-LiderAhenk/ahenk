@@ -5,11 +5,23 @@
 
 class Scope(object):
     """docstring for Scope"""
+
+    scopeInstance=None
+
     def __init__(self):
         super(Scope, self).__init__()
         self.customMap = {}
         self.configurationManager=None
         self.logger=None
+
+    @staticmethod
+    def getInstance():
+        return scopeInstance
+
+    @staticmethod
+    def setInstance(scopeObj):
+        global scopeInstance
+        scopeInstance = scopeObj
 
     def getCustomMap(self):
         return self.customMap

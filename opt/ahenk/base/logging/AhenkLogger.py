@@ -4,13 +4,13 @@
 
 import logging
 import logging.config
-from ahenkd import AhenkDeamon
+from base.Scope import Scope
 
 class Logger(object):
 	"""docstring for Logger"""
 	def __init__(self):
 		super(Logger, self).__init__()
-		scope = AhenkDeamon.scope()
+		scope = Scope.getInstance()
 		configManager = scope.getConfigurationManager()
 
 		logging.config.fileConfig(configManager.get('BASE','logConfigurationFilePath'))

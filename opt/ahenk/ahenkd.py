@@ -11,19 +11,11 @@ import sys,logging
 
 class AhenkDeamon(BaseDeamon):
 	"""docstring for AhenkDeamon"""
-	globalscope=None
-	def __init__(self, arg):
-		super(AhenkDeamon, self).__init__()
-		self.arg = arg
-		global globalscope
-		globalscope=Scope()
-
-	@staticmethod
-	def scope():
-		return globalscope
 
 	def run(self):
-		global globalscope
+		globalscope = Scope()
+		globalscope.setInstance(globalscope)
+
 		configFilePath='/etc/ahenk/ahenk.conf'
 		configfileFolderPath='/etc/ahenk/config.d/'
 
@@ -36,25 +28,22 @@ class AhenkDeamon(BaseDeamon):
 		logger.info("obaraaa")
 		globalscope.setLogger(logger)
 
-		
-
-
-
-
 
 if __name__ == '__main__':
 
 	pidfilePath='/var/run/ahenk.pid'
 
-	deamon = AhenkDeamon(pidfilePath)
+	ahenkdeamon = AhenkDeamon(pidfilePath)
 
+	print sys.argv
 	if len(sys.argv) == 2:
 		if sys.argv[1] == "start":
-			deamon.start()
+			print "starting"
+			ahenkdeamon.start()
 		elif sys.argv[1] == 'stop':
-			deamon.stop()
+			ahenkdeamon.stop()
 		elif sys.argv[1] == 'restart':
-			deamon.restart()
+			ahenkdeamon.restart()
 		elif sys.argv[1] == 'status':
 			# print status
 			pass
