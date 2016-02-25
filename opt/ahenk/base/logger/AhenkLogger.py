@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 import sys
-sys.path.append('../..')
 import logging
 import logging.config
-from ahenkd import AhenkDeamon
+sys.path.insert(0,'/home/ismail/devzone/workspace/lider-ahenk/ahenk/opt/ahenk/')
+#import ahenkd
 
 class AhenkLogger(object):
 	"""docstring for Logger"""
 	def __init__(self):
 		super(Logger, self).__init__()
-		scope = AhenkDeamon.scope()
+		scope = ahenkd.AhenkDeamon.scope()
 		configManager = scope.getConfigurationManager()
 
 		logging.config.fileConfig(configManager.get('BASE','logConfigurationFilePath'))
@@ -31,3 +31,8 @@ class AhenkLogger(object):
 
 	def debug(self,logstring):
 		self.logger.debug(logstring)
+
+
+if __name__ == '__main__':
+	print "hello"
+	print sys.path

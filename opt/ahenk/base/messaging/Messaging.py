@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <basaran.ismaill@gmail.com>
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
-
-import configparser
+import sys
+sys.path.append('../..')
 import slixmpp
 from slixmpp.exceptions import IqError, IqTimeout
 from ahenkd import AhenkDeamon

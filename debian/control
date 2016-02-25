@@ -1,0 +1,13 @@
+Source: ahenk
+Section: unknown
+Priority: optional
+Maintainer: TUBITAK ULAKBIM
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Homepage: http://www.liderahenk.org.tr
+
+Package: ahenk
+Architecture: any
+Depends:python-deamon, python2.7 (>= 2.7.3)
+Description: LiderAhenk agent application
+ Long Desc

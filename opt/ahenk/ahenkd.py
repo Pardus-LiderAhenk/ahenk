@@ -1,11 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 from base.config.ConfigManager import ConfigManager
 from base.deamon.BaseDeamon import BaseDeamon
-from base.logging.AhenkLogger import Logger
+from base.logger.AhenkLogger import AhenkLogger
 from base.Scope import Scope
+#from base.messaging.Messaging import Messaging
 import sys,logging
 
 
@@ -32,18 +33,18 @@ class AhenkDeamon(BaseDeamon):
 		config = configManager.read()
 		globalscope.setConfigurationManager(config)
 
-		logger = Logger()
-		logger.info("obaraaa")
-		globalscope.setLogger(logger)
+		#logger = AhenkLogger()
+		#logger.info("obaraaa")
+		#globalscope.setLogger(logger)
 
-		
-
-
-
+		#messaging=Messaging()
+		#messaging.connectToServer()
 
 
 if __name__ == '__main__':
-
+	print "hello"
+	print sys.path
+"""
 	pidfilePath='/var/run/ahenk.pid'
 
 	deamon = AhenkDeamon(pidfilePath)
@@ -65,3 +66,4 @@ if __name__ == '__main__':
 	else:
 		print 'Usage : %s start|stop|restart|status' % sys.argv[0]
 		sys.exit(2)
+"""
