@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 from base.config.ConfigManager import ConfigManager
 from base.deamon.BaseDeamon import BaseDeamon
-from base.logger.AhenkLogger import AhenkLogger
+from base.logging.AhenkLogger import Logger
 from base.Scope import Scope
 #from base.messaging.Messaging import Messaging
 import sys,logging
@@ -12,19 +12,11 @@ import sys,logging
 
 class AhenkDeamon(BaseDeamon):
 	"""docstring for AhenkDeamon"""
-	globalscope=None
-	def __init__(self, arg):
-		super(AhenkDeamon, self).__init__()
-		self.arg = arg
-		global globalscope
-		globalscope=Scope()
-
-	@staticmethod
-	def scope():
-		return globalscope
 
 	def run(self):
-		global globalscope
+		globalscope = Scope()
+		globalscope.setInstance(globalscope)
+
 		configFilePath='/etc/ahenk/ahenk.conf'
 		configfileFolderPath='/etc/ahenk/config.d/'
 
@@ -33,29 +25,26 @@ class AhenkDeamon(BaseDeamon):
 		config = configManager.read()
 		globalscope.setConfigurationManager(config)
 
-		#logger = AhenkLogger()
-		#logger.info("obaraaa")
-		#globalscope.setLogger(logger)
-
-		#messaging=Messaging()
-		#messaging.connectToServer()
+		logger = Logger()
+		logger.info("obaraaa")
+		globalscope.setLogger(logger)
 
 
 if __name__ == '__main__':
-	print "hello"
-	print sys.path
-"""
+
 	pidfilePath='/var/run/ahenk.pid'
 
-	deamon = AhenkDeamon(pidfilePath)
+	ahenkdeamon = AhenkDeamon(pidfilePath)
 
+	print sys.argv
 	if len(sys.argv) == 2:
 		if sys.argv[1] == "start":
-			deamon.start()
+			print "starting"
+			ahenkdeamon.start()
 		elif sys.argv[1] == 'stop':
-			deamon.stop()
+			ahenkdeamon.stop()
 		elif sys.argv[1] == 'restart':
-			deamon.restart()
+			ahenkdeamon.restart()
 		elif sys.argv[1] == 'status':
 			# print status
 			pass
@@ -66,4 +55,3 @@ if __name__ == '__main__':
 	else:
 		print 'Usage : %s start|stop|restart|status' % sys.argv[0]
 		sys.exit(2)
-"""

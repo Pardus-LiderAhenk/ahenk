@@ -2,3 +2,4 @@
 *.py[cod]
 debian/ahenk/*
 debian/ahenk
+*.orig
