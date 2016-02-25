@@ -3,17 +3,18 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 from base.config.ConfigManager import ConfigManager
-from base.deamon.BaseDeamon import BaseDeamon
-from base.logging.AhenkLogger import Logger
+from base.deamon.BaseDeamon import BaseDaemon
+from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
 #from base.messaging.Messaging import Messaging
 import sys,logging
 
 
-class AhenkDeamon(BaseDeamon):
+class AhenkDeamon(BaseDaemon):
 	"""docstring for AhenkDeamon"""
 
 	def run(self):
+		print "merhaba dunya"
 		globalscope = Scope()
 		globalscope.setInstance(globalscope)
 
@@ -34,17 +35,18 @@ if __name__ == '__main__':
 
 	pidfilePath='/var/run/ahenk.pid'
 
-	ahenkdeamon = AhenkDeamon(pidfilePath)
+	ahenkdaemon = AhenkDeamon(pidfilePath)
 
 	print sys.argv
 	if len(sys.argv) == 2:
 		if sys.argv[1] == "start":
 			print "starting"
-			ahenkdeamon.start()
+			ahenkdaemon.start()
+			print ahenkdaemon.get_pid()
 		elif sys.argv[1] == 'stop':
-			ahenkdeamon.stop()
+			ahenkdaemon.stop()
 		elif sys.argv[1] == 'restart':
-			ahenkdeamon.restart()
+			ahenkdaemon.restart()
 		elif sys.argv[1] == 'status':
 			# print status
 			pass
