@@ -8,6 +8,6 @@ Homepage: http://www.liderahenk.org.tr
 
 Package: ahenk
 Architecture: any
-Depends:python-deamon, python2.7 (>= 2.7.3)
+Depends:python-deamon, python3 (>= 3)
 Description: LiderAhenk agent application
  Long Desc

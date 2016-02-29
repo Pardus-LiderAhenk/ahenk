@@ -1,17 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
-import ConfigParser,os
+import configparser,os
 from os import listdir
 from os.path import isfile, join
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 class ConfigManager(object):
 	"""
 		This class written for configuration file management of ahenk and ahenk plugins
 		Sample ahenk configuration file path /etc/ahenk/ahenk.conf and sample ahenk plugins configuration folder path /etc/ahenk/config.d/
-		Usage: Takes two argument, - both of them are optional - one of the is a configuration file path the other one 
+		Usage: Takes two argument, - both of them are optional - one of the is a configuration file path the other one
 		is configuration files folder path
 	"""
 	def __init__(self, configurationFilePath=None, configurationFolderPath=None):

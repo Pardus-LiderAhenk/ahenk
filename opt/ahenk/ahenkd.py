@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
@@ -14,7 +14,7 @@ class AhenkDeamon(BaseDaemon):
 	"""docstring for AhenkDeamon"""
 
 	def run(self):
-		print "merhaba dunya"
+		print ("merhaba dunya")
 		globalscope = Scope()
 		globalscope.setInstance(globalscope)
 
@@ -37,23 +37,23 @@ if __name__ == '__main__':
 
 	ahenkdaemon = AhenkDeamon(pidfilePath)
 
-	print sys.argv
+	print (sys.argv)
 	if len(sys.argv) == 2:
 		if sys.argv[1] == "start":
-			print "starting"
+			print ("starting")
 			ahenkdaemon.start()
-			print ahenkdaemon.get_pid()
+			print (ahenkdaemon.get_pid())
 		elif sys.argv[1] == 'stop':
 			ahenkdaemon.stop()
 		elif sys.argv[1] == 'restart':
 			ahenkdaemon.restart()
 		elif sys.argv[1] == 'status':
-			# print status
+			# print (status)
 			pass
 		else:
-			print 'Unknown command. Usage : %s start|stop|restart|status' % sys.argv[0]
+			print ('Unknown command. Usage : %s start|stop|restart|status' % sys.argv[0])
 			sys.exit(2)
 		sys.exit(0)
 	else:
-		print 'Usage : %s start|stop|restart|status' % sys.argv[0]
+		print ('Usage : %s start|stop|restart|status' % sys.argv[0])
 		sys.exit(2)
