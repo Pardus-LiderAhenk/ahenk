@@ -9,7 +9,7 @@ class AbstractCommand(object):
         super(AbstractCommand, self).__init__()
         self.scope = Scope.getInstance()
 
-    def run():
+    def handle_task(task):
         # implement this metot from command
         pass
 
@@ -18,6 +18,13 @@ class AbstractCommand(object):
             return self.scope.getLogger()
         except Exception as e:
             print('Logger did not found')
+            return None
+
+    def configurationManager(self):
+        try:
+            return self.scope.getConfigurationManager()
+        except Exception as e:
+            print('ConfigurationManager did not found')
             return None
 
     def addMessageResponseQueue(self):

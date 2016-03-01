@@ -4,5 +4,5 @@
 
 
 
-def run(val):
-    print "oo yeah plugin1 " + str(val)
+def info():
+    return None

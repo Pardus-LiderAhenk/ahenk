@@ -20,11 +20,20 @@ class PluginManager(object):
             if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
                 continue
             info = imp.find_module(self.configManager.get("PLUGIN", "mainModuleName"), [location])
-            mainModule = self.loadSinglePlugin(info):
+            #mainModule = self.loadSinglePlugin(info):
             self.plugins.append(Plugin(pname,mainModule))
 
-    def loadSinglePlugin(pluginInfo):
-        return imp.load_module(self.configManager.get("PLUGIN", "mainModuleName"), pluginInfo)
+    def createQueueForPlugin(self):
 
-    def findSinglePlugin(pluginName):
-        pass # Not implemented yet
+
+    def loadSinglePlugin(self,pluginInfo):
+        return imp.load_module(self.configManager.get("PLUGIN", "mainModuleName"), *pluginInfo)
+
+    def findSinglePlugin(self,pluginName):
+        for plugin in self.getPlugins():
+            if plugin["name"] == self.plugins:
+                return self.loadSinglePlugin(plugin)
+
+
+    def findCommand(self,comamndName):
+        pass
