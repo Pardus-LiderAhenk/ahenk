@@ -6,8 +6,11 @@ from base.config.ConfigManager import ConfigManager
 from base.deamon.BaseDeamon import BaseDaemon
 from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
-#from base.messaging.Messaging import Messaging
+from base.messaging.Messaging import Messaging
+from multiprocessing import Process
+from threading import Thread
 import sys,logging
+import time
 
 
 class AhenkDeamon(BaseDaemon):
@@ -31,6 +34,18 @@ class AhenkDeamon(BaseDaemon):
 		globalscope.setLogger(logger)
 
 
+		xmpp = Messaging()
+		print("xmpp is created")
+		p = Process(target=xmpp.connect_to_server)
+		print("Process thread starting")
+		p.start()
+		print("Process tread started")
+		print("waiting 5sn ")
+		time.sleep(5)
+		print("sleep is over ")
+		xmpp.send_direct_message("asdasdas")# not working ->connection error
+
+
 if __name__ == '__main__':
 
 	pidfilePath='/var/run/ahenk.pid'
@@ -38,11 +53,12 @@ if __name__ == '__main__':
 	ahenkdaemon = AhenkDeamon(pidfilePath)
 
 	print (sys.argv)
+
 	if len(sys.argv) == 2:
 		if sys.argv[1] == "start":
 			print ("starting")
-			ahenkdaemon.start()
-			print (ahenkdaemon.get_pid())
+			ahenkdaemon.run()
+			#print (ahenkdaemon.get_pid())
 		elif sys.argv[1] == 'stop':
 			ahenkdaemon.stop()
 		elif sys.argv[1] == 'restart':

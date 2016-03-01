@@ -12,6 +12,7 @@ class Scope(object):
         super(Scope, self).__init__()
         self.customMap = {}
         self.configurationManager=None
+        self.messageManager=None
         self.logger=None
 
     @staticmethod
@@ -43,3 +44,9 @@ class Scope(object):
 
     def setLogger(self,logger):
         self.logger = logger
+
+    def getMessageManager(self):
+        return self.messageManager
+
+    def setMessageManager(self,messageManager):
+        self.messageManager = messageManager
