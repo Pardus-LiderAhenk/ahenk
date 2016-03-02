@@ -7,10 +7,12 @@ from base.deamon.BaseDeamon import BaseDaemon
 from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
 from base.messaging.Messaging import Messaging
+from base.messaging.MessageResponseQueue import MessageResponseQueue
+from base.plugin.PluginManager import PluginManager
+from base.task.TaskManager import TaskManager
 from multiprocessing import Process
 from threading import Thread
-import sys,logging
-import time
+import sys,logging,queue,time
 
 
 class AhenkDeamon(BaseDaemon):
@@ -29,22 +31,41 @@ class AhenkDeamon(BaseDaemon):
 		config = configManager.read()
 		globalscope.setConfigurationManager(config)
 
+		# Logger must be second
 		logger = Logger()
-		logger.info("obaraaa")
+		logger.info("this is info log")
 		globalscope.setLogger(logger)
 
+		pluginManager = PluginManager()
+		pluginManager.loadPlugins()
+		globalscope.setPluginManager(pluginManager)
 
-		xmpp = Messaging()
-		print("xmpp is created")
-		p = Process(target=xmpp.connect_to_server)
-		print("Process thread starting")
-		p.start()
-		print("Process tread started")
-		print("waiting 5sn ")
-		time.sleep(5)
-		print("sleep is over ")
-		xmpp.send_direct_message("asdasdas")# not working ->connection error
+		taskManger = TaskManager()
+		globalscope.setTaskManager(taskManger)
 
+		# add services after this line
+
+		"""
+			xmpp = Messaging()
+			print("xmpp is created")
+			p = Process(target=xmpp.connect_to_server)
+			print("Process thread starting")
+			p.start()
+			print("Process tread started")
+			print("waiting 5sn ")
+			time.sleep(5)
+			print("sleep is over ")
+			xmpp.send_direct_message("asdasdas")# not working ->connection error
+		"""
+
+		"""
+			this is must be created after message services
+			responseQueue = queue.Queue()
+			messageResponseQueue = MessageResponseQueue(responseQueue)
+			messageResponseQueue.setDaemon(True)
+			messageResponseQueue.start()
+			globalscope.setResponseQueue(responseQueue)
+		"""
 
 if __name__ == '__main__':
 

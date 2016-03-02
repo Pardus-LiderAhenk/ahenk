@@ -16,6 +16,7 @@ class Scope(object):
         self.logger=None
         self.pluginManager=None
         self.taskManager=None
+        self.responseQueue=None
 
     @staticmethod
     def getInstance():
@@ -64,3 +65,9 @@ class Scope(object):
 
     def setTaskManager(self,taskManager):
         self.taskManager = taskManager
+
+    def getResponseQueue(self):
+        return self.responseQueue
+
+    def setResponseQueue(self,responseQueue):
+        self.responseQueue=responseQueue

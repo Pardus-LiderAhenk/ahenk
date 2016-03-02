@@ -18,6 +18,7 @@ class PluginManager(object):
         self.logger = scope.getLogger()
 
     def loadPlugins(self):
+        print("loading")
         self.plugins = []
         possibleplugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
         for pname in possibleplugins:
@@ -72,3 +73,6 @@ class PluginManager(object):
     def checkCommandExist(self,pluginName,commandId):
         # Not implemented yet
         pass
+
+    def printQueueSize(self):
+        print("size " + str(len(self.pluginQueueDict)))
