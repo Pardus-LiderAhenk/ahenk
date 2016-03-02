@@ -24,6 +24,6 @@ class MessageResponseQueue(threading.Thread):
             print(item)
             # Call message manager for response
             self.messageManager.sendResponse(responseMessage)
-            self.outQueue.task_done()
+            #self.outQueue.task_done()
         except:
             pass

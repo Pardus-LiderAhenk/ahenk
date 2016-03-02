@@ -6,14 +6,15 @@ from base.config.ConfigManager import ConfigManager
 from base.deamon.BaseDeamon import BaseDaemon
 from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
-from base.messaging.Messaging import Messaging
 from base.messaging.MessageReceiver import MessageReceiver
 from base.messaging.MessageSender import MessageSender
 from base.registration.Registration import Registration
+from base.messaging.MessageResponseQueue import MessageResponseQueue
+from base.plugin.PluginManager import PluginManager
+from base.task.TaskManager import TaskManager
 from multiprocessing import Process
 from threading import Thread
-import sys,logging
-import time
+import sys,logging,queue,time
 
 
 class AhenkDeamon(BaseDaemon):
@@ -33,26 +34,44 @@ class AhenkDeamon(BaseDaemon):
 		config = configManager.read()
 		globalscope.setConfigurationManager(config)
 
+		# Logger must be second
 		logger = Logger()
-		logger.debug("[AhenkDeamon]logging")
+		logger.info("this is info log")
 		globalscope.setLogger(logger)
+
+		pluginManager = PluginManager()
+		pluginManager.loadPlugins()
+		globalscope.setPluginManager(pluginManager)
+
+		taskManger = TaskManager()
+		globalscope.setTaskManager(taskManger)
 
 		registration = Registration()
 		registration.register()
 
+		"""
 		#TODO send register message according to register status
 		print("sending registration message")
 		message_sender = MessageSender(registration.get_registration_message())
 		message_sender.connect_to_server()
 		print("registration message were sent")
-		#TODO add sender to scope 
+		#TODO add sender to scope
 
 		message_receiver = MessageReceiver()
 		rec_process = Process(target=message_receiver.connect_to_server)
 		rec_process.start()
 		print("receiver online")
 		#set parameters which will use for message sending
+		"""
 
+		"""
+			this is must be created after message services
+			responseQueue = queue.Queue()
+			messageResponseQueue = MessageResponseQueue(responseQueue)
+			messageResponseQueue.setDaemon(True)
+			messageResponseQueue.start()
+			globalscope.setResponseQueue(responseQueue)
+		"""
 
 if __name__ == '__main__':
 

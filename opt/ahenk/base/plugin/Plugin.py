@@ -16,11 +16,12 @@ class Plugin(threading.Thread):
     def run():
         try:
             task=self.InQueue.get()
-            command = self.pluginManager.findCommand(task.getCommandId())
+            command = self.pluginManager.findCommand(self.getName(),task.getCommandId())
             command.handle_task(task)
             # TODO add result to response queue
 
         except Exception as e:
+            #TODO error log here
             print("exception occured when executing plugin")
 
     def getName(self):
