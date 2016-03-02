@@ -14,6 +14,8 @@ class Scope(object):
         self.configurationManager=None
         self.messageManager=None
         self.logger=None
+        self.pluginManager=None
+        self.taskManager=None
 
     @staticmethod
     def getInstance():
@@ -50,3 +52,15 @@ class Scope(object):
 
     def setMessageManager(self,messageManager):
         self.messageManager = messageManager
+
+    def getPluginManager(self):
+        return self.pluginManager
+
+    def setPluginManager(self,pluginManager):
+        self.pluginManager = pluginManager
+
+    def getTaskManager(self):
+        return self.TaskManager
+
+    def setTaskManager(self,taskManager):
+        self.taskManager = taskManager

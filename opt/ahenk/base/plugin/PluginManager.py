@@ -17,18 +17,19 @@ class PluginManager(object):
         self.pluginQueueDict = dict()
         self.logger = scope.getLogger()
 
-    def loadPlugins():
+    def loadPlugins(self):
         self.plugins = []
         possibleplugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
         for pname in possibleplugins:
             location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pname)
             if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
-                self.logger.debug('It is not a plugin location - %s - ',location)
+                self.logger.debug('It is not a plugin location - - ')
                 continue
             try:
                 self.loadSinglePlugin(pname)
             except Exception as e:
                 # TODO error log
+                pass
 
     def loadSinglePlugin(self,pluginName):
         # TODO check already loaded plugin
@@ -44,7 +45,7 @@ class PluginManager(object):
             info = imp.find_module(commandId, [location])
             return imp.load_module(commandId, *info)
         else:
-            self.logger.warning('Command id - %s - not found',commandId)
+            self.logger.warning('Command id -  - not found')
             return None
 
     def processTask(self,task):
@@ -54,6 +55,7 @@ class PluginManager(object):
         except Exception as e:
             # TODO error log here
             # TODO update task - status to not found command
+            pass
 
     def reloadPlugins(self):
         # Not implemented yet

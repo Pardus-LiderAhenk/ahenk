@@ -19,6 +19,7 @@ class TaskManager(object):
             self.pluginManager.processTask(task)
         except Exception as e:
             # TODO error log here
+            pass
 
     def saveTask(self,task):
         # TODO not implemented yet
