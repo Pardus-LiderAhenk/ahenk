@@ -23,7 +23,7 @@ class PluginManager(object):
         for pname in possibleplugins:
             location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pname)
             if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
-                #TODO debug log here
+                self.logger.debug('It is not a plugin location - %s - ',location)
                 continue
             try:
                 self.loadSinglePlugin(pname)
@@ -39,10 +39,34 @@ class PluginManager(object):
         self.plugins.append(plugin)
 
     def findCommand(self,pluginName,commandId):
-        location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pname)
+        location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pluginName)
         if os.path.dir(location) and commandId + ".py" in os.listdir(location):
             info = imp.find_module(commandId, [location])
             return imp.load_module(commandId, *info)
         else:
             self.logger.warning('Command id - %s - not found',commandId)
             return None
+
+    def processTask(self,task):
+        try:
+            if task.getPluginId().lower() in self.pluginQueueDict :
+                self.pluginQueueDict[task.getPluginId().lower()].put(task,task.priority)
+        except Exception as e:
+            # TODO error log here
+            # TODO update task - status to not found command
+
+    def reloadPlugins(self):
+        # Not implemented yet
+        pass
+
+    def checkPluginExists(self,pluginName):
+        # Not implemented yet
+        pass
+
+    def reloadSinglePlugin(self,pluginName):
+        # Not implemented yet
+        pass
+
+    def checkCommandExist(self,pluginName,commandId):
+        # Not implemented yet
+        pass
