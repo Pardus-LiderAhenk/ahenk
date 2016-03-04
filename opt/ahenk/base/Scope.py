@@ -18,6 +18,8 @@ class Scope(object):
         self.taskManager=None
         self.responseQueue=None
         self.registration=None
+        self.eventManager=None
+
 
     @staticmethod
     def getInstance():
@@ -78,3 +80,9 @@ class Scope(object):
 
     def setRegistration(self,registration):
         self.registration=registration
+
+    def getEventManager(self):
+        return self.eventManager
+
+    def setEventManager(self,eventManager):
+        self.eventManager=eventManager

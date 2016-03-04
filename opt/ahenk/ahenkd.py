@@ -10,6 +10,7 @@ from base.messaging.MessageReceiver import MessageReceiver
 from base.messaging.MessageSender import MessageSender
 from base.registration.Registration import Registration
 from base.messaging.MessageResponseQueue import MessageResponseQueue
+from base.event.EventManager import EventManager
 from base.plugin.PluginManager import PluginManager
 from base.task.TaskManager import TaskManager
 from multiprocessing import Process
@@ -19,6 +20,10 @@ import sys,logging,queue,time
 
 class AhenkDeamon(BaseDaemon):
 	"""docstring for AhenkDeamon"""
+
+	def reload(self,msg):
+		# reload service here
+		pass
 
 	def run(self):
 		print ("merhaba dunya")
@@ -38,6 +43,12 @@ class AhenkDeamon(BaseDaemon):
 		logger = Logger()
 		logger.info("this is info log")
 		globalscope.setLogger(logger)
+
+		eventManager = EventManager()
+		globalscope.setEventManager(eventManager)
+
+		eventManager.register_event('registration_ok',self.reload)
+
 
 		pluginManager = PluginManager()
 		pluginManager.loadPlugins()
