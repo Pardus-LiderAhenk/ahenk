@@ -46,9 +46,25 @@ class AhenkDeamon(BaseDaemon):
 		taskManger = TaskManager()
 		globalscope.setTaskManager(taskManger)
 
-		registration = Registration()
-		registration.register()
+		registration=Registration()
+		globalscope.setRegistration(registration)
 
+		if registration.is_registered() is False:
+			message_sender=MessageSender(registration.get_registration_request_message())
+			message_sender.connect_to_server()
+			registration.confirm_registration()
+
+		""""
+		message_receiver = MessageReceiver()
+		rec_process = Process(target=message_receiver.connect_to_server)
+		rec_process.start()
+		"""
+
+		"""
+		else:
+
+
+		"""
 		"""
 		#TODO send register message according to register status
 		print("sending registration message")
@@ -72,6 +88,7 @@ class AhenkDeamon(BaseDaemon):
 			messageResponseQueue.start()
 			globalscope.setResponseQueue(responseQueue)
 		"""
+
 
 if __name__ == '__main__':
 

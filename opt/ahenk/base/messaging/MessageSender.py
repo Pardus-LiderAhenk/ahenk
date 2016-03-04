@@ -32,18 +32,27 @@ class MessageSender(slixmpp.ClientXMPP):
     def __init__(self,message):
 
         # global scope of ahenk
-        scope = Scope()
-        scope = scope.getInstance()
+        scope = Scope().getInstance()
 
         # logger comes from ahenk deamon
         #configurationManager comes from ahenk deamon
         self.logger = scope.getLogger()
         self.configurationManager = scope.getConfigurationManager()
+        self.registration=scope.getRegistration()
         #set parameters
         #slixmpp.ClientXMPP.__init__(self, self.configurationManager.get('CONNECTION', 'jid'), self.configurationManager.get('Connection_Param', 'password'))
 
-        slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
+        #is user want to create connection as anonymous
+        if self.configurationManager.get('CONNECTION', 'uid') == "" or  self.configurationManager.get('CONNECTION', 'uid') is None:
+            print("uid not found")
+            slixmpp.ClientXMPP.__init__(self, self.configurationManager.get('CONNECTION', 'host'), None)
+        else:
+            print("uid:"+self.configurationManager.get('CONNECTION', 'uid'))
+            slixmpp.ClientXMPP.__init__(self, self.configurationManager.get('CONNECTION', 'uid'), self.configurationManager.get('CONNECTION', 'password'))
+
         self.receiver="caner@localhost"
+        #TODO lider account
+
         #slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
         #self.receiver="caner@localhost"
         """
@@ -55,60 +64,35 @@ class MessageSender(slixmpp.ClientXMPP):
         """
         self.room=None
         self.message=message
-
         self.add_event_handler("session_start", self.session_start)
+        self.add_event_handler("message", self.recv_direct_message)
         self.register_extensions()
 
         #!!! you have to use modified slixmpp for file transfering
         #self.send_file()
+    def recv_direct_message(self, msg):
+        if msg['type'] in ('chat', 'normal'):
+            print ("%s : %s" % (msg['from'], msg['body']))
+            self.registration.registration_reply=str(msg['body'])
+            self.disconnect(wait=False)
+
 
     def session_start(self, event):
         self.get_roster()
         self.send_presence()
         self.send_direct_message(self.message)
 
-    def stream_opened(self, sid):
-        #self.logger.info('Stream opened. %s', sid)
-        return open(self.receivefile, 'wb')
-
-    def stream_data(self, data):
-        #self.logger.info('Stream data.')
-        self.file.write(data)
-
-    def stream_closed(self, exception):
-        #self.logger.info('Stream closed. %s', exception)
-        self.file.close()
-        #self.disconnect()
-
-
-    def send_file(self):
-        try:
-            # Open the S5B stream in which to write to.
-            proxy = yield from self['xep_0065'].handshake(self.receiver)
-            # Send the entire file.
-            while True:
-                data = self.file.read(1048576)
-                if not data:
-                    break
-                yield from proxy.write(data)
-            # And finally close the stream.
-            proxy.transport.write_eof()
-        except (IqError, IqTimeout):
-            print('File transfer errored')
-        else:
-            print('File transfer finished')
-        finally:
-            self.file.close()
-
     def send_direct_message(self,msg):
         #need connection control
         self.send_message(mto=self.receiver,mbody=msg,mtype='chat')
-        self.disconnect()
+        if self.configurationManager.get('CONNECTION', 'uid') != "" and  self.configurationManager.get('CONNECTION', 'uid') is not None:
+            print("diskooo")
+            self.disconnect()
 
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
         try:
             self.connect()
-            self.process()
+            self.process(forever=False)
             #self.logger.info('Connection were established successfully')
             return True
         except Exception as e:

@@ -17,6 +17,7 @@ class Scope(object):
         self.pluginManager=None
         self.taskManager=None
         self.responseQueue=None
+        self.registration=None
 
     @staticmethod
     def getInstance():
@@ -71,3 +72,9 @@ class Scope(object):
 
     def setResponseQueue(self,responseQueue):
         self.responseQueue=responseQueue
+
+    def getRegistration(self):
+        return self.registration
+
+    def setRegistration(self,registration):
+        self.registration=registration

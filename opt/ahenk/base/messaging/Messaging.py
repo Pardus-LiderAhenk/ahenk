@@ -41,8 +41,10 @@ class Messaging(slixmpp.ClientXMPP):
         #self.configurationManager = scope.getConfigurationManager()
 
         #set parameters
-        slixmpp.ClientXMPP.__init__(self, self.configurationManager.get('CONNECTION', 'jid'), self.configurationManager.get('Connection_Param', 'password'))
+        #slixmpp.ClientXMPP.__init__(self, self.configurationManager.get('CONNECTION', 'jid'), self.configurationManager.get('Connection_Param', 'password'))
 
+        slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
+        self.receiver="caner@localhost"
         #slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
         #self.receiver="caner@localhost"
         """

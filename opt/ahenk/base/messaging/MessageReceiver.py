@@ -32,21 +32,20 @@ class MessageReceiver(slixmpp.ClientXMPP):
     def __init__(self):
 
         # global scope of ahenk
-        scope = Scope()
-        scope = scope.getInstance()
+        scope = Scope().getInstance()
 
         # logger comes from ahenk deamon
         # configurationManager comes from ahenk deamon
         self.logger = scope.getLogger()
         self.configurationManager = scope.getConfigurationManager()
 
-        #self.full_jid =str(self.configurationManager.get('REGISTRATION', 'from'))+'@'+str(self.configurationManager.get('CONNECTION', 'host'))
-        #print("self.jid  nedir:"+self.full_jid )
-        #set parameters
+        self.full_jid =str(self.configurationManager.get('CONNECTION', 'uid'))+'@'+str(self.configurationManager.get('CONNECTION', 'host'))
         #slixmpp.ClientXMPP.__init__(self, self.full_jid, 'pass')
 
+        #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
         slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
         self.receiver="caner@localhost"
+        #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
 
         """
         self.nick = self.configurationManager.get('CONNECTION', 'nick')
@@ -66,7 +65,7 @@ class MessageReceiver(slixmpp.ClientXMPP):
     def add_listeners(self):
 
         self.add_event_handler("session_start", self.session_start)
-        self.add_event_handler("groupchat_message", self.recv_muc_message)
+        #self.add_event_handler("groupchat_message", self.recv_muc_message)
         self.add_event_handler("message", self.recv_direct_message)
 
         #self.room=self.add_event_handler("groupchat_invite", self.invite_auto_accept)
@@ -115,7 +114,7 @@ class MessageReceiver(slixmpp.ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
-            self.disconnect()
+            #self.disconnect()
             print ("%s : %s" % (msg['from'], msg['body']))
 
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
