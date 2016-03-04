@@ -17,6 +17,7 @@ class Scope(object):
         self.pluginManager=None
         self.taskManager=None
         self.responseQueue=None
+        self.eventManager=None
 
     @staticmethod
     def getInstance():
@@ -71,3 +72,9 @@ class Scope(object):
 
     def setResponseQueue(self,responseQueue):
         self.responseQueue=responseQueue
+
+    def getEventManager(self):
+        return self.eventManager
+
+    def setEventManager(self,eventManager):
+        self.eventManager=eventManager
