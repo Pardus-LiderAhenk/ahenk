@@ -7,6 +7,7 @@ sys.path.append('../..')
 import slixmpp
 import asyncio
 import threading
+import json
 from threading import Thread
 from multiprocessing import Process
 from slixmpp.exceptions import IqError, IqTimeout
@@ -38,13 +39,14 @@ class MessageReceiver(slixmpp.ClientXMPP):
         # configurationManager comes from ahenk deamon
         self.logger = scope.getLogger()
         self.configurationManager = scope.getConfigurationManager()
+        self.event_manger=scope.getEventManager()
 
         self.full_jid =str(self.configurationManager.get('CONNECTION', 'uid'))+'@'+str(self.configurationManager.get('CONNECTION', 'host'))
-        #slixmpp.ClientXMPP.__init__(self, self.full_jid, 'pass')
+        slixmpp.ClientXMPP.__init__(self, self.full_jid, 'pass')
 
         #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
-        slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
-        self.receiver="caner@localhost"
+        #slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
+        self.receiver="lider_sunucu@localhost"
         #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
 
         """
@@ -114,8 +116,11 @@ class MessageReceiver(slixmpp.ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
-            #self.disconnect()
-            print ("%s : %s" % (msg['from'], msg['body']))
+            print ("event will be fired - %s : %s" % (msg['from'], msg['body']))
+            j = json.loads(str(msg['body']))
+            type =j['type']
+            self.event_manger.fireEvent('type',str(msg['body']))
+
 
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
         try:
