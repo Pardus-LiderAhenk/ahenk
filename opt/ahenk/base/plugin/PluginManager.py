@@ -11,11 +11,11 @@ class PluginManager(object):
     #implement logger
     def __init__(self):
         super(PluginManager, self).__init__()
-        scope = Scope.getInstance()
-        self.configManager = scope.getConfigurationManager()
+        self.scope = Scope.getInstance()
+        self.configManager = self.scope.getConfigurationManager()
         self.plugins = []
         self.pluginQueueDict = dict()
-        self.logger = scope.getLogger()
+        self.logger = self.scope.getLogger()
 
     def loadPlugins(self):
         print("loading")
