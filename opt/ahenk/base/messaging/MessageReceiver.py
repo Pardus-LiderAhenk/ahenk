@@ -13,20 +13,6 @@ from multiprocessing import Process
 from slixmpp.exceptions import IqError, IqTimeout
 from base.Scope import Scope
 
-"""
---fetch parameters of connection  from conf file
---connect xmpp
---send direct message
---receive direct message
---send muc message
---receive muc message
---listen to muc invites
---auto accept muc invites
---send auto reply to muc messages
---receive file (0065)
---send file (0065)
-
-"""
 
 class MessageReceiver(slixmpp.ClientXMPP):
 
@@ -35,63 +21,61 @@ class MessageReceiver(slixmpp.ClientXMPP):
         # global scope of ahenk
         scope = Scope().getInstance()
 
-        # logger comes from ahenk deamon
-        # configurationManager comes from ahenk deamon
+        # configuration_manager and logger comes from ahenk deamon
         self.logger = scope.getLogger()
         self.configurationManager = scope.getConfigurationManager()
         self.event_manger=scope.getEventManager()
 
-        self.full_jid =str(self.configurationManager.get('CONNECTION', 'uid'))+'@'+str(self.configurationManager.get('CONNECTION', 'host'))
-        slixmpp.ClientXMPP.__init__(self, self.full_jid, 'pass')
+        self.my_jid=self.get_jid_id()
+        self.my_pass=self.get_password()
 
-        #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
-        #slixmpp.ClientXMPP.__init__(self, "volkan@localhost", "volkan")
-        self.receiver="lider_sunucu@localhost"
-        #TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+        slixmpp.ClientXMPP.__init__(self, self.my_jid,self.my_pass)
 
-        """
-        self.nick = self.configurationManager.get('CONNECTION', 'nick')
-        self.receiver=self.configurationManager.get('CONNECTION','receiverJid')
-        self.sendfile=open(self.configurationManager.get('CONNECTION','sendFilePath'), 'rb')
-        self.receivefile=self.configurationManager.get('CONNECTION', 'receiveFileParam')
-        self.logger.info('Parameters were established')
-        """
         self.room=None
+        self.receiver=self.configurationManager.get('CONNECTION', 'receiverjid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/Smack'
+        self.nick = self.configurationManager.get('CONNECTION', 'nick')
+        self.receivefile=self.configurationManager.get('CONNECTION', 'receiveFileParam')
+
+        #TODO get default folder path from receivefile
+        self.file = open('/home/volkan/Desktop/yaz.txt', 'rb')
+
         self.register_extensions()
         self.add_listeners()
         self.connect()
 
-        #!!! you have to use modified slixmpp for file transfering
-        #self.send_file()
+    def get_jid_id(self):
+        if self.configurationManager.get('CONNECTION', 'uid') == "" or  self.configurationManager.get('CONNECTION', 'uid') is None:
+            return str(self.configurationManager.get('CONNECTION', 'host')) #is user want to create connection as anonymous
+        else:
+            return str(self.configurationManager.get('CONNECTION', 'uid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/ahenk')
+
+    def get_password(self):
+        if self.configurationManager.get('CONNECTION', 'password') == "" or  self.configurationManager.get('CONNECTION', 'password') is None:
+            return None
+        else:
+            return str(self.configurationManager.get('CONNECTION', 'password'))
 
     def add_listeners(self):
-
         self.add_event_handler("session_start", self.session_start)
-        #self.add_event_handler("groupchat_message", self.recv_muc_message)
         self.add_event_handler("message", self.recv_direct_message)
-
-        #self.room=self.add_event_handler("groupchat_invite", self.invite_auto_accept)
-
-        #file_listeners
-        #self.add_event_handler("socks5_connected", self.stream_opened)
-        #self.add_event_handler("socks5_data", self.stream_data)
-        #self.add_event_handler("socks5_closed", self.stream_closed)
-
-        #self.logger.info('Listeners were added')
-
+        self.add_event_handler("socks5_connected", self.stream_opened)
+        self.add_event_handler("socks5_data", self.stream_data)
+        self.add_event_handler("socks5_closed", self.stream_closed)
 
     def stream_opened(self, sid):
+        print('stream opened')
         #self.logger.info('Stream opened. %s', sid)
-        return open(self.receivefile, 'wb')
+        return open('/home/volkan/Desktop/ooo.txt', 'wb')
 
     def stream_data(self, data):
+        print('stream data')
         #self.logger.info('Stream data.')
         self.file.write(data)
 
     def stream_closed(self, exception):
+        print('stream close')
         #self.logger.info('Stream closed. %s', exception)
         self.file.close()
-        #self.disconnect()
 
     def session_start(self, event):
         self.get_roster()
@@ -99,7 +83,6 @@ class MessageReceiver(slixmpp.ClientXMPP):
 
 
     def invite_auto_accept(self, inv):
-
         self.room=inv['from']
         print("(%s) invite is accepted" % str(self.room))
         self.plugin['xep_0045'].joinMUC(self.room,self.nick,wait=True)

@@ -6,6 +6,7 @@ from base.config.ConfigManager import ConfigManager
 from base.deamon.BaseDeamon import BaseDaemon
 from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
+from base.messaging.Messaging import Messaging
 from base.messaging.MessageReceiver import MessageReceiver
 from base.messaging.MessageSender import MessageSender
 from base.registration.Registration import Registration
@@ -47,7 +48,10 @@ class AhenkDeamon(BaseDaemon):
 		eventManager = EventManager()
 		globalscope.setEventManager(eventManager)
 
-		eventManager.register_event('registration_ok',self.reload)
+		messageManager = Messaging()
+		globalscope.setMessageManager(messageManager)
+
+
 		pluginManager = PluginManager()
 		pluginManager.loadPlugins()
 		globalscope.setPluginManager(pluginManager)
@@ -61,15 +65,23 @@ class AhenkDeamon(BaseDaemon):
 		while registration.is_registered() is False:
 			registration.registration_request()
 
-		#message_sender=MessageSender(None,'/home/volkan/Desktop/batman.png')
-		#message_sender.connect_to_server()
+		#eventManager.register_event('registration_ok',self.reload)
+
+		#registration.unregister()
 
 
-		""""
+		"""
 		message_receiver = MessageReceiver()
 		rec_process = Process(target=message_receiver.connect_to_server)
 		rec_process.start()
 		"""
+
+		#rec_process.terminate()
+
+
+		#message_sender=MessageSender(None,'/home/volkan/Desktop/batman.png')
+		#message_sender.connect_to_server()
+
 
 
 		"""

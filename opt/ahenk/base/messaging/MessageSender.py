@@ -24,12 +24,13 @@ class MessageSender(slixmpp.ClientXMPP):
         self.logger = scope.getLogger()
         self.configurationManager = scope.getConfigurationManager()
         self.registration=scope.getRegistration()
+        self.event_manager = scope.getEventManager()
 
         self.my_jid=self.get_jid_id()
         self.my_pass=self.get_password()
 
         slixmpp.ClientXMPP.__init__(self, self.my_jid,self.my_pass)
-        #slixmpp.ClientXMPP.__init__(self,'volkan@localhost','volkan')
+        #slixmpp.ClientXMPP.__init__(self, "volkan@localhost/ahenk","volkan")
 
         self.message=None
         self.file=None
@@ -40,18 +41,18 @@ class MessageSender(slixmpp.ClientXMPP):
 
         if file_path is not None and file_path!='':
             self.file=open(file_path, 'rb')
-            print('file path-'+file_path+"-"+self.my_jid+"-"+self.my_pass)
-        if message is not None and message!='':
+        if message is not None:
             self.message=message
 
+        self.add_listeners()
+        self.register_extensions()
+
+    def add_listeners(self):
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.recv_direct_message)
         self.add_event_handler("socks5_connected", self.stream_opened)
         self.add_event_handler("socks5_data", self.stream_data)
         self.add_event_handler("socks5_closed", self.stream_closed)
-
-        self.register_extensions()
-
 
     def get_jid_id(self):
         if self.configurationManager.get('CONNECTION', 'uid') == "" or  self.configurationManager.get('CONNECTION', 'uid') is None:
@@ -68,8 +69,9 @@ class MessageSender(slixmpp.ClientXMPP):
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
             print ("%s : %s" % (msg['from'], msg['body']))
-            self.registration.registration_reply=str(msg['body'])
-            self.disconnect(wait=False)
+            self.disconnect()
+            self.event_manager.fireEvent('confirm_registration',str(msg['body']))
+
 
     @asyncio.coroutine
     def session_start(self, event):
@@ -77,6 +79,7 @@ class MessageSender(slixmpp.ClientXMPP):
         self.send_presence()
 
         if self.message is not None:
+            print("send dire")
             self.send_direct_message(self.message)
 
         if self.file is not None:
@@ -97,34 +100,8 @@ class MessageSender(slixmpp.ClientXMPP):
                 print('File transfer finished')
             finally:
                 self.file.close()
-        self.disconnect()
 
-
-    @asyncio.coroutine
-    def send_file(self,event):
-        print("send file")
-        try:
-            # Open the S5B stream in which to write to.
-            print("try")
-            proxy = yield from self['xep_0065'].handshake(self.receiver)
-            print("proxy")
-            # Send the entire file.
-            while True:
-                data = self.file.read(1048576)
-                if not data:
-                    print("not data")
-                    break
-                yield from proxy.write(data)
-            # And finally close the stream.
-            print("while bitti")
-            proxy.transport.write_eof()
-        except (IqError, IqTimeout):
-            print('File transfer errored')
-        else:
-            print('File transfer finished')
-        finally:
-            print("close")
-            self.file.close()
+        if self.message is None and self.file is None:
             self.disconnect()
 
     def stream_opened(self, sid):
@@ -143,12 +120,9 @@ class MessageSender(slixmpp.ClientXMPP):
     def send_direct_message(self,msg):
         #need connection control
         self.send_message(mto=self.receiver,mbody=msg,mtype='chat')
-        if self.configurationManager.get('CONNECTION', 'uid') != "" and  self.configurationManager.get('CONNECTION', 'uid') is not None:
-            self.disconnect()
 
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
         try:
-            print("connec")
             self.connect()
             self.process(forever=False)
             #self.logger.info('Connection were established successfully')

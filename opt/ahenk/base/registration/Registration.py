@@ -26,6 +26,12 @@ class Registration():
         scope = Scope().getInstance()
         self.conf_manager = scope.getConfigurationManager()
         self.logger=scope.getLogger()
+        self.message_manager=scope.getMessageManager()
+        self.event_manager = scope.getEventManager()
+
+        self.event_manager.register_event('confirm_registration',self.confirm_registration)
+
+        #self.registration_reply=""
 
         if self.conf_manager.has_section('REGISTRATION'):
             if self.conf_manager.get('REGISTRATION', 'registered')=='false':
@@ -34,37 +40,37 @@ class Registration():
                 self.logger.debug('[Registration] already registered')
         else:
             self.register(True)
-            self.registration_reply=""
+            #self.registration_reply=""
         self.logger.debug('[Registration] ')
 
     def registration_request(self):
         message_sender=MessageSender(self.get_registration_request_message(),None)
         message_sender.connect_to_server()
-        self.confirm_registration()
 
-    def confirm_registration(self):
-        if self.registration_reply != "":
-            j = json.loads(self.registration_reply)
-            self.logger.info('[REGISTRATION] register reply: '+j['message'])
-            status =j['status']
-            dn=j['dn']
+    def confirm_registration(self,reg_reply): #event fire and keep here
 
-            if(str(status).lower()=='registered'):
-                if self.conf_manager.has_section('CONNECTION') and self.conf_manager.get('REGISTRATION', 'from') is not None:
-                    self.conf_manager.set('CONNECTION', 'uid',self.conf_manager.get('REGISTRATION', 'from'))
-                    self.conf_manager.set('CONNECTION', 'password',self.conf_manager.get('REGISTRATION', 'password'))
-                    self.conf_manager.set('REGISTRATION', 'dn',dn)
-                    self.conf_manager.set('REGISTRATION', 'registered','true')
-                    with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
-                        self.conf_manager.write(configfile)
+        j = json.loads(reg_reply)
+        self.logger.info('[REGISTRATION] register reply: '+j['message'])
+        status =j['status']
+        dn=j['dn']
 
-                self.logger.info('[REGISTRATION] registered successfully')
-            elif(status=='registration_error'):
-                self.logger.info('[REGISTRATION] registration error')
-            elif(status=='already_registered'):
-                self.logger.info('[REGISTRATION]already registered')
-                self.re_register()
-                self.registration_request()
+        if(str(status).lower()=='registered'):
+            print("registered")
+            if self.conf_manager.has_section('CONNECTION') and self.conf_manager.get('REGISTRATION', 'from') is not None:
+                self.conf_manager.set('CONNECTION', 'uid',self.conf_manager.get('REGISTRATION', 'from'))
+                self.conf_manager.set('CONNECTION', 'password',self.conf_manager.get('REGISTRATION', 'password'))
+                self.conf_manager.set('REGISTRATION', 'dn',dn)
+                self.conf_manager.set('REGISTRATION', 'registered','true')
+                with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
+                    self.conf_manager.write(configfile)
+
+            self.logger.info('[REGISTRATION] registered successfully')
+        elif(status=='registration_error'):
+            self.logger.info('[REGISTRATION] registration error')
+        elif(status=='already_registered'):
+            self.logger.info('[REGISTRATION]already registered')
+            self.re_register()
+            self.registration_request()
 
     def is_registered(self):
         if self.conf_manager.has_section('REGISTRATION') and (self.conf_manager.get('REGISTRATION', 'registered')=='true'):
@@ -119,11 +125,16 @@ class Registration():
 
     def unregister(self):
         if self.conf_manager.has_section('REGISTRATION'):
+
+            message_sender=MessageSender(self.message_manager.unregister_msg(),None)
+            message_sender.connect_to_server()
+
             self.conf_manager.remove_section('REGISTRATION')
             self.conf_manager.set('CONNECTION', 'uid','')
             self.conf_manager.set('CONNECTION', 'password','')
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
+
 
     def re_register(self):
         self.unregister()
