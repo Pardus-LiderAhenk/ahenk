@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
-import configparser,os
+import os,configparser
 from os import listdir
 from os.path import isfile, join
 from configparser import SafeConfigParser
@@ -15,7 +15,6 @@ class ConfigManager(object):
 		is configuration files folder path
 	"""
 	def __init__(self, configurationFilePath=None, configurationFolderPath=None):
-		super(ConfigManager, self).__init__()
 		self.configurationFilePath = configurationFilePath
 		self.configurationFolderPath = configurationFolderPath
 
