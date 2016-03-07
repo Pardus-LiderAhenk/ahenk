@@ -48,8 +48,6 @@ class AhenkDeamon(BaseDaemon):
 		globalscope.setEventManager(eventManager)
 
 		eventManager.register_event('registration_ok',self.reload)
-
-
 		pluginManager = PluginManager()
 		pluginManager.loadPlugins()
 		globalscope.setPluginManager(pluginManager)
@@ -60,10 +58,12 @@ class AhenkDeamon(BaseDaemon):
 		registration=Registration()
 		globalscope.setRegistration(registration)
 
-		if registration.is_registered() is False:
-			message_sender=MessageSender(registration.get_registration_request_message())
-			message_sender.connect_to_server()
-			registration.confirm_registration()
+		while registration.is_registered() is False:
+			registration.registration_request()
+
+		#message_sender=MessageSender(None,'/home/volkan/Desktop/batman.png')
+		#message_sender.connect_to_server()
+
 
 		""""
 		message_receiver = MessageReceiver()
@@ -71,25 +71,6 @@ class AhenkDeamon(BaseDaemon):
 		rec_process.start()
 		"""
 
-		"""
-		else:
-
-
-		"""
-		"""
-		#TODO send register message according to register status
-		print("sending registration message")
-		message_sender = MessageSender(registration.get_registration_message())
-		message_sender.connect_to_server()
-		print("registration message were sent")
-		#TODO add sender to scope
-
-		message_receiver = MessageReceiver()
-		rec_process = Process(target=message_receiver.connect_to_server)
-		rec_process.start()
-		print("receiver online")
-		#set parameters which will use for message sending
-		"""
 
 		"""
 			this is must be created after message services

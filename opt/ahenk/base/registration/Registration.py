@@ -5,6 +5,7 @@
 from base.config.ConfigManager import ConfigManager
 from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
+from base.messaging.MessageSender import MessageSender
 from uuid import getnode as get_mac
 import json
 import uuid
@@ -32,9 +33,14 @@ class Registration():
             else:
                 self.logger.debug('[Registration] already registered')
         else:
-            self.register()
+            self.register(True)
             self.registration_reply=""
         self.logger.debug('[Registration] ')
+
+    def registration_request(self):
+        message_sender=MessageSender(self.get_registration_request_message(),None)
+        message_sender.connect_to_server()
+        self.confirm_registration()
 
     def confirm_registration(self):
         if self.registration_reply != "":
@@ -53,13 +59,12 @@ class Registration():
                         self.conf_manager.write(configfile)
 
                 self.logger.info('[REGISTRATION] registered successfully')
-                return True
             elif(status=='registration_error'):
                 self.logger.info('[REGISTRATION] registration error')
-                return False
             elif(status=='already_registered'):
                 self.logger.info('[REGISTRATION]already registered')
-                return False
+                self.re_register()
+                self.registration_request()
 
     def is_registered(self):
         if self.conf_manager.has_section('REGISTRATION') and (self.conf_manager.get('REGISTRATION', 'registered')=='true'):
@@ -89,7 +94,7 @@ class Registration():
             print("reg sec yok :(")
             return None
 
-    def register(self):
+    def register(self,uuid_depend_mac):
         self.logger.debug('[Registration] configuration parameters of registration is checking')
         if self.conf_manager.has_section('REGISTRATION'):
             self.logger.debug('[Registration] REGISTRATION section is already created')
@@ -97,7 +102,7 @@ class Registration():
             self.logger.debug('[Registration] creating REGISTRATION section')
 
             self.conf_manager.add_section('REGISTRATION')
-            self.conf_manager.set('REGISTRATION', 'from',str(self.generate_uuid(True)))
+            self.conf_manager.set('REGISTRATION', 'from',str(self.generate_uuid(uuid_depend_mac)))
             self.conf_manager.set('REGISTRATION', 'mac_address',str(':'.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2))))
             self.conf_manager.set('REGISTRATION', 'ip_address',str(self.get_ip_addresses()))
             self.conf_manager.set('REGISTRATION', 'hostname',str(socket.gethostname()))
@@ -108,7 +113,7 @@ class Registration():
 
             #TODO self.conf_manager.configurationFilePath attribute error ? READ olacak
             self.logger.debug('[Registration] parameters were set up, section will write to configuration file')
-            with open('/etc/ahenk/ahenk.conf', 'a') as configfile:
+            with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
             self.logger.debug('[Registration] REGISTRATION section wrote to configuration file successfully')
 
@@ -120,6 +125,9 @@ class Registration():
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
 
+    def re_register(self):
+        self.unregister()
+        self.register(False)
 
     def generate_uuid(self,depend_mac=True):
         self.logger.debug('[Registration] universal user id will be created')
