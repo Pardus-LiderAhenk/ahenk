@@ -7,16 +7,9 @@ from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
 from base.messaging.MessageSender import MessageSender
 from uuid import getnode as get_mac
-import json
-import uuid
-import sys,logging
-import datetime
-import time
-import netifaces
-import re
-import socket
-import configparser
-
+import sys,logging,json,uuid
+import datetime,time,configparser
+import netifaces,socket,re
 
 class Registration():
 
@@ -31,8 +24,6 @@ class Registration():
 
         self.event_manager.register_event('confirm_registration',self.confirm_registration)
 
-        #self.registration_reply=""
-
         if self.conf_manager.has_section('REGISTRATION'):
             if self.conf_manager.get('REGISTRATION', 'registered')=='false':
                 self.re_register()
@@ -40,7 +31,6 @@ class Registration():
                 self.logger.debug('[Registration] already registered')
         else:
             self.register(True)
-            #self.registration_reply=""
         self.logger.debug('[Registration] ')
 
     def registration_request(self):
@@ -48,13 +38,12 @@ class Registration():
         message_sender.connect_to_server()
 
     def confirm_registration(self,reg_reply): #event fire and keep here
-
         j = json.loads(reg_reply)
         self.logger.info('[REGISTRATION] register reply: '+j['message'])
-        status =j['status']
-        dn=j['dn']
+        status =str(j['status']).lower()
+        dn=str(j['agentDn']).lower()
 
-        if(str(status).lower()=='registered'):
+        if str(status)=='registered':
             print("registered")
             if self.conf_manager.has_section('CONNECTION') and self.conf_manager.get('REGISTRATION', 'from') is not None:
                 self.conf_manager.set('CONNECTION', 'uid',self.conf_manager.get('REGISTRATION', 'from'))
@@ -63,7 +52,7 @@ class Registration():
                 self.conf_manager.set('REGISTRATION', 'registered','true')
                 with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                     self.conf_manager.write(configfile)
-
+            self.event_manager.register_event('registration_ok',self.reload)
             self.logger.info('[REGISTRATION] registered successfully')
         elif(status=='registration_error'):
             self.logger.info('[REGISTRATION] registration error')
@@ -83,21 +72,20 @@ class Registration():
 
         if self.conf_manager.has_section('REGISTRATION'):
             data = {}
-            data['message_type'] = 'registration'
+            data['type'] = 'REGISTER'
             data['from'] = str(self.conf_manager.get('REGISTRATION','from'))
             data['password'] = str(self.conf_manager.get('REGISTRATION','password'))
-            data['mac_address'] = str(self.conf_manager.get('REGISTRATION','mac_address'))
-            data['ip_address'] = str(self.conf_manager.get('REGISTRATION','ip_address'))
+            data['macAddresses'] = str(self.conf_manager.get('REGISTRATION','macAddresses'))
+            data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION','ipAddresses'))
             data['hostname'] = str(self.conf_manager.get('REGISTRATION','hostname'))
             data['timestamp'] = str(self.conf_manager.get('REGISTRATION','timestamp'))
-            data['dn'] = str(self.conf_manager.get('REGISTRATION','dn'))
             self.logger.debug('[Registration] json of registration message was created')
 
             json_data = json.dumps(data)
             self.logger.debug('[Registration] json converted to str')
             return json_data
         else:
-            print("reg sec yok :(")
+            print("Registration section not found")
             return None
 
     def register(self,uuid_depend_mac):
@@ -109,8 +97,8 @@ class Registration():
 
             self.conf_manager.add_section('REGISTRATION')
             self.conf_manager.set('REGISTRATION', 'from',str(self.generate_uuid(uuid_depend_mac)))
-            self.conf_manager.set('REGISTRATION', 'mac_address',str(':'.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2))))
-            self.conf_manager.set('REGISTRATION', 'ip_address',str(self.get_ip_addresses()))
+            self.conf_manager.set('REGISTRATION', 'macAddresses',str(':'.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2))))
+            self.conf_manager.set('REGISTRATION', 'ipAddresses',str(self.get_ipAddresses()))
             self.conf_manager.set('REGISTRATION', 'hostname',str(socket.gethostname()))
             self.conf_manager.set('REGISTRATION', 'timestamp',str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M")))
             self.conf_manager.set('REGISTRATION', 'password',str(self.generate_password()))
@@ -125,9 +113,9 @@ class Registration():
 
     def unregister(self):
         if self.conf_manager.has_section('REGISTRATION'):
-
-            message_sender=MessageSender(self.message_manager.unregister_msg(),None)
-            message_sender.connect_to_server()
+            #TODO open this block if you want to be aware about unregistration
+            #message_sender=MessageSender(self.message_manager.unregister_msg(),None)
+            #message_sender.connect_to_server()
 
             self.conf_manager.remove_section('REGISTRATION')
             self.conf_manager.set('CONNECTION', 'uid','')
@@ -152,7 +140,7 @@ class Registration():
     def generate_password(self):
         return uuid.uuid4()
 
-    def get_ip_addresses(self):
+    def get_ipAddresses(self):
         self.logger.debug('[Registration] looking for network interces')
         ip_address=""
         for interface in netifaces.interfaces():
