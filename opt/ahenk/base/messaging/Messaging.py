@@ -10,15 +10,17 @@ from base.Scope import Scope
 class Messaging(object):
 
     def __init__(self):
-        print("messaging initilaziton")
+        
         scope = Scope().getInstance()
         self.logger = scope.getLogger()
         self.configurationManager = scope.getConfigurationManager()
         self.event_manger=scope.getEventManager()
 
+    #TODO can use sh commands for getting username and timestamp
+
     def login_msg(self):
         data = {}
-        data['type'] = 'login'
+        data['type'] = 'LOGIN'
         data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
@@ -26,7 +28,7 @@ class Messaging(object):
 
     def logout_msg(self):
         data = {}
-        data['type'] = 'logout'
+        data['type'] = 'LOGOUT'
         data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
@@ -34,7 +36,7 @@ class Messaging(object):
 
     def get_policies_msg(self):
         data = {}
-        data['type'] = 'get_policies'
+        data['type'] = 'GET_POLICIES'
         data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
@@ -42,8 +44,7 @@ class Messaging(object):
 
     def unregister_msg(self):
         data = {}
-        data['type'] = 'registration'
-        data['status'] = 'unregister'
+        data['type'] = 'UNREGISTER'
         data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
