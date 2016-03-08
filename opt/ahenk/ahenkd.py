@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
 from base.config.ConfigManager import ConfigManager
 from base.deamon.BaseDeamon import BaseDaemon
@@ -9,6 +10,7 @@ from base.Scope import Scope
 from base.messaging.Messaging import Messaging
 from base.messaging.MessageReceiver import MessageReceiver
 from base.messaging.MessageSender import MessageSender
+from base.execution.ExecutionManager import ExecutionManager
 from base.registration.Registration import Registration
 from base.messaging.MessageResponseQueue import MessageResponseQueue
 from base.event.EventManager import EventManager
@@ -16,7 +18,7 @@ from base.plugin.PluginManager import PluginManager
 from base.task.TaskManager import TaskManager
 from multiprocessing import Process
 from threading import Thread
-import sys,logging,queue,time
+import sys,logging,queue,time,os
 
 
 class AhenkDeamon(BaseDaemon):
@@ -51,7 +53,6 @@ class AhenkDeamon(BaseDaemon):
 		messageManager = Messaging()
 		globalscope.setMessageManager(messageManager)
 
-
 		pluginManager = PluginManager()
 		pluginManager.loadPlugins()
 		globalscope.setPluginManager(pluginManager)
@@ -62,27 +63,25 @@ class AhenkDeamon(BaseDaemon):
 		registration=Registration()
 		globalscope.setRegistration(registration)
 
+		execution_manager=ExecutionManager()
+
 		while registration.is_registered() is False:
 			registration.registration_request()
 
-		#eventManager.register_event('registration_ok',self.reload)
-
-		#registration.unregister()
-
-
-		"""
+		print("Receiver OnAir")
 		message_receiver = MessageReceiver()
 		rec_process = Process(target=message_receiver.connect_to_server)
 		rec_process.start()
-		"""
 
-		#rec_process.terminate()
-
-
-		#message_sender=MessageSender(None,'/home/volkan/Desktop/batman.png')
+		#login
+		#message_sender=MessageSender(messageManager.login_msg(),None)
 		#message_sender.connect_to_server()
 
+		#logout
+		#message_sender=MessageSender(messageManager.logout_msg(),None)
+		#message_sender.connect_to_server()
 
+		#rec_process.terminate()
 
 		"""
 			this is must be created after message services
