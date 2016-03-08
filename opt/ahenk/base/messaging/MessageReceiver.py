@@ -34,10 +34,10 @@ class MessageReceiver(slixmpp.ClientXMPP):
         self.room=None
         self.receiver=self.configurationManager.get('CONNECTION', 'receiverjid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/Smack'
         self.nick = self.configurationManager.get('CONNECTION', 'nick')
-        self.receivefile=self.configurationManager.get('CONNECTION', 'receiveFileParam')
+        self.receive_file_path=self.configurationManager.get('CONNECTION', 'receiveFileParam')
 
         #TODO get default folder path from receivefile
-        self.file = open('/home/volkan/Desktop/yaz.txt', 'rb')
+        #self.file = open('/home/volkan/Desktop/yaz.txt', 'rb')
 
         self.register_extensions()
         self.add_listeners()
@@ -47,7 +47,7 @@ class MessageReceiver(slixmpp.ClientXMPP):
         if self.configurationManager.get('CONNECTION', 'uid') == "" or  self.configurationManager.get('CONNECTION', 'uid') is None:
             return str(self.configurationManager.get('CONNECTION', 'host')) #is user want to create connection as anonymous
         else:
-            return str(self.configurationManager.get('CONNECTION', 'uid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/ahenk')
+            return str(self.configurationManager.get('CONNECTION', 'uid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/1793816026658382528511590341137904818696727194330755982493')
 
     def get_password(self):
         if self.configurationManager.get('CONNECTION', 'password') == "" or  self.configurationManager.get('CONNECTION', 'password') is None:
@@ -62,10 +62,15 @@ class MessageReceiver(slixmpp.ClientXMPP):
         self.add_event_handler("socks5_data", self.stream_data)
         self.add_event_handler("socks5_closed", self.stream_closed)
 
+        self.add_event_handler("ibb_stream_start", self.stream_opened)
+        self.add_event_handler("ibb_stream_data", self.stream_data)
+        self.add_event_handler("ibb_stream_end", self.stream_closed)
+
     def stream_opened(self, sid):
         print('stream opened')
         #self.logger.info('Stream opened. %s', sid)
-        return open('/home/volkan/Desktop/ooo.txt', 'wb')
+        self.file = open(self.receive_file_path+self.stream_id, 'wb')
+        return self.file
 
     def stream_data(self, data):
         print('stream data')
@@ -97,12 +102,12 @@ class MessageReceiver(slixmpp.ClientXMPP):
         else:
             print("%s : %s" % (str(msg['mucnick']),str(msg['body'])))
 
-    def recv_direct_message(self, msg):
+    def recv_direct_message(self, msg): #TODO burada mesajın type ını event olarak fırlat
         if msg['type'] in ('chat', 'normal'):
-            print ("event will be fired - %s : %s" % (msg['from'], msg['body']))
             j = json.loads(str(msg['body']))
             type =j['type']
-            self.event_manger.fireEvent('type',str(msg['body']))
+            print ("event will be fired:"+type)
+            self.event_manger.fireEvent(type,str(msg['body']))
 
 
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
@@ -123,7 +128,8 @@ class MessageReceiver(slixmpp.ClientXMPP):
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0045') # Multi-User Chat
             self.register_plugin('xep_0199') # XMPP Ping
-            self.register_plugin('xep_0065') # SOCKS5 Bytestreams
+            self.register_plugin('xep_0065', {'auto_accept': True}) # SOCKS5 Bytestreams
+            self.register_plugin('xep_0047', {'auto_accept': True}) # In-band Bytestreams
 
             #self.logger.info('Extension were registered: xep_0030,xep_0045,xep_0199,xep_0065')
             return True

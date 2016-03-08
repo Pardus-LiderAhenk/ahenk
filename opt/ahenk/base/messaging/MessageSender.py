@@ -30,7 +30,6 @@ class MessageSender(slixmpp.ClientXMPP):
         self.my_pass=self.get_password()
 
         slixmpp.ClientXMPP.__init__(self, self.my_jid,self.my_pass)
-        #slixmpp.ClientXMPP.__init__(self, "volkan@localhost/ahenk","volkan")
 
         self.message=None
         self.file=None
@@ -70,7 +69,7 @@ class MessageSender(slixmpp.ClientXMPP):
         if msg['type'] in ('chat', 'normal'):
             print ("%s : %s" % (msg['from'], msg['body']))
             self.disconnect()
-            self.event_manager.fireEvent('confirm_registration',str(msg['body']))
+            self.event_manager.fireEvent('confirm_registration',str(msg['body'])) #only anonymous account can fire confirm_registration
 
 
     @asyncio.coroutine
@@ -79,7 +78,6 @@ class MessageSender(slixmpp.ClientXMPP):
         self.send_presence()
 
         if self.message is not None:
-            print("send dire")
             self.send_direct_message(self.message)
 
         if self.file is not None:
@@ -101,12 +99,13 @@ class MessageSender(slixmpp.ClientXMPP):
             finally:
                 self.file.close()
 
-        if self.message is None and self.file is None:
+        if (self.message is None and self.file is None) or self.get_password() is not None:
             self.disconnect()
 
     def stream_opened(self, sid):
         #self.logger.info('Stream opened. %s', sid)
-        return open(self.receivefile, 'wb')
+        self.file = open(self.receive_file_path+self.stream_id, 'wb')
+        return self.file
 
     def stream_data(self, data):
         #self.logger.info('Stream data.')
@@ -115,11 +114,12 @@ class MessageSender(slixmpp.ClientXMPP):
     def stream_closed(self, exception):
         #self.logger.info('Stream closed. %s', exception)
         self.file.close()
-        #self.disconnect()
+        self.disconnect()
 
     def send_direct_message(self,msg):
         #need connection control
-        self.send_message(mto=self.receiver,mbody=msg,mtype='chat')
+        print("sending...\n"+msg)
+        self.send_message(mto=self.receiver,mbody=msg,mtype='normal')
 
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
         try:
