@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import sys
-import logging
+import logging,subprocess
 import logging.config
 from base.Scope import Scope
 
@@ -27,11 +27,9 @@ class ExecutionManager(object):
 		print("execute_script")
 		j = json.loads(arg)
 		msg_id =str(j['id']).lower()
-		file_path =str(j['filePath']).lower()
+		file_name =str(j['filePath']).lower()
 		time_stamp=str(j['timestamp']).lower()
-
-		os.system('./command.sh') #TODO
-
+		subprocess.call("/bin/sh "+self.conf_manager.get('CONNECTION', 'receivefileparam')+file_name, shell=True)
 
 	#need to move somewhere else
 	def send_file(self,arg):
