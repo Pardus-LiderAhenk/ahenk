@@ -47,7 +47,7 @@ class MessageReceiver(slixmpp.ClientXMPP):
         if self.configurationManager.get('CONNECTION', 'uid') == "" or  self.configurationManager.get('CONNECTION', 'uid') is None:
             return str(self.configurationManager.get('CONNECTION', 'host')) #is user want to create connection as anonymous
         else:
-            return str(self.configurationManager.get('CONNECTION', 'uid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/1793816026658382528511590341137904818696727194330755982493')
+            return str(self.configurationManager.get('CONNECTION', 'uid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/receiver')
 
     def get_password(self):
         if self.configurationManager.get('CONNECTION', 'password') == "" or  self.configurationManager.get('CONNECTION', 'password') is None:
@@ -68,12 +68,14 @@ class MessageReceiver(slixmpp.ClientXMPP):
 
     def stream_opened(self, sid):
         print('stream opened')
-        #self.logger.info('Stream opened. %s', sid)
+        print('So stream_id:'+str(self.stream_id))
+
         self.file = open(self.receive_file_path+self.stream_id, 'wb')
         return self.file
 
     def stream_data(self, data):
         print('stream data')
+        self.logger.info('Sd'+self.get_id())
         #self.logger.info('Stream data.')
         self.file.write(data)
 
@@ -86,6 +88,10 @@ class MessageReceiver(slixmpp.ClientXMPP):
         self.get_roster()
         self.send_presence()
 
+    def send_direct_message(self,msg):
+        #need connection control
+        print("sending...\n"+msg)
+        self.send_message(mto=self.receiver,mbody=msg,mtype='normal')
 
     def invite_auto_accept(self, inv):
         self.room=inv['from']
@@ -107,12 +113,11 @@ class MessageReceiver(slixmpp.ClientXMPP):
             j = json.loads(str(msg['body']))
             type =j['type']
             print ("event will be fired:"+type)
-            self.event_manger.fireEvent(type,str(msg['body']))
+            self.event_manger.fireEvent(type,str(msg['body']).lower())
 
 
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
         try:
-
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.process())
 

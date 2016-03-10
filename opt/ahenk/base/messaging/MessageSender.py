@@ -57,7 +57,7 @@ class MessageSender(slixmpp.ClientXMPP):
         if self.configurationManager.get('CONNECTION', 'uid') == "" or  self.configurationManager.get('CONNECTION', 'uid') is None:
             return str(self.configurationManager.get('CONNECTION', 'host')) #is user want to create connection as anonymous
         else:
-            return str(self.configurationManager.get('CONNECTION', 'uid')+'@'+self.configurationManager.get('CONNECTION', 'host'))
+            return str(self.configurationManager.get('CONNECTION', 'uid')+'@'+self.configurationManager.get('CONNECTION', 'host')+'/sender')
 
     def get_password(self):
         if self.configurationManager.get('CONNECTION', 'password') == "" or  self.configurationManager.get('CONNECTION', 'password') is None:
@@ -74,11 +74,13 @@ class MessageSender(slixmpp.ClientXMPP):
 
     @asyncio.coroutine
     def session_start(self, event):
+        print("session start")
         self.get_roster()
         self.send_presence()
 
         if self.message is not None:
             self.send_direct_message(self.message)
+            print("sent")
 
         if self.file is not None:
             try:
@@ -124,7 +126,7 @@ class MessageSender(slixmpp.ClientXMPP):
     def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
         try:
             self.connect()
-            self.process(forever=False)
+            self.process(forever=True)
             #self.logger.info('Connection were established successfully')
             return True
         except Exception as e:
@@ -137,7 +139,8 @@ class MessageSender(slixmpp.ClientXMPP):
             self.register_plugin('xep_0030') # Service Discovery
             self.register_plugin('xep_0045') # Multi-User Chat
             self.register_plugin('xep_0199') # XMPP Ping
-            self.register_plugin('xep_0065') # SOCKS5 Bytestreams
+            self.register_plugin('xep_0065', {'auto_accept': True}) # SOCKS5 Bytestreams
+            self.register_plugin('xep_0047', {'auto_accept': True}) # In-band Bytestreams
 
             #self.logger.info('Extension were registered: xep_0030,xep_0045,xep_0199,xep_0065')
             return True
