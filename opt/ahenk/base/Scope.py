@@ -19,6 +19,7 @@ class Scope(object):
         self.responseQueue=None
         self.registration=None
         self.eventManager=None
+        self.executionManager=None
 
 
     @staticmethod
@@ -86,3 +87,9 @@ class Scope(object):
 
     def setEventManager(self,eventManager):
         self.eventManager=eventManager
+
+    def getExecutionManager(self):
+        return self.executionManager
+
+    def setExecutionManager(self,executionManager):
+        self.executionManager=executionManager
