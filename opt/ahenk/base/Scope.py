@@ -19,6 +19,7 @@ class Scope(object):
         self.responseQueue=None
         self.registration=None
         self.eventManager=None
+        self.executionManager=None
         self.dbService=None
 
 
@@ -88,8 +89,14 @@ class Scope(object):
     def setEventManager(self,eventManager):
         self.eventManager=eventManager
 
+    def getExecutionManager(self):
+        return self.executionManager
+
+    def setExecutionManager(self,executionManager):
+        self.executionManager=executionManager
+
     def getDbService(self):
         return self.dbService
 
-    def serDbService(self,dbService):
+    def setDbService(self,dbService):
         self.dbService = dbService
