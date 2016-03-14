@@ -10,11 +10,15 @@ class Task(object):
         self.request = self.payload[u'request']
 
     @property
-    def getPluginName(self):
+    def task_id(self):
+        self.request[u'id']
+
+    @property
+    def plugin_name(self):
         self.request[u'pluginName']
 
     @property
-    def getCommandId(self):
+    def command_id(self):
         self.request[u'commandId']
 
     @property
@@ -22,5 +26,5 @@ class Task(object):
         self.request[u'parameterMap']
 
     @property
-    def pluginVersion(self):
+    def plugin_version(self):
         self.request[u'pluginVersion']

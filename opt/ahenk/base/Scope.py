@@ -19,6 +19,7 @@ class Scope(object):
         self.responseQueue=None
         self.registration=None
         self.eventManager=None
+        self.dbService=None
 
 
     @staticmethod
@@ -86,3 +87,9 @@ class Scope(object):
 
     def setEventManager(self,eventManager):
         self.eventManager=eventManager
+
+    def getDbService(self):
+        return self.dbService
+
+    def serDbService(self,dbService):
+        self.dbService = dbService

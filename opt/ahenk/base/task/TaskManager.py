@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 from base.Scope import Scope
+from base.model.MessageFactory import MessageFactory
+from base.model.MessageType import MessageType
 
 class TaskManager(object):
     """docstring for TaskManager"""
@@ -10,11 +12,12 @@ class TaskManager(object):
         scope = Scope.getInstance()
         self.pluginManager = scope.getPluginManager()
         self.logger= scope.getLogger()
+        self.dbService = scope.getDbService()
 
     def addTask(self,task):
         try:
-            # TODO add log
-            # TODO save task to database
+            self.logger.debug('Adding task ... ' + str(task.plugin_ame) + ' - ' + str(task.command_id))
+            self.saveTask(task)
             # TODO send task received message
             self.pluginManager.processTask(task)
         except Exception as e:
@@ -36,3 +39,11 @@ class TaskManager(object):
         # TODO not implemented yet
         # remove task if it is processed
         pass
+
+    def sendMessage(self,type,message):
+        # TODO not implemented yet
+        pass
+
+
+if __name__ == '__main__':
+    print(MessageFactory.createMessage(MessageType.TASK_PROCESSING,"my message"))
