@@ -20,6 +20,7 @@ class Scope(object):
         self.registration=None
         self.eventManager=None
         self.executionManager=None
+        self.dbService=None
 
 
     @staticmethod
@@ -93,3 +94,9 @@ class Scope(object):
 
     def setExecutionManager(self,executionManager):
         self.executionManager=executionManager
+
+    def getDbService(self):
+        return self.dbService
+
+    def setDbService(self,dbService):
+        self.dbService = dbService
