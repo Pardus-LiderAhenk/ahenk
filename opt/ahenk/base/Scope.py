@@ -66,7 +66,7 @@ class Scope(object):
         self.pluginManager = pluginManager
 
     def getTaskManager(self):
-        return self.TaskManager
+        return self.taskManager
 
     def setTaskManager(self,taskManager):
         self.taskManager = taskManager

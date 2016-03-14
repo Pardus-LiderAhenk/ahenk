@@ -7,9 +7,7 @@ class Task(object):
     """docstring for Task"""
     def __init__(self,message):
         self.payload = json.loads(message)
-        print(self.payload)
         self.request = self.payload['request']
-        print(self.request)
 
     @property
     def task_id(self):

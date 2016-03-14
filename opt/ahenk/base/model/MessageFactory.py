@@ -11,6 +11,6 @@ class MessageFactory(object):
             return "Message receivden response"
         elif type == MessageType.TASK_PROCESSING:
             return "Message processing response"
-        else
+        else:
             return None
     createMessage = staticmethod(createMessage)
