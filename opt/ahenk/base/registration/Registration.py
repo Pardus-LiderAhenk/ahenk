@@ -31,12 +31,12 @@ class Registration():
 
     def registration_request(self):
         self.logger.debug('[Registration] Requesting registration')
-        message_sender=MessageSender(self.get_registration_request_message(),None)
+        message_sender=MessageSender(self.message_manager.registration_msg(),None)
         message_sender.connect_to_server()
 
     def ldap_registration_request(self):
         self.logger.debug('[Registration] Requesting LDAP registration')
-        message_sender=MessageSender(self.get_ldap_registration_request_message(),None)
+        message_sender=MessageSender(self.message_manager.ldap_registration_msg(),None)
         message_sender.connect_to_server()
 
     def confirm_registration(self,reg_reply):
@@ -83,20 +83,6 @@ class Registration():
             return True
         else:
             return False
-
-    def get_registration_request_message(self):
-        if self.conf_manager.has_section('REGISTRATION'):
-            return self.message_manager.registration_msg()
-        else:
-            self.logger.error('[Registration] Registration section not found while trying to registration request')
-            return None
-
-    def get_ldap_registration_request_message(self):
-        if self.conf_manager.has_section('REGISTRATION'):
-            return self.message_manager.ldap_registration_msg()
-        else:
-            self.logger.error('[Registration] Registration section not found while trying to ldap registration request')
-            return None
 
     def register(self,uuid_depend_mac):
         if self.conf_manager.has_section('REGISTRATION'):
