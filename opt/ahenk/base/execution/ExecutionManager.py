@@ -5,6 +5,7 @@
 import subprocess
 from base.Scope import Scope
 from base.messaging.MessageSender import MessageSender
+from base.model.Task import Task
 import hashlib,json,os,stat,shutil
 
 class ExecutionManager(object):
@@ -16,16 +17,19 @@ class ExecutionManager(object):
         scope = Scope.getInstance()
         self.config_manager = scope.getConfigurationManager()
         self.event_manager = scope.getEventManager()
+        self.task_manager = scope.getTaskManager()
         self.logger=scope.getLogger()
 
         self.event_manager.register_event('EXECUTE_TASK',self.execute_task)
         self.event_manager.register_event('EXECUTE_SCRIPT',self.execute_script)
         self.event_manager.register_event('REQUEST_FILE',self.request_file)
         self.event_manager.register_event('MOVE_FILE',self.move_file)
+        self.event_manager.register_event('TASK',self.add_task)
 
-    def execute_task(self,arg):
-        #TODO
+    def add_task(self,arg):
         self.logger.debug('[ExecutionManager] Executing task...')
+        task = Task(arg)
+        self.task_manager.addTask(task)
 
     def move_file(self,arg):
         default_file_path=self.config_manager.get('CONNECTION', 'receiveFileParam')

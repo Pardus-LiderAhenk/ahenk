@@ -11,7 +11,6 @@ import json, uuid, netifaces, socket, datetime
 class Registration():
 
 
-    #TODO keep catches and set logs
     def __init__(self):
         scope = Scope().getInstance()
         self.conf_manager = scope.getConfigurationManager()

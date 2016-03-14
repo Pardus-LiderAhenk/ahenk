@@ -7,20 +7,22 @@ class Task(object):
     """docstring for Task"""
     def __init__(self,message):
         self.payload = json.loads(message)
-        self.request = self.payload[u'request']
+        print(self.payload)
+        self.request = self.payload['request']
+        print(self.request)
 
     @property
     def getPluginName(self):
-        self.request[u'pluginName']
+        self.request['pluginName']
 
     @property
     def getCommandId(self):
-        self.request[u'commandId']
+        self.request['commandId']
 
     @property
     def params(self):
-        self.request[u'parameterMap']
+        self.request['parameterMap']
 
     @property
     def pluginVersion(self):
-        self.request[u'pluginVersion']
+        self.request['pluginVersion']
