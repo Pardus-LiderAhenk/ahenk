@@ -16,6 +16,7 @@ class ExecutionManager(object):
         scope = Scope.getInstance()
         self.config_manager = scope.getConfigurationManager()
         self.event_manager = scope.getEventManager()
+        self.logger=scope.getLogger()
 
         self.event_manager.register_event('EXECUTE_TASK',self.execute_task)
         self.event_manager.register_event('EXECUTE_SCRIPT',self.execute_script)
@@ -32,7 +33,7 @@ class ExecutionManager(object):
         #msg_id =str(j['id']).lower()
         target_file_path =str(j['filepath']).lower()
         file_name =str(j['filename']).lower()
-        self.logger.debug('[ExecutionManager] %s will be moved to %s' % file_name,target_file_path)
+        self.logger.debug('[ExecutionManager] '+file_name+' will be moved to '+target_file_path)
         shutil.move(default_file_path+file_name,target_file_path+file_name)
 
     def execute_script(self,arg):
