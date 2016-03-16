@@ -16,7 +16,7 @@ class AhenkDbService(object):
         self.connection=None
         self.cursor = None
 
-    def connect():
+    def connect(self):
         try:
             self.connection=sqlite3.connect(self.db_path, check_same_thread=False)
             self.cursor = self.connection.cursor()
@@ -26,9 +26,14 @@ class AhenkDbService(object):
     def check_and_create_table(self,table_name,cols):
         if self.cursor:
             cols = ', '.join([str(x) for x in cols])
-            self.cursor.execute("create table if not exists "+table_name+" ("+cols+")")
-        else
+            self.cursor.execute('create table if not exists '+table_name+' ('+cols+')')
+        else:
             self.warn("Could not create table cursor is None! Table Name : " + str(table_name))
+
+    def drop_table(self,table_name):
+        sql = "DROP TABLE "+table_name
+        self.cursor.execute(sql)
+        self.connection.commit()
 
     def update(self, table_name, cols, args, criteria=None):
         try:
@@ -50,7 +55,7 @@ class AhenkDbService(object):
                 self.connection.commit()
             else:
                 self.warn("Could not update table cursor is None! Table Name : " + str(table_name))
-        except Exception, e:
+        except Exception as e:
             self.logger.error("Updating table error ! Table Name : " + str(table_name) + " " + str(e))
 
     def delete(self):
@@ -66,7 +71,7 @@ class AhenkDbService(object):
             try:
                 if not cols == "*":
                     cols = ', '.join([str(x) for x in cols])
-                sql = "SELECT "+cols+" FROM " + table_name  + " " + str(criteria)  + " " +  orderby
+                sql = "SELECT "+cols+" FROM " + table_name  + " where 1=1 and " + str(criteria)  + " " +  orderby
                 self.cursor.execute(sql)
                 rows = self.cursor.fetchall()
                 return rows
@@ -80,4 +85,4 @@ class AhenkDbService(object):
             self.cursor.close()
             self.connection.close()
         except Exception as e:
-            self.logger.error("Closing database connection error " + str(e)) 
+            self.logger.error("Closing database connection error " + str(e))
