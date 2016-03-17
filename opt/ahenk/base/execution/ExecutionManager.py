@@ -6,6 +6,7 @@ import subprocess
 from base.Scope import Scope
 from base.messaging.MessageSender import MessageSender
 from base.model.Task import Task
+from base.model.Policy import Policy
 import hashlib,json,os,stat,shutil
 
 class ExecutionManager(object):
@@ -19,11 +20,65 @@ class ExecutionManager(object):
         self.event_manager = scope.getEventManager()
         self.task_manager = scope.getTaskManager()
         self.logger=scope.getLogger()
+        self.db_service=scope.getDbService()
 
         self.event_manager.register_event('EXECUTE_SCRIPT',self.execute_script)
         self.event_manager.register_event('REQUEST_FILE',self.request_file)
         self.event_manager.register_event('MOVE_FILE',self.move_file)
         self.event_manager.register_event('TASK',self.add_task)
+        self.event_manager.register_event('POLICY',self.update_policies)
+
+    def update_policies(self,arg):
+        print("updating policies...")
+
+        policy = Policy(json.loads(arg))
+        #TODO get username from pam
+        username='volkan'
+
+        ahenk_policy_ver=self.db_service.select('policy',['version'],'type = \'A\'')
+        user_policy_version=self.db_service.select('policy',['version'],'type = \'U\' and name = \''+username+'\'')
+        installed_plugins=self.get_installed_plugins()
+        missing_plugins=[]
+
+
+        if policy.ahenk_policy_version != ahenk_policy_ver[0][0]:
+            ahenk_policy_id=self.db_service.select('policy',['id'],'type = \'A\'')
+            self.db_service.delete('profile','id='+str(ahenk_policy_id[0][0]))
+            self.db_service.update('policy',['version'],[str(policy.ahenk_policy_version)],'type=\'A\'')
+
+            for profile in policy.ahenk_profiles:
+                profile_columns=['id','label','description','is_overridable','is_active','profile_data','modify_date']
+                args=[str(ahenk_policy_id[0][0]),str(profile.label),str(profile.description),str(profile.is_overridable),str(profile.is_active),str(profile.profile_data),str(profile.modify_date)]
+                self.db_service.update('profile',profile_columns,args)
+                if profile.plugin.name not in installed_plugins and profile.plugin.name not in missing_plugins:
+                    missing_plugins.append(profile.plugin.name)
+
+        else:
+            print("already there ahenk policy")
+
+        if policy.user_policy_version != user_policy_version[0][0]:
+            user_policy_id=self.db_service.select('policy',['id'],'type = \'U\' and name=\''+username+'\'')
+            self.db_service.delete('profile','id='+str(user_policy_id[0][0]))
+            self.db_service.update('policy',['version'],[str(policy.user_policy_version)],'type=\'U\' and name=\''+username+'\'')
+            for profile in policy.user_profiles:
+                profile_columns=['id','label','description','is_overridable','is_active','profile_data','modify_date']
+                args=[str(user_policy_id[0][0]),str(profile.label),str(profile.description),str(profile.is_overridable),str(profile.is_active),str(profile.profile_data),str(profile.modify_date)]
+                self.db_service.update('profile',profile_columns,args)
+                if profile.plugin.name not in installed_plugins and profile.plugin.name not in missing_plugins:
+                    missing_plugins.append(profile.plugin.name)
+        else:
+            print("already there user policy")
+
+        print("updated policies")
+        print("but first need these plugins:"+str(missing_plugins))
+
+    def get_installed_plugins(self):
+        plugins=self.db_service.select('plugin',['name','version'])
+        p_list=[]
+        for p in plugins:
+            p_list.append(str(p[0])+'-'+str(p[1]))
+        return p_list
+
 
     def add_task(self,arg):
         self.logger.debug('[ExecutionManager] Adding new  task...')

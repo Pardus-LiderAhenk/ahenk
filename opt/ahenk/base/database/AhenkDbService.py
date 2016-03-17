@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 from base.Scope import Scope
 import sqlite3
 
@@ -42,26 +43,27 @@ class AhenkDbService(object):
                     cols = ', '.join([str(x) for x in cols])
                     params = ', '.join(["?" for x in args])
                     sql = "INSERT INTO "+table_name+" ("+cols+") VALUES ("+params+")"
-                    self.cursor.execute(sql, tuple(args))
                 else:
                     update_list = ""
                     params = ', '.join(["?" for x in args])
                     for index in range(len(cols)):
                         update_list = update_list + " " + cols[index] +" = ?,"
-
                     update_list = update_list.strip(',')
-                    sql = "UPDATE "+table_name+" SET " + update_list  + " " +  criteria
-                    self.cursor.execute(sql, tuple(args))
+                    sql = "UPDATE "+table_name+" SET " + update_list  + " where " +  criteria
+                self.cursor.execute(sql, tuple(args))
                 self.connection.commit()
             else:
                 self.warn("Could not update table cursor is None! Table Name : " + str(table_name))
         except Exception as e:
             self.logger.error("Updating table error ! Table Name : " + str(table_name) + " " + str(e))
 
-    def delete(self):
-        sql = "DELETE FROM " + table_name + str(criteria)
-        self.cursor.execute(sql)
-        self.connection.commit()
+    def delete(self,table_name,criteria):
+        if self.cursor:
+            sql = "DELETE FROM " + table_name
+            if criteria:
+                sql+=' where '+str(criteria)
+            self.cursor.execute(sql)
+            self.connection.commit()
 
     def findByProperty(self):
         # Not implemented yet
@@ -71,7 +73,14 @@ class AhenkDbService(object):
             try:
                 if not cols == "*":
                     cols = ', '.join([str(x) for x in cols])
-                sql = "SELECT "+cols+" FROM " + table_name  + " where 1=1 and " + str(criteria)  + " " +  orderby
+                sql = "SELECT "+cols+" FROM " + table_name
+                if criteria != "":
+                    sql+=' where '
+                    sql+=criteria
+                if orderby != "":
+                    sql+=' order by '
+                    sql+=orderby
+
                 self.cursor.execute(sql)
                 rows = self.cursor.fetchall()
                 return rows

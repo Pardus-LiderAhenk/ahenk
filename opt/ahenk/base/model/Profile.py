@@ -14,12 +14,28 @@ class Profile(object):
         return self.profile['id']
 
     @property
-    def params(self):
-        return self.profile['params']
+    def label(self):
+        return self.profile['label']
 
     @property
-    def date(self):
-        return self.profile['date']
+    def description(self):
+        return self.profile['description']
+
+    @property
+    def is_overridable(self):
+        return self.profile['isoverridable']
+
+    @property
+    def is_active(self):
+        return self.profile['isactive']
+
+    @property
+    def modify_date(self):
+        return self.profile['modifydate']
+
+    @property
+    def profile_data(self):
+        return self.profile['profiledata']
 
     @property
     def plugin(self):
