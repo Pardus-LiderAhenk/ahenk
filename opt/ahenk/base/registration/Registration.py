@@ -3,7 +3,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
 from base.Scope import Scope
-from base.messaging.MessageSender import MessageSender
+from base.messaging.AnonymousMessager import AnonymousMessager
 from uuid import getnode as get_mac
 import json, uuid, netifaces, socket, datetime
 
@@ -17,6 +17,7 @@ class Registration():
         self.logger=scope.getLogger()
         self.message_manager=scope.getMessageManager()
         self.event_manager = scope.getEventManager()
+        self.messager = scope.getMessager()
 
         self.event_manager.register_event('confirm_registration',self.confirm_registration)
 
@@ -30,13 +31,12 @@ class Registration():
 
     def registration_request(self):
         self.logger.debug('[Registration] Requesting registration')
-        message_sender=MessageSender(self.message_manager.registration_msg(),None)
-        message_sender.connect_to_server()
+        anon_messager = AnonymousMessager(self.message_manager.registration_msg(),None)
+        anon_messager.connect_to_server()
 
     def ldap_registration_request(self):
         self.logger.debug('[Registration] Requesting LDAP registration')
-        message_sender=MessageSender(self.message_manager.ldap_registration_msg(),None)
-        message_sender.connect_to_server()
+        self.messager.send_Direct_message(self.message_manager.ldap_registration_msg())
 
     def confirm_registration(self,reg_reply):
         self.logger.debug('[Registration] Reading registration reply')
@@ -65,6 +65,7 @@ class Registration():
             self.conf_manager.set('CONNECTION', 'password',self.conf_manager.get('REGISTRATION', 'password'))
             self.conf_manager.set('REGISTRATION', 'dn',dn)
             self.conf_manager.set('REGISTRATION', 'registered','true')
+            #TODO  get file path?
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
             self.logger.debug('[Registration] Registration configuration file is updated')
@@ -98,7 +99,7 @@ class Registration():
             self.conf_manager.set('REGISTRATION', 'dn','')
             self.conf_manager.set('REGISTRATION', 'registered','false')
 
-            #TODO self.conf_manager.configurationFilePath attribute error ? READ olacak
+            #TODO  get file path?
             self.logger.debug('[Registration] Parameters were set up, section will write to configuration file')
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
@@ -108,6 +109,7 @@ class Registration():
         self.logger.debug('[Registration] Ahenk is unregistering...')
         if self.conf_manager.has_section('REGISTRATION'):
             #TODO open this block if you want to be aware about unregistration
+            #TODO messaging thread must be terminated
             #message_sender=MessageSender(self.message_manager.unregister_msg(),None)
             #message_sender.connect_to_server()
 

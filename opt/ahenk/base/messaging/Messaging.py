@@ -19,32 +19,15 @@ class Messaging(object):
 
     # TODO can use sh commands or api for getting username and timestamp
 
-
     def policy_request_msg(self):
         #TODO volkan
 
         self.logger.debug('[Messaging] Creating policy request message')
 
-        ############# Create policy tables #########################
-
-        columns=['id INTEGER PRIMARY KEY AUTOINCREMENT','type TEXT','version TEXT','name TEXT']
-        self.db_service.check_and_create_table('policy',columns)
-
-        columns=['id INTEGER','label TEXT','description TEXT','is_overridable INTEGER','is_active INTEGER','profile_data BLOB','modify_date TEXT']
-        self.db_service.check_and_create_table('profile',columns)
-
-        columns=['version TEXT','name TEXT','description TEXT']
-        self.db_service.check_and_create_table('plugin',columns)
-        ############################################################
-
-        #cols=['type','version','name']
-        #args=['U','1','2559305d-a415-38e7-8498-2dbc458662a7']
-        #self.db_service.update('policy',cols,args,None)
-
-        colz=['version']
-        ahenk_version=self.db_service.select('policy',colz,'type = \'A\'')
+        ahenk_version=self.db_service.select('policy',['version'],'type = \'A\'')
         username='volkan'
-        user_version=self.db_service.select('policy',colz,'type = \'U\' and name = \''+username+'\'')
+        user_version=self.db_service.select('policy',['version'],'type = \'U\' and name = \''+username+'\'')
+
         if len(ahenk_version)==0:
             ahenk_version.append(-1)
         if len(user_version)==0:
