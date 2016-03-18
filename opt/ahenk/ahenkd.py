@@ -8,16 +8,15 @@ from base.deamon.BaseDeamon import BaseDaemon
 from base.logger.AhenkLogger import Logger
 from base.Scope import Scope
 from base.messaging.Messaging import Messaging
-from base.messaging.MessageReceiver import MessageReceiver
-from base.messaging.MessageSender import MessageSender
+from base.messaging.Messager import Messager
 from base.execution.ExecutionManager import ExecutionManager
 from base.registration.Registration import Registration
 from base.messaging.MessageResponseQueue import MessageResponseQueue
 from base.event.EventManager import EventManager
 from base.plugin.PluginManager import PluginManager
 from base.task.TaskManager import TaskManager
-from multiprocessing import Process
-import sys
+from base.database.AhenkDbService import AhenkDbService
+import threading,time,sys
 
 
 class AhenkDeamon(BaseDaemon):
@@ -50,6 +49,12 @@ class AhenkDeamon(BaseDaemon):
         globalscope.setEventManager(eventManager)
         logger.info("[AhenkDeamon] Event Manager was set")
 
+        db_service=AhenkDbService()
+        db_service.connect()
+        db_service.initialize_table()
+        globalscope.setDbService(db_service)
+        logger.info("[AhenkDeamon] Data Base Service was set")
+
         messageManager = Messaging()
         globalscope.setMessageManager(messageManager)
         logger.info("[AhenkDeamon] Message Manager was set")
@@ -72,34 +77,42 @@ class AhenkDeamon(BaseDaemon):
         logger.info("[AhenkDeamon] Execution Manager was set")
 
 
+        #TODO restrict number of attemption
         while registration.is_registered() is False:
             logger.debug("[AhenkDeamon] Attempting to register")
             registration.registration_request()
 
         logger.info("[AhenkDeamon] Ahenk is registered")
 
-        message_receiver = MessageReceiver()
-        rec_process = Process(target=message_receiver.connect_to_server)
-        rec_process.start()
-        logger.info("[AhenkDeamon] Receiver was set")
+        messager = Messager()
+        messanger_thread = threading.Thread(target=messager.connect_to_server)
+        messanger_thread.start()
+
+        while(messager.is_connected() is False):
+            time.sleep(1)
+
+        globalscope.setMessager(messager)
+        logger.info("[AhenkDeamon] Messager was set")
 
         if registration.is_ldap_registered() is False:
             logger.debug("[AhenkDeamon] Attempting to registering ldap")
-            registration.ldap_registration_request() #TODO bu mesaj daha kısa olabilir
+            registration.ldap_registration_request() #TODO work on message
 
         logger.info("[AhenkDeamon] LDAP registration of Ahenk is completed")
 
-		#login
-        logger.info("[AhenkDeamon] Logining...")
-        message_sender=MessageSender(messageManager.login_msg(),None)
-        message_sender.connect_to_server()
 
+        #login
+        logger.info("[AhenkDeamon] Logining...")
+        messager.send_direct_message(messageManager.login_msg())
+
+        #request policies
+        logger.info("[AhenkDeamon] Requesting policies...")
+        messager.send_direct_message(messageManager.policy_request_msg())
 
         #logout
-        #message_sender=MessageSender(messageManager.logout_msg(),None)
-        #message_sender.connect_to_server()
+        #logger.info("[AhenkDeamon] Logouting...")
+        #messager.send_direct_message(messageManager.logout_msg())
 
-        #rec_process.terminate()
 
         """
             this is must be created after message services
