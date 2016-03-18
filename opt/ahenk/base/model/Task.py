@@ -10,21 +10,9 @@ class Task(object):
         self.request = self.payload['request']
 
     @property
-    def task_id(self):
-        self.request['id']
+    def task(self):
+        self.request['task']
 
     @property
-    def plugin_name(self):
-        self.request['pluginName']
-
-    @property
-    def command_id(self):
-        self.request['commandId']
-
-    @property
-    def params(self):
-        self.request['parameterMap']
-
-    @property
-    def plugin_version(self):
-        self.request['pluginVersion']
+    def timestamp(self):
+        self.request['timestamp']

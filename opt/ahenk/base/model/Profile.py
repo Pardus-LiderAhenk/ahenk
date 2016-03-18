@@ -14,6 +14,14 @@ class Profile(object):
         return self.profile['id']
 
     @property
+    def create_date(self):
+        return self.profile['createdate']
+
+    @property
+    def modify_date(self):
+        return self.profile['modifydate']
+
+    @property
     def label(self):
         return self.profile['label']
 
@@ -22,20 +30,20 @@ class Profile(object):
         return self.profile['description']
 
     @property
-    def is_overridable(self):
-        return self.profile['isoverridable']
+    def overridable(self):
+        return self.profile['overridable']
 
     @property
-    def is_active(self):
-        return self.profile['isactive']
+    def active(self):
+        return self.profile['active']
 
     @property
-    def modify_date(self):
-        return self.profile['modifydate']
+    def deleted(self):
+        return self.profile['deleted']
 
     @property
     def profile_data(self):
-        return self.profile['profiledata']
+        return self.profile['profileData']
 
     @property
     def plugin(self):

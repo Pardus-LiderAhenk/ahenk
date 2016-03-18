@@ -26,6 +26,10 @@ class Policy(object):
         return self.policy['userpolicyversion']
 
     @property
+    def timestamp(self):
+        self.request['timestamp']
+
+    @property
     def user_profiles(self):
         profiles=[]
         for p in self.policy['userprofiles']:
