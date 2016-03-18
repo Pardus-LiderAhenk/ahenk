@@ -17,6 +17,15 @@ class AhenkDbService(object):
         self.connection=None
         self.cursor = None
 
+
+
+    def initialize_table(self):
+        self.check_and_create_table('task',['task TEXT','timestamp TEXT'])
+        self.check_and_create_table('policy',['id INTEGER PRIMARY KEY AUTOINCREMENT','type TEXT','version TEXT','name TEXT'])
+        self.check_and_create_table('profile',['id INTEGER','create_date TEXT','label TEXT','description TEXT','overridable INTEGER','active INTEGER','deleted INTEGER','profile_data BLOB','modify_date TEXT'])
+        self.check_and_create_table('plugin',['version TEXT','name TEXT','description TEXT'])
+
+
     def connect(self):
         try:
             self.connection=sqlite3.connect(self.db_path, check_same_thread=False)
@@ -29,7 +38,7 @@ class AhenkDbService(object):
             cols = ', '.join([str(x) for x in cols])
             self.cursor.execute('create table if not exists '+table_name+' ('+cols+')')
         else:
-            self.warn("Could not create table cursor is None! Table Name : " + str(table_name))
+            self.logger.warning("Could not create table cursor is None! Table Name : " + str(table_name))
 
     def drop_table(self,table_name):
         sql = "DROP TABLE "+table_name
@@ -53,7 +62,7 @@ class AhenkDbService(object):
                 self.cursor.execute(sql, tuple(args))
                 self.connection.commit()
             else:
-                self.warn("Could not update table cursor is None! Table Name : " + str(table_name))
+                self.logger.warning("Could not update table cursor is None! Table Name : " + str(table_name))
         except Exception as e:
             self.logger.error("Updating table error ! Table Name : " + str(table_name) + " " + str(e))
 
@@ -87,7 +96,7 @@ class AhenkDbService(object):
             except Exception as e:
                 raise
         else:
-            self.warn("Could not select table cursor is None! Table Name : " + str(table_name))
+            self.logger.warning("Could not select table cursor is None! Table Name : " + str(table_name))
 
     def close(self):
         try:
