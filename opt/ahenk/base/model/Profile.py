@@ -48,3 +48,10 @@ class Profile(object):
     @property
     def plugin(self):
         return Plugin(self.profile['plugin'])
+
+    def to_string(self):
+        return str(self.profile)
+
+    def to_json(self):
+        return json.load(self.profile)
+

@@ -23,3 +23,9 @@ class Plugin(object):
     @property
     def description(self):
         return self.plugin['description']
+
+    def to_string(self):
+        return str(self.plugin)
+
+    def to_json(self):
+        return json.load(self.plugin)

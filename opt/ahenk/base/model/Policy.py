@@ -35,3 +35,9 @@ class Policy(object):
         for p in self.policy['userprofiles']:
             profiles.append(Profile(p))
         return profiles
+
+    def to_string(self):
+        return str(self.policy)
+
+    def to_json(self):
+        return json.load(self.policy)
