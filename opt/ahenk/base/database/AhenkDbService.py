@@ -17,10 +17,8 @@ class AhenkDbService(object):
         self.connection=None
         self.cursor = None
 
-
-
     def initialize_table(self):
-        self.check_and_create_table('task',['task TEXT','timestamp TEXT'])
+        self.check_and_create_table('task',['id INTEGER','create_date TEXT','modify_date TEXT','command_cls_id TEXT','parameter_map BLOB','deleted INTEGER','plugin TEXT'])
         self.check_and_create_table('policy',['id INTEGER PRIMARY KEY AUTOINCREMENT','type TEXT','version TEXT','name TEXT'])
         self.check_and_create_table('profile',['id INTEGER','create_date TEXT','label TEXT','description TEXT','overridable INTEGER','active INTEGER','deleted INTEGER','profile_data BLOB','modify_date TEXT'])
         self.check_and_create_table('plugin',['version TEXT','name TEXT','description TEXT'])

@@ -83,8 +83,9 @@ class ExecutionManager(object):
 
     def execute_task(self,arg):
         self.logger.debug('[ExecutionManager] Adding new  task...')
-        task = Task(arg)
+        task = Task(json.loads(arg))
         self.task_manager.addTask(task)
+        self.logger.debug('[ExecutionManager] Task added')
 
     def move_file(self,arg):
         default_file_path=self.config_manager.get('CONNECTION', 'receiveFileParam')
