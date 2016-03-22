@@ -7,7 +7,7 @@ sys.path.append('../..')
 from base.Scope import Scope
 import configparser
 
-
+#TODO Message Factory
 class Messaging(object):
     def __init__(self):
         scope = Scope().getInstance()
@@ -45,19 +45,19 @@ class Messaging(object):
 
 
 
-    def login_msg(self):
+    def login_msg(self,username):
         data = {}
         data['type'] = 'LOGIN'
-        data['username'] = str(pwd.getpwuid(os.getuid())[0])
+        data['username'] = username
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Login message was created')
         return json_data
 
-    def logout_msg(self):
+    def logout_msg(self,username):
         data = {}
         data['type'] = 'LOGOUT'
-        data['username'] = str(pwd.getpwuid(os.getuid())[0])
+        data['username'] = str(username)
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Logout message was created')
