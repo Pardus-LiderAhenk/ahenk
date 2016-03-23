@@ -3,11 +3,14 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 import threading
+
 from base.task.TaskJob import TaskJob
+
 
 class TaskInQueue(threading.Thread):
     """docstring for TaskInQueue"""
-    def __init__(self,inQueue):
+
+    def __init__(self, inQueue):
         super(TaskInQueue, self).__init__()
         self.inQueue = inQueue
 

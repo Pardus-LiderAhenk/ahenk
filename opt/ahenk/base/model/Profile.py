@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-from base.model.Plugin import Plugin
 import json
+
+from base.model.Plugin import Plugin
+
 
 class Profile(object):
     """docstring for Profile"""
-    def __init__(self,message):
+
+    def __init__(self, message):
         self.profile = message
 
     @property
@@ -54,4 +57,3 @@ class Profile(object):
 
     def to_json(self):
         return json.load(self.profile)
-

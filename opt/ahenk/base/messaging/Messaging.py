@@ -1,51 +1,53 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-import sys, pwd, os, datetime, json
+import datetime
+import json
+import os
+import pwd
+import sys
 
 sys.path.append('../..')
 from base.Scope import Scope
-import configparser
 
-#TODO Message Factory
+
+# TODO Message Factory
 class Messaging(object):
     def __init__(self):
         scope = Scope().getInstance()
         self.logger = scope.getLogger()
         self.conf_manager = scope.getConfigurationManager()
-        self.db_service=scope.getDbService()
+        self.db_service = scope.getDbService()
 
         self.event_manger = scope.getEventManager()
 
     # TODO can use sh commands or api for getting username and timestamp
 
     def policy_request_msg(self):
-        #TODO volkan
+        # TODO volkan
 
         self.logger.debug('[Messaging] Creating policy request message')
 
-        ahenk_version=self.db_service.select('policy',['version'],'type = \'A\'')
-        username='volkan'
-        user_version=self.db_service.select('policy',['version'],'type = \'U\' and name = \''+username+'\'')
+        ahenk_version = self.db_service.select('policy', ['version'], 'type = \'A\'')
+        username = 'volkan'
+        user_version = self.db_service.select('policy', ['version'], 'type = \'U\' and name = \'' + username + '\'')
 
-        if len(ahenk_version)==0:
+        if len(ahenk_version) == 0:
             ahenk_version.append(-1)
-        if len(user_version)==0:
+        if len(user_version) == 0:
             user_version.append(-1)
 
         data = {}
         data['type'] = 'POLICY_REQUEST'
         data['username'] = username
         data['ahenkPolicyVersion'] = str(''.join(ahenk_version[0]))
-        data['userPolicyVersion'] =str(''.join(user_version[0]))
+        data['userPolicyVersion'] = str(''.join(user_version[0]))
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Policy request message was created')
         print(json_data)
         return json_data
 
-
-
-    def login_msg(self,username):
+    def login_msg(self, username):
         data = {}
         data['type'] = 'LOGIN'
         data['username'] = username
@@ -54,7 +56,7 @@ class Messaging(object):
         self.logger.debug('[Messaging] Login message was created')
         return json_data
 
-    def logout_msg(self,username):
+    def logout_msg(self, username):
         data = {}
         data['type'] = 'LOGOUT'
         data['username'] = str(username)

@@ -2,36 +2,37 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
-import slixmpp, asyncio, sys
+import asyncio
+import slixmpp
+import sys
+
 sys.path.append('../..')
 from slixmpp.exceptions import IqError, IqTimeout
 from base.Scope import Scope
 
 
 class AnonymousMessager(slixmpp.ClientXMPP):
-
-    def __init__(self,message,file_path):
+    def __init__(self, message, file_path):
         # global scope of ahenk
         scope = Scope().getInstance()
 
         self.logger = scope.getLogger()
         self.configuration_manager = scope.getConfigurationManager()
-        self.registration=scope.getRegistration()
+        self.registration = scope.getRegistration()
         self.event_manager = scope.getEventManager()
 
-        self.my_jid=str(self.configuration_manager.get('CONNECTION', 'host'))
+        self.my_jid = str(self.configuration_manager.get('CONNECTION', 'host'))
 
+        slixmpp.ClientXMPP.__init__(self, self.my_jid, None)
 
-        slixmpp.ClientXMPP.__init__(self, self.my_jid,None)
+        self.message = None
+        self.file = None
+        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'host') + '/Smack'
 
-        self.message=None
-        self.file=None
-        self.receiver=self.configuration_manager.get('CONNECTION', 'receiverjid')+'@'+self.configuration_manager.get('CONNECTION', 'host')+'/Smack'
-
-        if file_path is not None and file_path!='':
-            self.file=open(file_path, 'rb')
+        if file_path is not None and file_path != '':
+            self.file = open(file_path, 'rb')
         if message is not None:
-            self.message=message
+            self.message = message
 
         self.logger.debug('[MessageSender] XMPP Receiver parameters were set')
 
@@ -46,14 +47,13 @@ class AnonymousMessager(slixmpp.ClientXMPP):
         self.add_event_handler("socks5_closed", self.stream_closed)
         self.logger.debug('[MessageSender] Event handlers were added')
 
-
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
             self.logger.debug("[MessageSender] Received message: %s -> %s" % (msg['from'], msg['body']))
             self.disconnect()
             self.logger.debug('[MessageSender] Disconnecting...')
             self.logger.debug('[MessageSender] Fired event is: confirm_registration')
-            self.event_manager.fireEvent('confirm_registration',str(msg['body']))
+            self.event_manager.fireEvent('confirm_registration', str(msg['body']))
             ##TODO type fire -- only anonymous account can fire confirm_registration
 
     @asyncio.coroutine
@@ -66,7 +66,7 @@ class AnonymousMessager(slixmpp.ClientXMPP):
             self.send_direct_message(self.message)
 
         if self.file is not None:
-            self.logger.debug('[MessageSender] Sending file: '+self.file.name)
+            self.logger.debug('[MessageSender] Sending file: ' + self.file.name)
             try:
                 self.logger.debug('[MessageSender] Handshaking for file transfering...')
                 # Open the S5B stream in which to write to.
@@ -88,8 +88,8 @@ class AnonymousMessager(slixmpp.ClientXMPP):
                 self.file.close()
 
     def stream_opened(self, sid):
-        self.logger.debug('[MessageSender] Stream was opened. Stream id: '+str(self.stream_id))
-        self.file = open(self.receive_file_path+self.stream_id, 'wb')
+        self.logger.debug('[MessageSender] Stream was opened. Stream id: ' + str(self.stream_id))
+        self.file = open(self.receive_file_path + self.stream_id, 'wb')
         return self.file
 
     def stream_data(self, data):
@@ -102,11 +102,11 @@ class AnonymousMessager(slixmpp.ClientXMPP):
         self.logger.debug('[MessageSender] Disconnecting...')
         self.disconnect()
 
-    def send_direct_message(self,msg):
-        self.logger.debug('[MessageSender] Sending message: '+msg)
-        self.send_message(mto=self.receiver,mbody=msg,mtype='normal')
+    def send_direct_message(self, msg):
+        self.logger.debug('[MessageSender] Sending message: ' + msg)
+        self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
 
-    def connect_to_server(self):# Connect to the XMPP server and start processing XMPP stanzas.
+    def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.
         try:
             self.logger.debug('[MessageSender] Connecting to server...')
             self.connect()
@@ -114,16 +114,16 @@ class AnonymousMessager(slixmpp.ClientXMPP):
             self.logger.debug('[MessageSender] Connection were established successfully')
             return True
         except Exception as e:
-            self.logger.error('[MessageSender] Connection to server is failed! '+e)
+            self.logger.error('[MessageSender] Connection to server is failed! ' + e)
             return False
 
     def register_extensions(self):
         try:
-            self.register_plugin('xep_0030') # Service Discovery
-            self.register_plugin('xep_0045') # Multi-User Chat
-            self.register_plugin('xep_0199') # XMPP Ping
-            self.register_plugin('xep_0065', {'auto_accept': True}) # SOCKS5 Bytestreams
-            self.register_plugin('xep_0047', {'auto_accept': True}) # In-band Bytestreams
+            self.register_plugin('xep_0030')  # Service Discovery
+            self.register_plugin('xep_0045')  # Multi-User Chat
+            self.register_plugin('xep_0199')  # XMPP Ping
+            self.register_plugin('xep_0065', {'auto_accept': True})  # SOCKS5 Bytestreams
+            self.register_plugin('xep_0047', {'auto_accept': True})  # In-band Bytestreams
 
             self.logger.debug('[MessageSender] Extension were registered: xep_0030,xep_0045,xep_0199,xep_0065,xep_0047')
             return True

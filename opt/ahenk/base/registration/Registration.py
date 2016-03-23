@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
+import datetime
+import json
+import netifaces
+import socket
+import uuid
+from uuid import getnode as get_mac
+
 from base.Scope import Scope
 from base.messaging.AnonymousMessager import AnonymousMessager
-from uuid import getnode as get_mac
-import netifaces
-import datetime
-import socket
-import json
-import uuid
 
 
 class Registration():

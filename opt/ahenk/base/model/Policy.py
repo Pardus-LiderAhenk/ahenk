@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-from base.model.Profile import Profile
 import json
+
+from base.model.Profile import Profile
+
 
 class Policy(object):
     """docstring for Policy"""
-    def __init__(self,message):
+
+    def __init__(self, message):
         self.policy = message
 
     @property
@@ -16,7 +19,7 @@ class Policy(object):
 
     @property
     def ahenk_profiles(self):
-        profiles=[]
+        profiles = []
         for p in self.policy['ahenkprofiles']:
             profiles.append(Profile(p))
         return profiles
@@ -31,7 +34,7 @@ class Policy(object):
 
     @property
     def user_profiles(self):
-        profiles=[]
+        profiles = []
         for p in self.policy['userprofiles']:
             profiles.append(Profile(p))
         return profiles

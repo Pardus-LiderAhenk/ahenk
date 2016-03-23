@@ -1,14 +1,18 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
+import imp
+import os
+
+from base.Scope import Scope
 from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
-from base.Scope import Scope
-import imp,os
+
 
 class PluginManager(object):
     """docstring for PluginManager"""
-    #implement logger
+
+    # implement logger
     def __init__(self):
         super(PluginManager, self).__init__()
         self.scope = Scope.getInstance()
@@ -31,45 +35,44 @@ class PluginManager(object):
                 # TODO error log
                 pass
 
-    def loadSinglePlugin(self,pluginName):
+    def loadSinglePlugin(self, pluginName):
         # TODO check already loaded plugin
-        self.pluginQueueDict[pluginName]=PluginQueue()
-        plugin = Plugin(pluginName,self.pluginQueueDict[pluginName])
+        self.pluginQueueDict[pluginName] = PluginQueue()
+        plugin = Plugin(pluginName, self.pluginQueueDict[pluginName])
         plugin.setDaemon(True)
         plugin.start()
         self.plugins.append(plugin)
 
-    def findCommand(self,pluginName,commandId):
+    def findCommand(self, pluginName, commandId):
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pluginName)
         if os.path.isdir(location) and commandId + ".py" in os.listdir(location):
             info = imp.find_module(commandId, [location])
             return imp.load_module(commandId, *info)
         else:
-            self.logger.warning('Command id -' +  commandId  +' - not found')
+            self.logger.warning('Command id -' + commandId + ' - not found')
             return None
 
-    def processTask(self,task):
+    def processTask(self, task):
         try:
-            if task.plugin.name.lower() in self.pluginQueueDict :
-                self.pluginQueueDict[task.plugin.name.lower()].put(task,1)
+            if task.plugin.name.lower() in self.pluginQueueDict:
+                self.pluginQueueDict[task.plugin.name.lower()].put(task, 1)
         except Exception as e:
             # TODO update task - status to not found command
             self.logger.error("[PluginManager] Exception occurred when processing task " + str(e))
-
 
     def reloadPlugins(self):
         # Not implemented yet
         pass
 
-    def checkPluginExists(self,pluginName):
+    def checkPluginExists(self, pluginName):
         # Not implemented yet
         pass
 
-    def reloadSinglePlugin(self,pluginName):
+    def reloadSinglePlugin(self, pluginName):
         # Not implemented yet
         pass
 
-    def checkCommandExist(self,pluginName,commandId):
+    def checkCommandExist(self, pluginName, commandId):
         # Not implemented yet
         pass
 

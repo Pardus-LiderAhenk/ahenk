@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-from base.model.Plugin import Plugin
 import json
+
+from base.model.Plugin import Plugin
+
 
 class Task(object):
     """docstring for Task"""
-    def __init__(self,message):
+
+    def __init__(self, message):
         self.task = message['task']
 
     @property
@@ -43,7 +46,3 @@ class Task(object):
 
     def to_json(self):
         return json.load(self.task)
-
-
-
-

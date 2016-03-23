@@ -4,6 +4,7 @@
 
 from queue import Queue
 
+
 class PluginQueue(Queue):
     def __contains__(self, item):
         with self.mutex:

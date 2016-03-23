@@ -3,9 +3,9 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 from base.model.MessageType import MessageType
 
-class MessageFactory(object):
 
-    def createMessage(self,type,message):
+class MessageFactory(object):
+    def createMessage(self, type, message):
 
         if type == MessageType.TASK_RECEIVED:
             return "Message receivden response"
@@ -13,4 +13,5 @@ class MessageFactory(object):
             return "Message processing response"
         else:
             return None
+
     createMessage = staticmethod(createMessage)

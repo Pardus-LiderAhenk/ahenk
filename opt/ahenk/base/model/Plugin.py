@@ -3,9 +3,11 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import json
 
+
 class Plugin(object):
     """docstring for Plugin"""
-    def __init__(self,message):
+
+    def __init__(self, message):
         self.plugin = message
 
     @property

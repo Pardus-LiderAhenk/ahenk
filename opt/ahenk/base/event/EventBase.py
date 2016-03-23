@@ -4,11 +4,13 @@
 
 class EventBase():
     listeners = []
+
     def __init__(self):
         self.listeners.append(self)
         self.listener_events = []
+
     def register_event(self, event_name, callback_func):
-        self.listener_events.append({'event_name' : event_name, 'callback_func' : callback_func})
+        self.listener_events.append({'event_name': event_name, 'callback_func': callback_func})
 
 
 class Event():
