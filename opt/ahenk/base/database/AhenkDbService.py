@@ -22,6 +22,7 @@ class AhenkDbService(object):
         self.check_and_create_table('policy',['id INTEGER PRIMARY KEY AUTOINCREMENT','type TEXT','version TEXT','name TEXT'])
         self.check_and_create_table('profile',['id INTEGER','create_date TEXT','label TEXT','description TEXT','overridable INTEGER','active INTEGER','deleted INTEGER','profile_data BLOB','modify_date TEXT'])
         self.check_and_create_table('plugin',['version TEXT','name TEXT','description TEXT'])
+        self.check_and_create_table('registration', ['jid TEXT', 'password TEXT', 'registered INTEGER', 'dn TEXT', 'params TEXT', 'timestamp TEXT'])
 
 
     def connect(self):
@@ -75,26 +76,45 @@ class AhenkDbService(object):
     def findByProperty(self):
         # Not implemented yet
         pass
+
     def select(self,table_name, cols="*",  criteria="", orderby=""):
+        print("seleeeeeeect")
         if self.cursor:
             try:
                 if not cols == "*":
                     cols = ', '.join([str(x) for x in cols])
                 sql = "SELECT "+cols+" FROM " + table_name
                 if criteria != "":
-                    sql+=' where '
-                    sql+=criteria
+                    sql += ' where '
+                    sql += criteria
                 if orderby != "":
-                    sql+=' order by '
-                    sql+=orderby
+                    sql += ' order by '
+                    sql += orderby
 
                 self.cursor.execute(sql)
+
                 rows = self.cursor.fetchall()
                 return rows
             except Exception as e:
                 raise
         else:
             self.logger.warning("Could not select table cursor is None! Table Name : " + str(table_name))
+
+    def select_one_result(self, table_name, col, criteria=''):
+        if self.cursor:
+            try:
+                sql = 'SELECT ' + col + ' FROM ' + table_name
+                if criteria != '':
+                    sql += ' where '
+                    sql += criteria
+                self.cursor.execute(sql)
+                row = self.cursor.fetchone()
+                if row is not None:
+                    return row[0]
+            except Exception as e:
+                raise
+        else:
+            self.logger.warning('Could not select table cursor is None! Table Name : ' + str(table_name))
 
     def close(self):
         try:
