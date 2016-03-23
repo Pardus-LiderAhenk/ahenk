@@ -33,40 +33,39 @@ class ExecutionManager(object):
         print("updating policies...")
 
         policy = Policy(json.loads(arg))
-        #TODO get username from pam
+        #TODO get username
         username='volkan'
 
-        ahenk_policy_ver=self.db_service.select('policy',['version'],'type = \'A\'')
-        user_policy_version=self.db_service.select('policy',['version'],'type = \'U\' and name = \''+username+'\'')
-        installed_plugins=self.get_installed_plugins()
-        missing_plugins=[]
+        ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
+        user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \''+username+'\'')
+        installed_plugins = self.get_installed_plugins()
+        missing_plugins = []
 
-
-        if policy.ahenk_policy_version != ahenk_policy_ver[0][0]:
-            ahenk_policy_id=self.db_service.select('policy',['id'],'type = \'A\'')
-            self.db_service.delete('profile','id='+str(ahenk_policy_id[0][0]))
-            self.db_service.update('policy',['version'],[str(policy.ahenk_policy_version)],'type=\'A\'')
+        if policy.ahenk_policy_version != ahenk_policy_ver:
+            ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
+            self.db_service.delete('profile', 'id='+str(ahenk_policy_id))
+            self.db_service.update('policy', ['version'], [str(policy.ahenk_policy_version)], 'type=\'A\'')
 
             for profile in policy.ahenk_profiles:
-                profile_columns=['id','create_date','modify_date','label','description','overridable','active','deleted','profile_data','plugin']
-                args=[str(ahenk_policy_id[0][0]),str(profile.create_date),str(profile.modify_date),str(profile.label),
-                      str(profile.description),str(profile.overridable),str(profile.active),str(profile.deleted),str(profile.profile_data),str(profile.plugin)]
-                self.db_service.update('profile',profile_columns,args)
+                profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'plugin']
+                args = [str(ahenk_policy_id), str(profile.create_date), str(profile.modify_date), str(profile.label),
+                      str(profile.description), str(profile.overridable), str(profile.active), str(profile.deleted), str(profile.profile_data), str(profile.plugin)]
+                self.db_service.update('profile', profile_columns, args)
                 if profile.plugin.name not in installed_plugins and profile.plugin.name not in missing_plugins:
                     missing_plugins.append(profile.plugin.name)
 
         else:
             print("already there ahenk policy")
 
-        if policy.user_policy_version != user_policy_version[0][0]:
-            user_policy_id=self.db_service.select('policy',['id'],'type = \'U\' and name=\''+username+'\'')
-            self.db_service.delete('profile','id='+str(user_policy_id[0][0]))
-            self.db_service.update('policy',['version'],[str(policy.user_policy_version)],'type=\'U\' and name=\''+username+'\'')
+        if policy.user_policy_version != user_policy_version:
+            user_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'U\' and name=\''+username+'\'')
+            self.db_service.delete('profile', 'id='+str(user_policy_id))
+            self.db_service.update('policy', ['version'], [str(policy.user_policy_version)], 'type=\'U\' and name=\''+username+'\'')
             for profile in policy.user_profiles:
-                profile_columns=['id','create_date','modify_date','label','description','overridable','active','deleted','profile_data','plugin']
-                args = [str(user_policy_id[0][0]),str(profile.create_date),str(profile.modify_date),str(profile.label),
-                      str(profile.description),str(profile.overridable),str(profile.active),str(profile.deleted),str(profile.profile_data),str(profile.plugin)]
-                self.db_service.update('profile',profile_columns,args)
+                profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'plugin']
+                args = [str(user_policy_id), str(profile.create_date), str(profile.modify_date), str(profile.label),
+                      str(profile.description), str(profile.overridable), str(profile.active), str(profile.deleted), str(profile.profile_data), str(profile.plugin)]
+                self.db_service.update('profile',profile_columns, args)
                 if profile.plugin.name not in installed_plugins and profile.plugin.name not in missing_plugins:
                     missing_plugins.append(profile.plugin.name)
         else:
