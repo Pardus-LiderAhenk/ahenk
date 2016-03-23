@@ -7,22 +7,24 @@ from base.Scope import Scope
 class Plugin(threading.Thread):
     """docstring for Plugin"""
     def __init__(self, name,InQueue):
-        super(Plugin, self).__init__()
+        threading.Thread.__init__(self)
         self.name = name
         self.InQueue = InQueue
-        self.scope=Scope.getInstance()
-        self.pluginManager = self.scope.getPluginManager()
+        scope = Scope.getInstance()
+        self.pluginManager = scope.getPluginManager()
+        self.logger = scope.getLogger()
 
-    def run():
-        try:
-            task=self.InQueue.get()
-            command = self.pluginManager.findCommand(self.getName(),task.getCommandId())
-            command.handle_task(task)
-            # TODO add result to response queue
+    def run(self):
+        while True :
+            try:
+                task=self.InQueue.get(block=True)
+                command = Scope.getInstance().getPluginManager().findCommand(self.getName(),task.command_cls_id)
+                command.handle_task(task)
+                # TODO add result to response queue
 
-        except Exception as e:
-            #TODO error log here
-            print("exception occured when executing plugin")
+            except Exception as e:
+                #TODO error log here
+                self.logger.error("Plugin running exception " + str(e))
 
     def getName(self):
         return self.name

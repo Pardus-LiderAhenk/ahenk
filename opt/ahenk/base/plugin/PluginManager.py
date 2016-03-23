@@ -18,7 +18,6 @@ class PluginManager(object):
         self.logger = self.scope.getLogger()
 
     def loadPlugins(self):
-        print("loading")
         self.plugins = []
         possibleplugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
         for pname in possibleplugins:
@@ -42,21 +41,21 @@ class PluginManager(object):
 
     def findCommand(self,pluginName,commandId):
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pluginName)
-        if os.path.dir(location) and commandId + ".py" in os.listdir(location):
+        if os.path.isdir(location) and commandId + ".py" in os.listdir(location):
             info = imp.find_module(commandId, [location])
             return imp.load_module(commandId, *info)
         else:
-            self.logger.warning('Command id -  - not found')
+            self.logger.warning('Command id -' +  commandId  +' - not found')
             return None
 
     def processTask(self,task):
         try:
-            if task.getPluginId().lower() in self.pluginQueueDict :
-                self.pluginQueueDict[task.getPluginId().lower()].put(task,task.priority)
+            if task.plugin.name.lower() in self.pluginQueueDict :
+                self.pluginQueueDict[task.plugin.name.lower()].put(task,1)
         except Exception as e:
-            # TODO error log here
             # TODO update task - status to not found command
-            pass
+            self.logger.error("[PluginManager] Exception occurred when processing task " + str(e))
+
 
     def reloadPlugins(self):
         # Not implemented yet

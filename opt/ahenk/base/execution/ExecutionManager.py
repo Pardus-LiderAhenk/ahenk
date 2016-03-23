@@ -22,6 +22,7 @@ class ExecutionManager(object):
         self.logger=scope.getLogger()
         self.db_service=scope.getDbService()
 
+        # TODO move this event names to enumeration
         self.event_manager.register_event('EXECUTE_SCRIPT',self.execute_script)
         self.event_manager.register_event('REQUEST_FILE',self.request_file)
         self.event_manager.register_event('MOVE_FILE',self.move_file)

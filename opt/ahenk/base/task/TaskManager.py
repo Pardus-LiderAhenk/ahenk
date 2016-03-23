@@ -10,7 +10,7 @@ class TaskManager(object):
     """docstring for TaskManager"""
 
     def __init__(self):
-        super(TaskManager, self).__init__()
+        #super(TaskManager, self).__init__()
         scope = Scope.getInstance()
         self.pluginManager = scope.getPluginManager()
         self.logger = scope.getLogger()
@@ -19,11 +19,13 @@ class TaskManager(object):
     def addTask(self, task):
         try:
             self.logger.debug('Adding task ... ')
-            self.saveTask(task)
+            #self.saveTask(task)
+            self.logger.info('Task saved ')
             # TODO send task received message
             self.pluginManager.processTask(task)
         except Exception as e:
             # TODO error log here
+            self.logger.debug('Exception occured when adding task ' + str(e))
             pass
 
     def saveTask(self, task):

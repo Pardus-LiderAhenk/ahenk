@@ -10,13 +10,13 @@ from base.Scope import Scope
 from base.messaging.Messaging import Messaging
 from base.messaging.Messager import Messager
 from base.execution.ExecutionManager import ExecutionManager
-from base.registration.Registration import Registration
+#from base.registration.Registration import Registration
 from base.messaging.MessageResponseQueue import MessageResponseQueue
 from base.event.EventManager import EventManager
 from base.plugin.PluginManager import PluginManager
 from base.task.TaskManager import TaskManager
 from base.database.AhenkDbService import AhenkDbService
-import threading, time, sys, os, signal, configparser
+import threading, time, sys, os, signal, configparser,queue
 
 pidfilePath = '/var/run/ahenk.pid'
 
@@ -70,9 +70,9 @@ class AhenkDeamon(BaseDaemon):
         globalscope.setTaskManager(taskManager)
         logger.info('[AhenkDeamon] Task Manager was set')
 
-        registration=Registration()
-        globalscope.setRegistration(registration)
-        logger.info('[AhenkDeamon] Registration was set')
+        #registration=Registration()
+        #globalscope.setRegistration(registration)
+        #logger.info('[AhenkDeamon] Registration was set')
 
         execution_manager=ExecutionManager()
         globalscope.setExecutionManager(execution_manager)
@@ -80,9 +80,9 @@ class AhenkDeamon(BaseDaemon):
 
 
         #TODO restrict number of attemption
-        while registration.is_registered() is False:
-            logger.debug('[AhenkDeamon] Attempting to register')
-            registration.registration_request()
+        #while registration.is_registered() is False:
+        #    logger.debug('[AhenkDeamon] Attempting to register')
+        #    registration.registration_request()
 
         logger.info('[AhenkDeamon] Ahenk is registered')
 
@@ -96,9 +96,9 @@ class AhenkDeamon(BaseDaemon):
         globalscope.setMessager(messager)
         logger.info('[AhenkDeamon] Messager was set')
 
-        if registration.is_ldap_registered() is False:
-            logger.debug('[AhenkDeamon] Attempting to registering ldap')
-            registration.ldap_registration_request() #TODO work on message
+        #if registration.is_ldap_registered() is False:
+        #    logger.debug('[AhenkDeamon] Attempting to registering ldap')
+        #    registration.ldap_registration_request() #TODO work on message
 
         logger.info('[AhenkDeamon] LDAP registration of Ahenk is completed')
 
@@ -119,6 +119,12 @@ class AhenkDeamon(BaseDaemon):
 
         #messager.send_direct_message('test')
 
+        responseQueue = queue.Queue()
+        messageResponseQueue = MessageResponseQueue(responseQueue)
+        messageResponseQueue.setDaemon(True)
+        messageResponseQueue.start()
+        globalscope.setResponseQueue(responseQueue)
+
         while True:
             time.sleep(1)
 
@@ -126,14 +132,10 @@ class AhenkDeamon(BaseDaemon):
         #logger.info('[AhenkDeamon] Requesting policies...')
         #messager.send_direct_message(messageManager.policy_request_msg())
 
-        """
-            this is must be created after message services
-            responseQueue = queue.Queue()
-            messageResponseQueue = MessageResponseQueue(responseQueue)
-            messageResponseQueue.setDaemon(True)
-            messageResponseQueue.start()
-            globalscope.setResponseQueue(responseQueue)
-        """
+
+        #this is must be created after message services
+
+
 
     def signal_handler (self, num, stack):
 
@@ -202,7 +204,3 @@ if __name__ == '__main__':
     else:
         print('Usage : %s start|stop|restart|status' % sys.argv[0])
         sys.exit(2)
-
-
-
-

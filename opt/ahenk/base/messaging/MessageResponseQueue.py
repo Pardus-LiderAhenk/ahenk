@@ -13,17 +13,18 @@ class MessageResponseQueue(threading.Thread):
         super(MessageResponseQueue, self).__init__()
         scope = Scope.getInstance()
         self.logger = scope.getLogger()
-        self.messageManager = scope.getMessageManager()
+        self.messageManager = scope.getMessager()
         self.outQueue = outQueue
 
     def run(self):
         try:
-            # This item will send response to lider.
-            # item must be response message. Response message may be generic message type
-            responseMessage = self.outQueue.get()
-            print(item)
-            # Call message manager for response
-            self.messageManager.sendResponse(responseMessage)
-            #self.outQueue.task_done()
+            while True :
+                # This item will send response to lider.
+                # item must be response message. Response message may be generic message type
+                responseMessage = self.outQueue.get(block=True)
+                print(responseMessage)
+                # Call message manager for response
+                self.messageManager.send_direct_message(responseMessage)
+                #self.outQueue.task_done()
         except:
             pass
