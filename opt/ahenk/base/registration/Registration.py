@@ -59,6 +59,14 @@ class Registration():
         self.logger.debug('[Registration] Registration configuration is updating...')
         self.db_service.update('registration', ['dn', 'registered'], [dn, 1], ' registered = 0')
 
+        if self.conf_manager.has_section('CONNECTION'):
+            self.conf_manager.set('CONNECTION', 'uid',self.conf_manager.get('REGISTRATION', 'from'))
+            self.conf_manager.set('CONNECTION', 'password',self.conf_manager.get('REGISTRATION', 'password'))
+            #TODO  get file path?
+            with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
+                self.conf_manager.write(configfile)
+            self.logger.debug('[Registration] Registration configuration file is updated')
+
     def is_registered(self):
         registered = self.db_service.select_one_result('registration', 'registered', 'registered = 1')
         if registered == 1:

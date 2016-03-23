@@ -3,4 +3,4 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 def run(val):
-    print "oo yeah plugin2  " + str(val)
+    print("oo yeah plugin2  " + str(val))
