@@ -24,13 +24,14 @@ class Messager(slixmpp.ClientXMPP):
         self.event_manger = scope.getEventManager()
         self.execution_manager = scope.getExecutionManager()
 
-        self.my_jid = str(self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION', 'host') + '/receiver')
+        self.my_jid = str(self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/receiver')
         self.my_pass = str(self.configuration_manager.get('CONNECTION', 'password'))
 
         slixmpp.ClientXMPP.__init__(self, self.my_jid, self.my_pass)
 
         self.file = None
-        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'host') + '/Smack'
+        self.hostname = self.configuration_manager.get('CONNECTION', 'host')
+        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/Smack'
         self.nick = self.configuration_manager.get('CONNECTION', 'nick')
         self.receive_file_path = self.configuration_manager.get('CONNECTION', 'receiveFileParam')
         self.logger.debug('[Messager] XMPP Receiver parameters were set')
@@ -98,6 +99,7 @@ class Messager(slixmpp.ClientXMPP):
 
     def send_direct_message(self, msg):
         self.logger.debug('[Messager] Sending message: ' + msg)
+        print("mesaj gidiyoo:"+str(msg))
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
 
     def recv_direct_message(self, msg):
@@ -105,14 +107,14 @@ class Messager(slixmpp.ClientXMPP):
             j = json.loads(str(msg['body']))
             type = j['type']
             self.logger.debug('[Messager] Fired event is: ' + type)
-            self.event_manger.fireEvent(type, str(msg['body']).lower())
+            self.event_manger.fireEvent(type, str(msg['body']))
 
     def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.
         try:
             self.logger.debug('[Messager] Connecting to server as thread')
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            self.connect()
+            self.connect((self.hostname, 5222))
             self.process()
             self.logger.debug('[Messager] Connection were established successfully')
             return True

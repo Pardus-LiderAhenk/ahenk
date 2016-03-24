@@ -19,19 +19,19 @@ class Task(object):
 
     @property
     def create_date(self):
-        return self.task['createdate']
+        return self.task['createDate']
 
     @property
     def modify_date(self):
-        return self.task['modifydate']
+        return self.task['modifyDate']
 
     @property
     def command_cls_id(self):
-        return self.task['commandclsid']
+        return self.task['commandClsId']
 
     @property
     def parameter_map(self):
-        return self.task['parametermap']
+        return self.task['parameterMap']
 
     @property
     def deleted(self):

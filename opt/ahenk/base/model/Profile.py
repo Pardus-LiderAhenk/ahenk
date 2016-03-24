@@ -18,11 +18,11 @@ class Profile(object):
 
     @property
     def create_date(self):
-        return self.profile['createdate']
+        return self.profile['createDate']
 
     @property
     def modify_date(self):
-        return self.profile['modifydate']
+        return self.profile['modifyDate']
 
     @property
     def label(self):
