@@ -97,7 +97,7 @@ class ExecutionManager(object):
         default_file_path = self.config_manager.get('CONNECTION', 'receiveFileParam')
         j = json.loads(arg)
         # msg_id =str(j['id']).lower()
-        target_file_path = str(j['filepath']).lower()
+        target_file_path = str(j['filePath']).lower()
         file_name = str(j['filename']).lower()
         self.logger.debug('[ExecutionManager] ' + file_name + ' will be moved to ' + target_file_path)
         shutil.move(default_file_path + file_name, target_file_path + file_name)
@@ -105,7 +105,7 @@ class ExecutionManager(object):
     def execute_script(self, arg):
         j = json.loads(arg)
         # msg_id =str(j['id']).lower()
-        file_path = str(j['filepath']).lower()
+        file_path = str(j['filePath']).lower()
         time_stamp = str(j['timestamp']).lower()
         self.logger.debug('[ExecutionManager] Making executable file (%s) for execution' % file_path)
         st = os.stat(file_path)
@@ -116,7 +116,7 @@ class ExecutionManager(object):
     def request_file(self, arg):
         j = json.loads(arg)
         # msg_id =str(j['id']).lower()
-        file_path = str(j['filepath']).lower()
+        file_path = str(j['filePath']).lower()
         time_stamp = str(j['timestamp']).lower()
         self.logger.debug('[ExecutionManager] Requested file is ' + file_path)
         self.messager.send_file(file_path)

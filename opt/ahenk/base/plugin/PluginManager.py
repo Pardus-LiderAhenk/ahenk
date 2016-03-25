@@ -17,10 +17,12 @@ class PluginManager(object):
         super(PluginManager, self).__init__()
         self.scope = Scope.getInstance()
         self.configManager = self.scope.getConfigurationManager()
+        self.db_service = self.scope.getDbService()
         self.plugins = []
         self.pluginQueueDict = dict()
         self.logger = self.scope.getLogger()
 
+    #TODO version?
     def loadPlugins(self):
         self.plugins = []
         possibleplugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
@@ -64,9 +66,17 @@ class PluginManager(object):
         # Not implemented yet
         pass
 
-    def checkPluginExists(self, pluginName):
-        # Not implemented yet
-        pass
+    def checkPluginExists(self, plugin_name, version=None):
+
+        criteria = ' name=\''+plugin_name+'\''
+        if version is not None:
+            criteria += ' and version=\'' + str(version) + '\''
+        result = self.db_service.select('plugin', 'name', criteria)
+
+        if result is None:
+            return False
+        else:
+            return True
 
     def reloadSinglePlugin(self, pluginName):
         # Not implemented yet

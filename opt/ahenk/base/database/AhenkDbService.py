@@ -111,6 +111,8 @@ class AhenkDbService(object):
                 row = self.cursor.fetchone()
                 if row is not None:
                     return row[0]
+                else:
+                    return None
             except Exception as e:
                 raise
         else:
