@@ -23,7 +23,7 @@ class AhenkDbService(object):
     def initialize_table(self):
         self.check_and_create_table('task', ['id INTEGER', 'create_date TEXT', 'modify_date TEXT', 'command_cls_id TEXT', 'parameter_map BLOB', 'deleted INTEGER', 'plugin TEXT'])
         self.check_and_create_table('policy', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'type TEXT', 'version TEXT', 'name TEXT'])
-        self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT', 'overridable INTEGER', 'active INTEGER', 'deleted INTEGER', 'profile_data BLOB', 'modify_date TEXT'])
+        self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT', 'overridable INTEGER', 'active INTEGER', 'deleted INTEGER', 'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT'])
         self.check_and_create_table('plugin', ['version TEXT', 'name TEXT', 'description TEXT'])
         self.check_and_create_table('registration', ['jid TEXT', 'password TEXT', 'registered INTEGER', 'dn TEXT', 'params TEXT', 'timestamp TEXT'])
 
@@ -49,7 +49,7 @@ class AhenkDbService(object):
     def update(self, table_name, cols, args, criteria=None):
         try:
             if self.connection:
-                if criteria == None:
+                if criteria is None:
                     cols = ', '.join([str(x) for x in cols])
                     params = ', '.join(['?' for x in args])
                     sql = 'INSERT INTO ' + table_name + ' (' + cols + ') VALUES (' + params + ')'
