@@ -19,7 +19,7 @@ class TaskManager(object):
     def addTask(self, task):
         try:
             self.logger.debug('Adding task ... ')
-            # self.saveTask(task)
+            self.saveTask(task)
             self.logger.info('Task saved ')
             # TODO send task received message
             self.pluginManager.processTask(task)

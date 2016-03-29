@@ -65,10 +65,13 @@ class Messaging(object):
         self.logger.debug('[Messaging] Logout message was created')
         return json_data
 
-    def policies_msg(self):
+    def policies_msg(self, username):
         data = {}
         data['type'] = 'GET_POLICIES'
-        data['username'] = str(pwd.getpwuid(os.getuid())[0])
+        #TODO fetch db values
+        data['userPolicyVersion'] = '1'
+        data['machinePolicyVersion'] = '1'
+        data['username'] = str(username)
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Get Policies message was created')

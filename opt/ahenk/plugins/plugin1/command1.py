@@ -12,6 +12,7 @@ class MySamplePlugin(AbstractCommand):
 
     def handle_task(self):
         print("This is command 1 ")
+        print("parameter map="+self.task.parameter_map)
 
 
 def handle_task(task):

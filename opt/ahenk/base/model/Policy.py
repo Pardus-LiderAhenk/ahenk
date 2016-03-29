@@ -15,12 +15,12 @@ class Policy(object):
 
     @property
     def ahenk_policy_version(self):
-        return self.policy['ahenkPolicyVersion']
+        return self.policy['machinePolicyVersion']
 
     @property
     def ahenk_profiles(self):
         profiles = []
-        for p in self.policy['ahenkProfiles']:
+        for p in self.policy['machinePolicyProfiles']:
             profiles.append(Profile(p))
         return profiles
 
@@ -35,7 +35,7 @@ class Policy(object):
     @property
     def user_profiles(self):
         profiles = []
-        for p in self.policy['userProfiles']:
+        for p in self.policy['userPolicyProfiles']:
             profiles.append(Profile(p))
         return profiles
 

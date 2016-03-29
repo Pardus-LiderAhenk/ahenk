@@ -75,6 +75,8 @@ class Messager(slixmpp.ClientXMPP):
     # TODO need check
     def send_file(self, file_path):
         self.file = open(file_path, 'rb')
+
+        #TODO read conf file check file size if file size is bigger than max size, divide and send parts.after all send message about them
         self.logger.debug('[Messager] Sending file: ' + self.file.name)
         self.logger.debug('[MessageSender] Sending file: ' + self.file.name)
         try:
@@ -99,7 +101,6 @@ class Messager(slixmpp.ClientXMPP):
 
     def send_direct_message(self, msg):
         self.logger.debug('[Messager] Sending message: ' + msg)
-        print("mesaj gidiyoo:"+str(msg))
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
 
     def recv_direct_message(self, msg):
@@ -115,12 +116,13 @@ class Messager(slixmpp.ClientXMPP):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             self.connect((self.hostname, 5222))
-            self.process()
+            self.process(forever=True)
             self.logger.debug('[Messager] Connection were established successfully')
             return True
         except Exception as e:
             self.logger.error('[Messager] Connection to server is failed! ' + e)
             return False
+
 
     def set_file_name_md5(self):
         self.logger.debug('[Messager] Renaming file as md5 hash')

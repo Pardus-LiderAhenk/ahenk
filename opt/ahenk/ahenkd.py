@@ -87,17 +87,21 @@ class AhenkDeamon(BaseDaemon):
 
         # TODO restrict number of attemption
         while registration.is_registered() is False:
+            print('registration need')
             logger.debug('[AhenkDeamon] Attempting to register')
             registration.registration_request()
 
         logger.info('[AhenkDeamon] Ahenk is registered')
 
+
         messager = Messager()
         messanger_thread = threading.Thread(target=messager.connect_to_server)
         messanger_thread.start()
 
+
         while (messager.is_connected() is False):
             time.sleep(1)
+        time.sleep(5)
 
         globalscope.setMessager(messager)
         logger.info('[AhenkDeamon] Messager was set')
@@ -125,6 +129,7 @@ class AhenkDeamon(BaseDaemon):
 
         messager.send_direct_message('test')
 
+
         responseQueue = queue.Queue()
         messageResponseQueue = MessageResponseQueue(responseQueue)
         messageResponseQueue.setDaemon(True)
@@ -141,8 +146,10 @@ class AhenkDeamon(BaseDaemon):
 
             # this is must be created after message services
 
-    def signal_handler(self, num, stack):
 
+
+    def signal_handler(self, num, stack):
+        print("signal handled")
         # TODO######
         config = configparser.ConfigParser()
         config._interpolation = configparser.ExtendedInterpolation()
@@ -155,57 +162,74 @@ class AhenkDeamon(BaseDaemon):
         logger = scope.getLogger()
 
         if 'login' == str(params[0]):
-            message = scope.getMessageManager().login_msg(params[1])
+            message = scope.getMessageManager().policies_msg(params[1])
             scope.getMessager().send_direct_message(message)
             logger.debug('[AhenkDeamon] login event is handled for user:' + params[1])
         elif 'logout' == str(params[0]):
             message = scope.getMessageManager().logout_msg(params[1])
             scope.getMessager().send_direct_message(message)
             logger.debug('[AhenkDeamon] logout event is handled for user:' + params[1])
+        elif 'exit' == str(params[0]):
+            print("exit:"+str(params[0]))
+            scope = Scope.getInstance()
+            scope.getMessager().disconnect()
+            #TODO kill thread
+            print('stopping ahenk')
         else:
             logger.error('[AhenkDeamon] Unknown command error. Command:' + params[0])
 
         logger.debug('[AhenkDeamon] Processing of handled event is completed')
 
 
+
+def get_pid_number():
+    config = configparser.ConfigParser()
+    config._interpolation = configparser.ExtendedInterpolation()
+    config.read(pidfilePath)
+    return config.get('PID', 'pid_number')
+
+
+def set_event(event_param):
+    config = configparser.ConfigParser()
+    config._interpolation = configparser.ExtendedInterpolation()
+    config.read(pidfilePath)
+    config.set('PID', 'event', event_param)
+
+    with open(pidfilePath, 'w') as config_file:
+        config.write(config_file)
+
+
 if __name__ == '__main__':
 
     ahenkdaemon = AhenkDeamon(pidfilePath)
+    try:
+        if len(sys.argv) == 2:
+            if sys.argv[1] == 'start':
+                print('starting')
+                ahenkdaemon.run()
+            elif sys.argv[1] == 'stop':
+                ahenkdaemon.stop()
+            elif sys.argv[1] == 'restart':
+                ahenkdaemon.restart()
+            elif sys.argv[1] == 'status':
+                print('status')
+            else:
+                print('Unknown command. Usage : %s start|stop|restart|status' % sys.argv[0])
+                sys.exit(2)
 
-    if len(sys.argv) == 2:
-        if sys.argv[1] == 'start':
-            print('starting')
-            ahenkdaemon.run()
-        elif sys.argv[1] == 'stop':
-            ahenkdaemon.stop()
-        elif sys.argv[1] == 'restart':
-            ahenkdaemon.restart()
-        elif sys.argv[1] == 'status':
-            print('status')
+        elif len(sys.argv) == 3:
+            if sys.argv[1] == 'login' or sys.argv[1] == 'logout':
+                print('event:' + str(sys.argv[1]))
+                set_event(str(sys.argv[1]) + ' ' + sys.argv[2])
+                os.kill(int(get_pid_number()), signal.SIGALRM)
+            else:
+                print('Unknown command. Usage : %s start|stop|restart|status' % sys.argv[0])
+                sys.exit(2)
+            sys.exit(0)
         else:
-            print('Unknown command. Usage : %s start|stop|restart|status' % sys.argv[0])
+            print('Usage : %s start|stop|restart|status' % sys.argv[0])
             sys.exit(2)
-
-    elif len(sys.argv) == 3:
-        if sys.argv[1] == 'login' or sys.argv[1] == 'logout':
-            print('event:' + str(sys.argv[1]))
-
-            # TODO##############
-            config = configparser.ConfigParser()
-            config._interpolation = configparser.ExtendedInterpolation()
-            config.read(pidfilePath)
-            pid_number = config.get('PID', 'pid_number')
-            config.set('PID', 'event', str(sys.argv[1]) + ' ' + sys.argv[2])
-            # TODO##############
-
-            with open(pidfilePath, 'w') as config_file:
-                config.write(config_file)
-
-            os.kill(int(pid_number), signal.SIGALRM)
-        else:
-            print('Unknown command. Usage : %s start|stop|restart|status' % sys.argv[0])
-            sys.exit(2)
-        sys.exit(0)
-    else:
-        print('Usage : %s start|stop|restart|status' % sys.argv[0])
-        sys.exit(2)
+    except(KeyboardInterrupt, SystemExit):
+        if str(os.getpid()) == get_pid_number():
+            set_event('exit true')
+            os.kill(int(get_pid_number()), signal.SIGALRM)
