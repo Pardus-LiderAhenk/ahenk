@@ -28,6 +28,14 @@ class TaskManager(object):
             self.logger.debug('Exception occured when adding task ' + str(e))
             pass
 
+    def addPolicy(self,policy):
+        try:
+            print("adding policy")
+            self.pluginManager.processPolicy(policy)
+        except Exception as e:
+            self.logger.error("Exception occured when adding policy ")
+            pass
+
     def saveTask(self, task):
         cols = ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin']
         values = [str(task.id), str(task.create_date), str(task.modify_date), str(task.command_cls_id), str(task.parameter_map), str(task.deleted), task.plugin.to_string()]
