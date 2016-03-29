@@ -33,25 +33,24 @@ class ExecutionManager(object):
         self.event_manager.register_event('REQUEST_FILE', self.request_file)
         self.event_manager.register_event('MOVE_FILE', self.move_file)
         self.event_manager.register_event('EXECUTE_TASK', self.execute_task)
-        self.event_manager.register_event('POLICY', self.update_policies)
+        self.event_manager.register_event('EXECUTE_POLICY', self.update_policies)
 
     def update_policies(self, arg):
         self.logger.debug('[ExecutionManager] Updating policies...')
 
         policy = Policy(json.loads(arg))
+        print(policy)
         # TODO get username
+        """
         username = 'volkan'
-
         ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
         user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + username + '\'')
         installed_plugins = self.get_installed_plugins()
         missing_plugins = []
-
         if policy.ahenk_policy_version != ahenk_policy_ver:
             ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
             self.db_service.delete('profile', 'id=' + str(ahenk_policy_id))
             self.db_service.update('policy', ['version'], [str(policy.ahenk_policy_version)], 'type=\'A\'')
-
             for profile in policy.ahenk_profiles:
                 profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'plugin']
                 args = [str(ahenk_policy_id), str(profile.create_date), str(profile.modify_date), str(profile.label),
@@ -79,6 +78,11 @@ class ExecutionManager(object):
 
         # TODO check plugins
         print("but first need these plugins:" + str(missing_plugins))
+        """
+        print("Executing policy")
+
+        self.task_manager.addPolicy(policy)
+
 
     def get_installed_plugins(self):
         plugins = self.db_service.select('plugin', ['name', 'version'])
