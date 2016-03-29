@@ -46,3 +46,7 @@ class Task(object):
 
     def to_json(self):
         return json.load(self.task)
+
+    @property
+    def obj_name(self):
+        return "TASK"

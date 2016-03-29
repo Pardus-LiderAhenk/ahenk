@@ -35,12 +35,18 @@ class Policy(object):
     @property
     def user_profiles(self):
         profiles = []
-        for p in self.policy['userPolicyProfiles']:
-            profiles.append(Profile(p))
-        return profiles
+        try:
+            for p in self.policy['userPolicyProfiles']:
+                profiles.append(Profile(p))
+            return profiles
+        except Exception as e:
+            return None
 
     def to_string(self):
         return str(self.policy)
 
     def to_json(self):
         return json.load(self.policy)
+
+    def obj_type(self):
+        return "POLICY"

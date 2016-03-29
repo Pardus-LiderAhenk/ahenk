@@ -93,13 +93,11 @@ class AhenkDeamon(BaseDaemon):
 
         logger.info('[AhenkDeamon] Ahenk is registered')
 
-
         messager = Messager()
         messanger_thread = threading.Thread(target=messager.connect_to_server)
         messanger_thread.start()
 
-
-        while (messager.is_connected() is False):
+        while messager.is_connected() is False:
             time.sleep(1)
         time.sleep(5)
 
@@ -139,15 +137,6 @@ class AhenkDeamon(BaseDaemon):
         while True:
             time.sleep(1)
 
-            # request policies
-            # logger.info('[AhenkDeamon] Requesting policies...')
-            # messager.send_direct_message(messageManager.policy_request_msg())
-
-
-            # this is must be created after message services
-
-
-
     def signal_handler(self, num, stack):
         print("signal handled")
         # TODO######
@@ -179,7 +168,6 @@ class AhenkDeamon(BaseDaemon):
             logger.error('[AhenkDeamon] Unknown command error. Command:' + params[0])
 
         logger.debug('[AhenkDeamon] Processing of handled event is completed')
-
 
 
 def get_pid_number():

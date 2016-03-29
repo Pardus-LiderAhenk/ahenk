@@ -102,13 +102,16 @@ class Messager(slixmpp.ClientXMPP):
     def send_direct_message(self, msg):
         self.logger.debug('[Messager] Sending message: ' + msg)
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
+        print('<---'+msg)
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
             j = json.loads(str(msg['body']))
             message_type = j['type']
             self.logger.debug('[Messager] Fired event is: ' + message_type)
+            print('----->'+str(msg['body']))
             self.event_manger.fireEvent(message_type, str(msg['body']))
+
 
     def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.
         try:

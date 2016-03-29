@@ -57,3 +57,7 @@ class Profile(object):
 
     def to_json(self):
         return json.load(self.profile)
+
+    @property
+    def obj_name(self):
+        return "PROFILE"

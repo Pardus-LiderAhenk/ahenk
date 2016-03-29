@@ -66,6 +66,28 @@ class PluginManager(object):
         # Not implemented yet
         pass
 
+    def findPolicyModule(self,plugin_name):
+        location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
+        if os.path.isdir(location) and "policy.py" in os.listdir(location):
+            info = imp.find_module("policy", [location])
+            return imp.load_module("policy", *info)
+        else:
+            self.logger.warning('[PluginManager] policy.py not found Plugin Name : ' + str(plugin_name))
+            return None
+
+    def processPolicy(self, policy):
+        user_profiles = policy.user_profiles
+        for profile in user_profiles:
+            try:
+                plugin = profile.plugin
+                plugin_name = plugin.name
+                if plugin_name in self.pluginQueueDict:
+                    self.pluginQueueDict[plugin_name].put(profile, 1)
+            except Exception as e:
+                print("Exception occured..")
+                self.logger.error("Policy profile not processed " + str(profile.plugin.name))
+
+
     def checkPluginExists(self, plugin_name, version=None):
 
         criteria = ' name=\''+plugin_name+'\''
