@@ -48,5 +48,5 @@ class Policy(object):
     def to_json(self):
         return json.load(self.policy)
 
-    def obj_type(self):
-        return "POLICY"
+    def obj_name(self):
+        return "PROFILE"

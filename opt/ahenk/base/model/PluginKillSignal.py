@@ -3,5 +3,8 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 
-def handle_policy(profile_data,context):
-    print("This is policy file - plugin 1")
+class PluginKillSignal(object):
+
+    @property
+    def obj_name(self):
+        return "KILL_SIGNAL"

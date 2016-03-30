@@ -12,6 +12,7 @@ import subprocess
 from base.Scope import Scope
 from base.model.Policy import Policy
 from base.model.Task import Task
+from base.model.MessageType import MessageType
 
 
 class ExecutionManager(object):
@@ -28,12 +29,11 @@ class ExecutionManager(object):
         self.logger = scope.getLogger()
         self.db_service = scope.getDbService()
 
-        # TODO move this event names to enumeration
-        self.event_manager.register_event('EXECUTE_SCRIPT', self.execute_script)
-        self.event_manager.register_event('REQUEST_FILE', self.request_file)
-        self.event_manager.register_event('MOVE_FILE', self.move_file)
-        self.event_manager.register_event('EXECUTE_TASK', self.execute_task)
-        self.event_manager.register_event('EXECUTE_POLICY', self.execute_policy)
+        self.event_manager.register_event(MessageType.EXECUTE_SCRIPT, self.execute_script)
+        self.event_manager.register_event(MessageType.REQUEST_FILE, self.request_file)
+        self.event_manager.register_event(MessageType.MOVE_FILE, self.move_file)
+        self.event_manager.register_event(MessageType.EXECUTE_TASK, self.execute_task)
+        self.event_manager.register_event(MessageType.EXECUTE_POLICY, self.execute_policy)
 
     def execute_policy(self, arg):
         self.logger.debug('[ExecutionManager] Updating policies...')

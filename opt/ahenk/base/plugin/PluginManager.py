@@ -7,6 +7,7 @@ import os
 from base.Scope import Scope
 from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
+from base.model.PluginKillSignal import PluginKillSignal
 
 
 class PluginManager(object):
@@ -24,18 +25,24 @@ class PluginManager(object):
 
     #TODO version?
     def loadPlugins(self):
+        """
+            This method loads plugins
+        """
+        self.logger.info('[PluginManager] Loading plugins...')
         self.plugins = []
+        self.logger.debug('[PluginManager] Lookup for possible plugins...')
         possibleplugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
+        self.logger.debug('[PluginManager] Possible plugins.. ' + str(possibleplugins))
         for pname in possibleplugins:
             location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pname)
             if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
-                self.logger.debug('It is not a plugin location - - ')
+                self.logger.debug('It is not a plugin location ! There is no main module - ' + str(location))
                 continue
             try:
                 self.loadSinglePlugin(pname)
             except Exception as e:
-                # TODO error log
-                pass
+                self.logger.error('Exception occured when loading plugin ! Plugin name : ' + str(pname) + ' Exception : ' + str(e))
+        self.logger.info('[PluginManager] Loaded plugins successfully.')
 
     def loadSinglePlugin(self, pluginName):
         # TODO check already loaded plugin
@@ -63,8 +70,17 @@ class PluginManager(object):
             self.logger.error("[PluginManager] Exception occurred when processing task " + str(e))
 
     def reloadPlugins(self):
-        # Not implemented yet
-        pass
+        #TODO
+        try:
+            self.logger.info('[PluginManager]  Reloading plugins... ')
+            kill_sgnl = PluginKillSignal()
+            for p_queue in self.pluginQueueDict:
+                p_queue.put(kill_sgnl)
+            self.plugins = []
+            self.loadPlugins()
+            self.logger.info('[PluginManager] Plugin reloaded successfully.')
+        except Exception as e:
+            self.logger.error('[PluginManager] Exception occurred when reloading plugins ' + str(e))
 
     def findPolicyModule(self,plugin_name):
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
@@ -102,6 +118,7 @@ class PluginManager(object):
 
     def reloadSinglePlugin(self, pluginName):
         # Not implemented yet
+
         pass
 
     def checkCommandExist(self, pluginName, commandId):
