@@ -3,5 +3,5 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 
-def handle_policy(profile_data):
+def handle_policy(profile_data,context):
     print("This is policy file - plugin 1")
