@@ -23,12 +23,13 @@ class TaskManager(object):
             self.logger.info('Task saved ')
             # TODO send task received message
             self.pluginManager.processTask(task)
+
         except Exception as e:
             # TODO error log here
             self.logger.debug('Exception occured when adding task ' + str(e))
             pass
 
-    def addPolicy(self,policy):
+    def addPolicy(self, policy):
         try:
             print("adding policy")
             self.pluginManager.processPolicy(policy)

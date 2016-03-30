@@ -134,6 +134,7 @@ class AhenkDeamon(BaseDaemon):
         messageResponseQueue.start()
         globalscope.setResponseQueue(responseQueue)
 
+
         while True:
             time.sleep(1)
 
@@ -151,7 +152,7 @@ class AhenkDeamon(BaseDaemon):
         logger = scope.getLogger()
 
         if 'login' == str(params[0]):
-            message = scope.getMessageManager().policies_msg(params[1])
+            message = scope.getMessageManager().policy_request_msg(params[1])
             scope.getMessager().send_direct_message(message)
             logger.debug('[AhenkDeamon] login event is handled for user:' + params[1])
         elif 'logout' == str(params[0]):

@@ -3,8 +3,6 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import datetime
 import json
-import os
-import pwd
 import sys
 
 sys.path.append('../..')
@@ -18,34 +16,23 @@ class Messaging(object):
         self.logger = scope.getLogger()
         self.conf_manager = scope.getConfigurationManager()
         self.db_service = scope.getDbService()
-
         self.event_manger = scope.getEventManager()
 
-    # TODO can use sh commands or api for getting username and timestamp
-
-    def policy_request_msg(self):
-        # TODO volkan
-
-        self.logger.debug('[Messaging] Creating policy request message')
-
-        ahenk_version = self.db_service.select('policy', ['version'], 'type = \'A\'')
-        username = 'volkan'
-        user_version = self.db_service.select('policy', ['version'], 'type = \'U\' and name = \'' + username + '\'')
-
-        if len(ahenk_version) == 0:
-            ahenk_version.append(-1)
-        if len(user_version) == 0:
-            user_version.append(-1)
-
+    def response_msg(self, response):
+        print("response message")
         data = {}
-        data['type'] = 'POLICY_REQUEST'
-        data['username'] = username
-        data['ahenkPolicyVersion'] = str(''.join(ahenk_version[0]))
-        data['userPolicyVersion'] = str(''.join(user_version[0]))
+        data['type'] = response.get_type()
+        data['id'] = response.get_id()
+        data['responseCode'] = response.get_code()
+        data['responseMessage'] = response.get_message()
+        data['responseData'] = response.get_data()
+        data['contentType'] = response.get_content_type()
+        data['timestamp'] = response.get_timestamp()
+
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Policy request message was created')
-        print(json_data)
-        return json_data
+        self.logger.debug('[Messaging] Response message was created')
+        return str(json_data)
+
 
     def login_msg(self, username):
         data = {}
@@ -65,12 +52,16 @@ class Messaging(object):
         self.logger.debug('[Messaging] Logout message was created')
         return json_data
 
-    def policies_msg(self, username):
+    def policy_request_msg(self, username):
         data = {}
         data['type'] = 'GET_POLICIES'
-        #TODO fetch db values
-        data['userPolicyVersion'] = '1'
-        data['machinePolicyVersion'] = '1'
+
+        user_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + username + '\'')
+        machine_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
+
+        data['userPolicyVersion'] = user_policy_number
+        data['machinePolicyVersion'] = machine_policy_number
+
         data['username'] = str(username)
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)

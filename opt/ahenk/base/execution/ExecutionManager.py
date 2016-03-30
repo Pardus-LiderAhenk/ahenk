@@ -35,15 +35,13 @@ class ExecutionManager(object):
         self.event_manager.register_event('EXECUTE_TASK', self.execute_task)
         self.event_manager.register_event('EXECUTE_POLICY', self.execute_policy)
 
-
     def execute_policy(self, arg):
         self.logger.debug('[ExecutionManager] Updating policies...')
 
         policy = Policy(json.loads(arg))
-
         # TODO get username and machine uid
-        username = '_username'
-        machine_uid='_machine_uid'
+        username = 'volkan'
+        machine_uid='616161616161'
 
         ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
         user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + username + '\'')
@@ -59,6 +57,7 @@ class ExecutionManager(object):
             else:
                 self.db_service.update('policy', ['type', 'version', 'name'], ['A', str(policy.ahenk_policy_version), machine_uid])
                 ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
+
             for profile in policy.ahenk_profiles:
                 args = [str(ahenk_policy_id), str(profile.create_date), str(profile.modify_date), str(profile.label),
                         str(profile.description), str(profile.overridable), str(profile.active), str(profile.deleted), str(profile.profile_data), str(profile.plugin)]
@@ -90,10 +89,7 @@ class ExecutionManager(object):
         # TODO check plugins
         print("but first need these plugins:" + str(missing_plugins))
 
-        print("Executing policy")
-
         self.task_manager.addPolicy(policy)
-
 
     def get_installed_plugins(self):
         plugins = self.db_service.select('plugin', ['name', 'version'])

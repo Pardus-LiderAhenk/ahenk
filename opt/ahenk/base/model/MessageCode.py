@@ -1,0 +1,19 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
+from enum import Enum
+
+
+class MessageCode(Enum):
+    TASK_RECEIVED = 'TASK_RECEIVED'
+    TASK_PROCESSED = 'TASK_PROCESSED'
+    TASK_ERROR = 'TASK_ERROR'
+    TASK_WARNING = 'TASK_WARNING'
+    TASK_TIMEOUT = 'TASK_TIMEOUT'
+    TASK_KILLED = 'TASK_KILLED'
+    POLICY_RECEIVED = 'POLICY_RECEIVED'
+    POLICY_PROCESSED = 'POLICY_PROCESSED'
+    POLICY_ERROR = 'POLICY_ERROR'
+    POLICY_WARNING = 'POLICY_WARNING'
+    POLICY_TIMEOUT = 'POLICY_TIMEOUT'
+    POLICY_KILLED = 'POLICY_KILLED'
