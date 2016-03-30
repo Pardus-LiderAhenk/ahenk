@@ -20,14 +20,14 @@ class MessageResponseQueue(threading.Thread):
         self.outQueue = outQueue
 
     def run(self):
-        try:
             while True:
-                # This item will send response to lider.
-                # item must be response message. Response message may be generic message type
-                responseMessage = self.outQueue.get(block=True)
-                print(responseMessage)
-                # Call message manager for response
-                self.messageManager.send_direct_message(responseMessage)
-                # self.outQueue.task_done()
-        except:
-            pass
+                try:
+                    # This item will send response to lider.
+                    # item must be response message. Response message may be generic message type
+                    responseMessage = self.outQueue.get(block=True)
+                    self.logger.debug('[MessageResponseQueue] Sending response message to lider. Response Message ' + str(responseMessage))
+                    # Call message manager for response
+                    self.messageManager.send_direct_message(responseMessage)
+                    # self.outQueue.task_done()
+                except Exception as e:
+                    self.logger.error
