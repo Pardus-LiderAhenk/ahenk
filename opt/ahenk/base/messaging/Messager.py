@@ -112,7 +112,6 @@ class Messager(slixmpp.ClientXMPP):
             print('----->'+str(msg['body']))
             self.event_manger.fireEvent(message_type, str(msg['body']))
 
-
     def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.
         try:
             self.logger.debug('[Messager] Connecting to server as thread')

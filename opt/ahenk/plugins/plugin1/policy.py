@@ -4,4 +4,6 @@
 
 
 def handle_policy(profile_data,context):
+    context.put('data','dataa')
+    context.put('content_type','type')
     print("This is policy file - plugin 1")

@@ -29,11 +29,12 @@ class ExecutionManager(object):
         self.logger = scope.getLogger()
         self.db_service = scope.getDbService()
 
-        self.event_manager.register_event(MessageType.EXECUTE_SCRIPT, self.execute_script)
-        self.event_manager.register_event(MessageType.REQUEST_FILE, self.request_file)
-        self.event_manager.register_event(MessageType.MOVE_FILE, self.move_file)
-        self.event_manager.register_event(MessageType.EXECUTE_TASK, self.execute_task)
-        self.event_manager.register_event(MessageType.EXECUTE_POLICY, self.execute_policy)
+        #TODO DEBUG
+        self.event_manager.register_event(str(MessageType.EXECUTE_SCRIPT), self.execute_script)
+        self.event_manager.register_event(str(MessageType.REQUEST_FILE), self.request_file)
+        self.event_manager.register_event(str(MessageType.MOVE_FILE), self.move_file)
+        self.event_manager.register_event(str(MessageType.EXECUTE_TASK), self.execute_task)
+        self.event_manager.register_event('EXECUTE_POLICY', self.execute_policy)
 
     def execute_policy(self, arg):
         self.logger.debug('[ExecutionManager] Updating policies...')

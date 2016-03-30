@@ -4,16 +4,25 @@
 import threading
 
 from base.Scope import Scope
+from base.model.Response import Response
+from base.model.MessageType import MessageType
+from base.model.MessageCode import MessageCode
+from base.messaging.Messaging import Messaging
+
 
 class Context(object):
     def __init__(self):
         self.data = {}
 
-    def put(self,var_name,data):
+    def put(self, var_name, data):
         self.data[var_name] = data
+
+    def get(self, var_name):
+        return self.data[var_name]
 
     def empty_data(self):
         self.data = {}
+
 
 class Plugin(threading.Thread):
     """
@@ -25,12 +34,18 @@ class Plugin(threading.Thread):
         threading.Thread.__init__(self)
         self.name = name
         self.InQueue = InQueue
+
         scope = Scope.getInstance()
         self.logger = scope.getLogger()
+        self.response_queue = scope.getResponseQueue()
+        self.messaging = scope.getMessageManager()
+        self.messager =None
+
         self.keep_run = True
         self.context = Context()
 
     def run(self):
+
         while self.keep_run:
             try:
                 item_obj = self.InQueue.get(block=True)
@@ -38,25 +53,35 @@ class Plugin(threading.Thread):
                 print(obj_name)
                 if obj_name == "TASK":
                     command = Scope.getInstance().getPluginManager().findCommand(self.getName(), item_obj.command_cls_id)
-                    command.handle_task(item_obj,self.context)
+                    command.handle_task(item_obj, self.context)
                     # TODO create response message from context and item_obj. item_obj is task
 
+                    #TODO Message Code keep
+                    #item_obj.id ??
+                    response = Response(type=MessageType.TASK_STATUS, id='id', code=MessageCode.TASK_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'))
+                    #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                    Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response)) #TODO REMOVE
 
                     # Empty context for next use
                     self.context.empty_data()
 
-                    # TODO add result to response queue
                 elif obj_name == "PROFILE":
                     plugin = item_obj.plugin
                     plugin_name = plugin.name
                     profile_data = item_obj.profile_data
                     policy_module = Scope.getInstance().getPluginManager().findPolicyModule(plugin_name)
 
-                    policy_module.handle_policy(profile_data,self.context)
-                    # TODO create response message from context and item_obj. item_obj is profile
+                    policy_module.handle_policy(profile_data, self.context)
+
+                    #TODO Message Code keep
+                    #item_obj.id ??
+                    response = Response(type=MessageType.POLICY_STATUS, id='id', code=MessageCode.POLICY_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'))
+                    #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                    Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response))#TODO REMOVE
 
                     # Empty context for next use
                     self.context.empty_data()
+
 
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False
