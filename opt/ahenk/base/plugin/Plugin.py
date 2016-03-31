@@ -57,8 +57,7 @@ class Plugin(threading.Thread):
                     # TODO create response message from context and item_obj. item_obj is task
 
                     #TODO Message Code keep
-                    #item_obj.id ??
-                    response = Response(type=MessageType.TASK_STATUS, id='id', code=MessageCode.TASK_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'))
+                    response = Response(type=MessageType.TASK_STATUS, id=item_obj.id, code=MessageCode.TASK_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'))
                     #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response)) #TODO REMOVE
 
@@ -74,8 +73,7 @@ class Plugin(threading.Thread):
                     policy_module.handle_policy(profile_data, self.context)
 
                     #TODO Message Code keep
-                    #item_obj.id ??
-                    response = Response(type=MessageType.POLICY_STATUS, id='id', code=MessageCode.POLICY_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'))
+                    response = Response(type=MessageType.POLICY_STATUS, id=item_obj.id, code=MessageCode.POLICY_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'))
                     #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response))#TODO REMOVE
 

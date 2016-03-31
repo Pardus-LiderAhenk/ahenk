@@ -15,6 +15,9 @@ from base.Scope import Scope
 
 
 class Messager(slixmpp.ClientXMPP):
+
+    global loop
+
     def __init__(self):
         # global scope of ahenk
         scope = Scope().getInstance()
@@ -41,6 +44,7 @@ class Messager(slixmpp.ClientXMPP):
 
     def add_listeners(self):
         self.add_event_handler('session_start', self.session_start)
+        self.add_event_handler('session_end', self.session_end)
         self.add_event_handler('message', self.recv_direct_message)
 
         self.add_event_handler('socks5_connected', self.stream_opened)
@@ -71,6 +75,9 @@ class Messager(slixmpp.ClientXMPP):
         self.logger.debug('[Messager] Session was started')
         self.get_roster()
         self.send_presence()
+
+    def session_end(self):
+        print("disconnect")
 
     # TODO need check
     def send_file(self, file_path):

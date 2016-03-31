@@ -41,8 +41,8 @@ class ExecutionManager(object):
 
         policy = Policy(json.loads(arg))
         # TODO get username and machine uid
-        username = 'volkan'
-        machine_uid='616161616161'
+        username = 'lider'
+        machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
 
         ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
         user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + username + '\'')
