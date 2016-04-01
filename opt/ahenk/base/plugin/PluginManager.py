@@ -92,7 +92,8 @@ class PluginManager(object):
             return None
 
     def processPolicy(self, policy):
-        user_profiles = policy.user_profiles
+        #TODO user and ahenk
+        user_profiles = policy.ahenk_profiles
         for profile in user_profiles:
             try:
                 plugin = profile.plugin
@@ -102,7 +103,6 @@ class PluginManager(object):
             except Exception as e:
                 print("Exception occured..")
                 self.logger.error("Policy profile not processed " + str(profile.plugin.name))
-
 
     def checkPluginExists(self, plugin_name, version=None):
 
