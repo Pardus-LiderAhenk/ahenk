@@ -23,16 +23,39 @@ class Browser(AbstractCommand):
 
         print("Browser handling")
 
-        # if (is_user):
-        #   self.write_to_user_profile(prefsText, userNameArray, task)
-        # else:
-        self.write_to_global_profile()
+        username = None
+        if username is not None:
+            self.write_to_user_profile(username)
+        else:
+            self.write_to_global_profile()
 
-    def write_to_user_profile(self, prefs_text, user_name_array):
-        pass
+        #prefsText -lockPrefsText
+
+    def write_to_user_profile(self, username):
+
+        try:
+            username = str(username).strip()
+            profile_paths = self.find_user_preference_paths(username)
+
+            # User might have multiple firefox profile directories
+            for path in profile_paths:
+                path = str(path) + '/user.js'
+                userjss = open(path, 'w')
+                userjss.write("prefsText")
+                userjss.close()
+                changeOwner = 'chown ' + username + ':' + username + ' ' + path
+                #TODO(result_code, p_out, p_err) = self.execute_command(changeOwner, shell=True)
+        except Exception as e:
+            print('ERR1')
+            # Remove global lock files to tell Firefox to load the user file
+            installation_path = self.find_firefox_installation_path()
+            if installation_path is None:
+                return
+            self.silent_remove(str(installation_path) + self.mozilla_config_file)
+            self.silent_remove(str(installation_path) + self.local_settings_JS_path + self.local_settings_JS_file)
 
     def write_to_global_profile(self):
-        #TODO NEED DEBUG
+        # TODO NEED DEBUG
         firefox_installation_path = self.find_firefox_installation_path()
         preferences = json.loads(self.data['preferences'])
 
@@ -43,7 +66,8 @@ class Browser(AbstractCommand):
         print(str(firefox_installation_path) + self.mozilla_config_file)
 
         for pref in preferences:
-            if isinstance(pref['value'], int) is True or isinstance(pref['value'], bool) is True or str(pref['value']) is 'false' or str(pref['value']) is 'true':
+            if isinstance(pref['value'], int) is True or isinstance(pref['value'], bool) is True or str(
+                    pref['value']) is 'false' or str(pref['value']) is 'true':
                 value = pref['value']
             else:
                 value = '"' + pref['value'] + '"'
@@ -60,8 +84,25 @@ class Browser(AbstractCommand):
             os.makedirs(local_settings_path)
 
         local_settings_js = open(local_settings_path + self.local_settings_JS_file, 'w')
-        local_settings_js.write('pref("general.config.obscure_value", 0);\npref("general.config.filename", "mozilla.cfg");\n')
+        local_settings_js.write(
+            'pref("general.config.obscure_value", 0);\npref("general.config.filename", "mozilla.cfg");\n')
         local_settings_js.close()
+
+    def silent_remove(self, filename):
+        try:
+            os.remove(filename)
+        except OSError as e:
+            print('ERR2')
+
+    def find_user_preference_paths(self, userName):
+        paths = []
+        firefox_path = '/home/' + userName + '/.mozilla/firefox/'
+        profile_ini_file = open(firefox_path + 'profiles.ini', 'r')
+        profile_ini_file_lines = profile_ini_file.readlines()
+        for line in profile_ini_file_lines:
+            if 'Path' in line:
+                paths.append(firefox_path + str(line.split('=')[1]).strip())
+        return paths
 
     def find_firefox_installation_path(self):
         installation_path = '/usr/lib/firefox/'
