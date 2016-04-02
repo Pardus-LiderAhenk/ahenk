@@ -33,6 +33,35 @@ class Messaging(object):
         self.logger.debug('[Messaging] Response message was created')
         return str(json_data)
 
+    def task_status_msg(self, response):
+        data = {}
+        data['type'] = response.get_type()
+        data['taskId'] = response.get_id()
+        data['responseCode'] = response.get_code()
+        data['responseMessage'] = response.get_message()
+        data['responseData'] = response.get_data()
+        data['contentType'] = response.get_content_type()
+        data['timestamp'] = response.get_timestamp()
+
+        json_data = json.dumps(data)
+        self.logger.debug('[Messaging] Task status message was created')
+        return str(json_data)
+
+    def policy_status_msg(self, response):
+        data = {}
+        data['type'] = response.get_type()
+        data['policyVersion'] = response.get_id()
+        data['commandExecutionId'] = response.get_id()
+        data['responseCode'] = response.get_code()
+        data['responseMessage'] = response.get_message()
+        data['responseData'] = response.get_data()
+        data['contentType'] = response.get_content_type()
+        data['timestamp'] = response.get_timestamp()
+
+        json_data = json.dumps(data)
+        self.logger.debug('[Messaging] Policy status message was created')
+        return str(json_data)
+
 
     def login_msg(self, username):
         data = {}
@@ -60,7 +89,7 @@ class Messaging(object):
         machine_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
 
         data['userPolicyVersion'] = user_policy_number
-        data['machinePolicyVersion'] = machine_policy_number
+        data['agentPolicyVersion'] = machine_policy_number
 
         data['username'] = str(username)
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))

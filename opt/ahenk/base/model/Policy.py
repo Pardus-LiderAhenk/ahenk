@@ -15,12 +15,12 @@ class Policy(object):
 
     @property
     def ahenk_policy_version(self):
-        return self.policy['machinePolicyVersion']
+        return self.policy['agentPolicyVersion']
 
     @property
     def ahenk_profiles(self):
         profiles = []
-        for p in self.policy['machinePolicyProfiles']:
+        for p in self.policy['agentPolicyProfiles']:
             profiles.append(Profile(p))
         return profiles
 
@@ -41,6 +41,15 @@ class Policy(object):
             return profiles
         except Exception as e:
             return None
+
+    @property
+    def ahenk_execution_id(self):
+        return self.policy['agentCommandExecutionId']
+
+    @property
+    def user_execution_id(self):
+        return self.policy['userCommandExecutionId']
+
 
     def to_string(self):
         return str(self.policy)
