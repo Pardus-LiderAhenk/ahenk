@@ -11,6 +11,8 @@ import subprocess
 
 from base.Scope import Scope
 from base.model.Policy import Policy
+from base.model.PolicyBean import PolicyBean
+from base.model.ProfileBean import ProfileBean
 from base.model.Task import Task
 from base.model.MessageType import MessageType
 
@@ -29,7 +31,7 @@ class ExecutionManager(object):
         self.logger = scope.getLogger()
         self.db_service = scope.getDbService()
 
-        #TODO DEBUG
+        # TODO DEBUG
         self.event_manager.register_event(str(MessageType.EXECUTE_SCRIPT), self.execute_script)
         self.event_manager.register_event(str(MessageType.REQUEST_FILE), self.request_file)
         self.event_manager.register_event(str(MessageType.MOVE_FILE), self.move_file)
@@ -41,7 +43,7 @@ class ExecutionManager(object):
 
         policy = Policy(json.loads(arg))
         # TODO get username and machine uid
-        username = 'lider'
+        username = policy.username
         machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
 
         ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
@@ -90,7 +92,52 @@ class ExecutionManager(object):
         # TODO check plugins
         print("but first need these plugins:" + str(missing_plugins))
 
-        self.task_manager.addPolicy(policy)
+        self.task_manager.addPolicy(self.get_active_policies(username))
+
+    def get_active_policies(self, username):
+
+        """
+            self.ahenk_policy_version = ahenk_policy_version
+            self.user_policy_version = user_policy_version
+            self.ahenk_profiles = ahenk_profiles
+            self.user_profiles = user_profiles
+        self.timestamp = timestamp
+            self.username = username
+
+
+        self.ahenk_execution_id = ahenk_execution_id
+        self.user_execution_id = user_execution_id
+        """
+
+        user_policy = self.db_service.select('policy', ['id', 'version', 'name'], ' type=\'U\' and name=\'' + username + '\'')
+        ahenk_policy = self.db_service.select('policy', ['id', 'version'], ' type=\'A\' ')
+
+        policy = PolicyBean(username=username)
+
+        if len(user_policy) > 0:
+            user_policy_version = user_policy[0][0]
+            policy.set_user_policy_version(user_policy_version)
+            user_profiles = self.db_service.select('profile', ['id', 'create_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'modify_date', 'plugin'], ' id=' + str(user_policy_version) + ' ')
+
+            arr_profiles = []
+            if len(user_profiles) > 0:
+                for profile in user_profiles:
+                    arr_profiles.append(ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6], profile[7], profile[8], profile[9]))
+                policy.set_user_profiles(arr_profiles)
+
+        if len(ahenk_policy) > 0:
+            ahenk_policy_version = ahenk_policy[0][0]
+            policy.set_ahenk_policy_version(ahenk_policy_version)
+            ahenk_profiles = self.db_service.select('profile', ['id', 'create_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'modify_date', 'plugin'], ' id=' + str(ahenk_policy_version) + ' ')
+            arr_profiles = []
+            if len(ahenk_profiles) > 0:
+                for profile in user_profiles:
+                    arr_profiles.append(ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6], profile[7], profile[8], profile[9]))
+                policy.set_ahenk_profiles(arr_profiles)
+
+        print("")
+        return policy
+
 
     def get_installed_plugins(self):
         plugins = self.db_service.select('plugin', ['name', 'version'])

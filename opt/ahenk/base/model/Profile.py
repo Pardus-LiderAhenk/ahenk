@@ -11,6 +11,7 @@ class Profile(object):
 
     def __init__(self, message):
         self.profile = message
+        self.username = None
 
     @property
     def id(self):
@@ -61,3 +62,9 @@ class Profile(object):
     @property
     def obj_name(self):
         return "PROFILE"
+
+    def get_username(self):
+        return self.username
+
+    def set_username(self, username):
+        self.username = username

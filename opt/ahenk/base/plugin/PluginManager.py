@@ -82,7 +82,7 @@ class PluginManager(object):
         except Exception as e:
             self.logger.error('[PluginManager] Exception occurred when reloading plugins ' + str(e))
 
-    def findPolicyModule(self,plugin_name):
+    def findPolicyModule(self, plugin_name):
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
         if os.path.isdir(location) and "policy.py" in os.listdir(location):
             info = imp.find_module("policy", [location])
@@ -92,17 +92,30 @@ class PluginManager(object):
             return None
 
     def processPolicy(self, policy):
-        #TODO user and ahenk
-        user_profiles = policy.ahenk_profiles
-        for profile in user_profiles:
-            try:
-                plugin = profile.plugin
-                plugin_name = plugin.name
-                if plugin_name in self.pluginQueueDict:
-                    self.pluginQueueDict[plugin_name].put(profile, 1)
-            except Exception as e:
-                print("Exception occured..")
-                self.logger.error("Policy profile not processed " + str(profile.plugin.name))
+        #TODO do you need username in profile?
+
+        username = policy.username
+        ahenk_profiles = policy.ahenk_profiles
+        user_profiles = policy.user_profiles
+
+        if ahenk_profiles is not None:
+            for profile in ahenk_profiles:
+                self.process_profile(profile)
+
+        if user_profiles is not None:
+            for profile in user_profiles:
+                profile.set_username(username)
+                self.process_profile(profile)
+
+    def process_profile(self, profile):
+        try:
+            plugin = profile.get_plugin()
+            plugin_name = plugin.name
+            if plugin_name in self.pluginQueueDict:
+                self.pluginQueueDict[plugin_name].put(profile, 1)
+        except Exception as e:
+            print("Exception occured..")
+            self.logger.error("Policy profile not processed " + str(profile.plugin.name))
 
     def checkPluginExists(self, plugin_name, version=None):
 
@@ -127,3 +140,4 @@ class PluginManager(object):
 
     def printQueueSize(self):
         print("size " + str(len(self.pluginQueueDict)))
+

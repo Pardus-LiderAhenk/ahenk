@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 import threading
-
+import subprocess
 from base.Scope import Scope
 from base.model.Response import Response
 from base.model.MessageType import MessageType
@@ -22,6 +22,9 @@ class Context(object):
 
     def empty_data(self):
         self.data = {}
+
+    def execute(self, command):
+        return subprocess.call(command, shell=True)
 
 
 class Plugin(threading.Thread):
@@ -70,10 +73,12 @@ class Plugin(threading.Thread):
                     profile_data = item_obj.profile_data
                     policy_module = Scope.getInstance().getPluginManager().findPolicyModule(plugin_name)
 
+                    self.context.put('username', item_obj.get_username())
+
                     policy_module.handle_policy(profile_data, self.context)
 
                     #TODO Message Code keep
-                    response = Response(type=MessageType.POLICY_STATUS, id=item_obj.id, code=MessageCode.POLICY_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'), execution_id='get_execution_id')
+                    response = Response(type=self.context.get('message_type'), id=item_obj.id, code=self.context.get('message_code'), message=self.context.get('message'), data=self.context.get('data'), content_type=self.context.get('content_type'), execution_id='get_execution_id')
                     #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response))#TODO REMOVE
 

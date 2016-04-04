@@ -92,7 +92,6 @@ class AhenkDbService(object):
                     sql += orderby
 
                 self.cursor.execute(sql)
-
                 rows = self.cursor.fetchall()
                 return rows
             except Exception as e:

@@ -30,7 +30,7 @@ class Policy(object):
 
     @property
     def timestamp(self):
-        self.request['timestamp']
+        return self.policy['timestamp']
 
     @property
     def user_profiles(self):
@@ -43,13 +43,17 @@ class Policy(object):
             return None
 
     @property
+    def username(self):
+        return self.policy['username']
+
+    # TODO result mesajı dönerken döndür
+    @property
     def ahenk_execution_id(self):
         return self.policy['agentCommandExecutionId']
 
     @property
     def user_execution_id(self):
         return self.policy['userCommandExecutionId']
-
 
     def to_string(self):
         return str(self.policy)
