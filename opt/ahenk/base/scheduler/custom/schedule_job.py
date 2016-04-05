@@ -23,10 +23,12 @@ class ScheduleTaskJob(object):
     def processTask(self):
         try:
             self.task_manager.addTask(self.task)
+            if self.is_single_shot():
+                Scope.getInstance().get_scheduler().remove_job(self.task)
         except Exception as e:
             self.logger.error(e)
 
-    def parse_cron_str(self,cron_str):
+    def parse_cron_str(self, cron_str):
         try:
             cron_exp_arr = cron_str.split(" ")
             cron_sj = []
@@ -66,6 +68,11 @@ class ScheduleTaskJob(object):
             obj = set(obj)
         return obj
 
+    def is_single_shot(self):
+        if '*' in self.task.cron_str:
+            return True
+        else:
+            return False
 
     def matchtime(self, t):
         """Return True if this event should trigger at the specified datetime"""

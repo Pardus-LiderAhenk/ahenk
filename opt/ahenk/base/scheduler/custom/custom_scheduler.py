@@ -27,6 +27,16 @@ class CustomScheduler(BaseScheduler):
     def add_job(self, job):
         self.events.append(job)
 
+    def save_and_add_job(self, task):
+        self.scheduledb.save(task)
+        self.events.append(ScheduleTaskJob(task))
+
+    def remove_job(self,task):
+        self.scheduledb.delete(task)
+        for event in self.events:
+            if event.task.id == task.id:
+                self.events.remove(event)
+
     def stop(self):
         self.keep_run = False
 
