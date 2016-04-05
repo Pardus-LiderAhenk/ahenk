@@ -8,3 +8,4 @@ class SchedulerFactory():
 
     def get_intstance(self):
         return CustomScheduler()
+    get_intstance = staticmethod(get_intstance)

@@ -4,6 +4,8 @@
 
 from base.scheduler.base_scheduler import BaseScheduler
 from base.Scope import Scope
+from base.scheduler.custom.scheduledb import ScheduleTaskDB
+from base.scheduler.custom.schedule_job import ScheduleTaskJob
 from datetime import datetime, timedelta
 import time
 
@@ -14,12 +16,15 @@ class CustomScheduler(BaseScheduler):
         self.events = []
         self.keep_run = True
         self.logger = Scope.getInstance().getLogger()
+        self.scheduledb = ScheduleTaskDB()
 
     def initialize(self):
-        # Implement this from your implementation class
-        pass
+        self.scheduledb.initialize()
+        tasks = self.scheduledb.load()
+        for task in tasks:
+            self.add_job(ScheduleTaskJob(task))
 
-    def add_job(self,job):
+    def add_job(self, job):
         self.events.append(job)
 
     def stop(self):
