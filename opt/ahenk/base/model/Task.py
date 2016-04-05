@@ -41,12 +41,25 @@ class Task(object):
     def plugin(self):
         return Plugin(self.task['plugin'])
 
+    @property
+    def cron_str(self):
+        return '1 * * * *'   #TODO update when task cron field added.
+
     def to_string(self):
         return str(self.task)
 
     def to_json(self):
-        return json.load(self.task)
+        return json.dumps(self.task)
+
+    def from_json(self,json_value):
+        self.task = json.load(json_value)
 
     @property
     def obj_name(self):
         return "TASK"
+
+    def cols(self):
+        return ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin']
+
+    def values(self):
+        return [str(self.id), str(self.create_date), str(self.modify_date), str(self.command_cls_id), str(self.parameter_map), str(self.deleted), self.plugin.to_string()]
