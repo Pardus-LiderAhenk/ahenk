@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
-from base.scheduler.custom_scheduler_impl import CustomScheduler
+from base.scheduler.custom.custom_scheduler import CustomScheduler
 
 class SchedulerFactory():
 
