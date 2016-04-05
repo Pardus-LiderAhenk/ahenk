@@ -11,7 +11,10 @@ class Task(object):
     """docstring for Task"""
 
     def __init__(self, message):
-        self.task = message['task']
+        #TODO message must be json !!! otherwise we can not use task json methods!
+        #Remove if condition and change message param to json task type.
+        if message:
+            self.task = message['task']
 
     @property
     def id(self):
