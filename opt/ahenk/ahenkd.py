@@ -24,6 +24,7 @@ from base.messaging.Messaging import Messaging
 from base.plugin.PluginManager import PluginManager
 from base.registration.Registration import Registration
 from base.task.TaskManager import TaskManager
+from base.scheduler.scheduler_factory import SchedulerFactory
 
 pidfilePath = '/var/run/ahenk.pid'
 
@@ -31,9 +32,94 @@ pidfilePath = '/var/run/ahenk.pid'
 class AhenkDeamon(BaseDaemon):
     """docstring for AhenkDeamon"""
 
-    def reload(self, msg):
+    def reload(self):
         # reload service here
         pass
+
+    def init_logger(self):
+        logger = Logger()
+        logger.info('[AhenkDeamon] Log was set')
+        Scope.getInstance().setLogger(logger)
+        return logger
+
+    def init_config_manager(self, configFilePath, configfileFolderPath):
+        configManager = ConfigManager(configFilePath, configfileFolderPath)
+        config = configManager.read()
+        Scope.getInstance().setConfigurationManager(config)
+        return config
+
+    def init_scheduler(self):
+        scheduler_ins = SchedulerFactory.get_intstance()
+        scheduler_ins.initialize()
+        Scope.getInstance().set_scheduler(scheduler_ins)
+        sc_thread = threading.Thread(target=scheduler_ins.run)
+        sc_thread.setDaemon(True)
+        sc_thread.start()
+
+    def init_event_manager(self):
+        eventManager = EventManager()
+        Scope.getInstance().setEventManager(eventManager)
+        return eventManager
+
+    def init_ahenk_db(self):
+        db_service = AhenkDbService()
+        db_service.connect()
+        db_service.initialize_table()
+        Scope.getInstance().setDbService(db_service)
+        return db_service
+
+    def init_messaging(self):
+        messageManager = Messaging()
+        Scope.getInstance().setMessageManager(messageManager)
+        return messageManager
+
+    def init_plugin_manager(self):
+        pluginManager = PluginManager()
+        pluginManager.loadPlugins()
+        Scope.getInstance().setPluginManager(pluginManager)
+        return pluginManager
+
+    def init_task_manager(self):
+        taskManager = TaskManager()
+        Scope.getInstance().setTaskManager(taskManager)
+        return taskManager
+
+    def init_registration(self):
+        registration = Registration()
+        Scope.getInstance().setRegistration(registration)
+        return registration
+
+    def init_execution_manager(self):
+        execution_manager = ExecutionManager()
+        Scope.getInstance().setExecutionManager(execution_manager)
+        return execution_manager
+
+    def init_messager(self):
+        messager = Messager()
+        messanger_thread = threading.Thread(target=messager.connect_to_server)
+        messanger_thread.start()
+
+        while messager.is_connected() is False:
+            time.sleep(1)
+        time.sleep(5)
+
+        Scope.getInstance().setMessager(messager)
+        return messager
+
+    def init_message_response_queue(self):
+        responseQueue = queue.Queue()
+        messageResponseQueue = MessageResponseQueue(responseQueue)
+        messageResponseQueue.setDaemon(True)
+        messageResponseQueue.start()
+        Scope.getInstance().setResponseQueue(responseQueue)
+        return responseQueue
+
+    def check_registration(self):
+        # TODO restrict number of attemption
+        while Scope.getInstance().getRegistration().is_registered() is False:
+            print('registration need')
+            Scope.getInstance().getLogger().debug('[AhenkDeamon] Attempting to register')
+            Scope.getInstance().getRegistration().registration_request()
 
     def run(self):
         print('Ahenk running...')
@@ -45,64 +131,40 @@ class AhenkDeamon(BaseDaemon):
         configfileFolderPath = '/etc/ahenk/config.d/'
 
         # configuration manager must be first load
-        configManager = ConfigManager(configFilePath, configfileFolderPath)
-        config = configManager.read()
-        globalscope.setConfigurationManager(config)
+        self.init_config_manager(configFilePath, configfileFolderPath)
 
         # Logger must be second
-        logger = Logger()
-        logger.info('[AhenkDeamon] Log was set')
-        globalscope.setLogger(logger)
+        logger = self.init_logger()
 
-        eventManager = EventManager()
-        globalscope.setEventManager(eventManager)
+        self.init_event_manager()
         logger.info('[AhenkDeamon] Event Manager was set')
 
-        db_service = AhenkDbService()
-        db_service.connect()
-        db_service.initialize_table()
-        globalscope.setDbService(db_service)
-        logger.info('[AhenkDeamon] Data Base Service was set')
+        self.init_ahenk_db()
+        logger.info('[AhenkDeamon] DataBase Service was set')
 
-        messageManager = Messaging()
-        globalscope.setMessageManager(messageManager)
+        self.init_messaging()
         logger.info('[AhenkDeamon] Message Manager was set')
 
-        pluginManager = PluginManager()
-        pluginManager.loadPlugins()
-        globalscope.setPluginManager(pluginManager)
+        self.init_plugin_manager()
         logger.info('[AhenkDeamon] Plugin Manager was set')
 
-        taskManager = TaskManager()
-        globalscope.setTaskManager(taskManager)
+        self.init_task_manager()
         logger.info('[AhenkDeamon] Task Manager was set')
 
-        registration = Registration()
-        globalscope.setRegistration(registration)
+        #self.init_registration()
         logger.info('[AhenkDeamon] Registration was set')
 
-        execution_manager = ExecutionManager()
-        globalscope.setExecutionManager(execution_manager)
+        self.init_execution_manager()
         logger.info('[AhenkDeamon] Execution Manager was set')
 
-        # TODO restrict number of attemption
-        while registration.is_registered() is False:
-            print('registration need')
-            logger.debug('[AhenkDeamon] Attempting to register')
-            registration.registration_request()
-
+        #self.check_registration()
         logger.info('[AhenkDeamon] Ahenk is registered')
 
-        messager = Messager()
-        messanger_thread = threading.Thread(target=messager.connect_to_server)
-        messanger_thread.start()
-
-        while messager.is_connected() is False:
-            time.sleep(1)
-        time.sleep(5)
-
-        globalscope.setMessager(messager)
+        messager = self.init_messager()
         logger.info('[AhenkDeamon] Messager was set')
+
+        self.init_message_response_queue()
+
 
         # if registration.is_ldap_registered() is False:
         #    logger.debug('[AhenkDeamon] Attempting to registering ldap')
@@ -126,14 +188,6 @@ class AhenkDeamon(BaseDaemon):
             logger.error('[AhenkDeamon] Signal handler could not set up :' + e.errno + '-' + e.strerror)
 
         messager.send_direct_message('test')
-
-
-        responseQueue = queue.Queue()
-        messageResponseQueue = MessageResponseQueue(responseQueue)
-        messageResponseQueue.setDaemon(True)
-        messageResponseQueue.start()
-        globalscope.setResponseQueue(responseQueue)
-
 
         while True:
             time.sleep(1)
