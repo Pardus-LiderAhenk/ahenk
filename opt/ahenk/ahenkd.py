@@ -55,6 +55,7 @@ class AhenkDeamon(BaseDaemon):
         sc_thread = threading.Thread(target=scheduler_ins.run)
         sc_thread.setDaemon(True)
         sc_thread.start()
+        return scheduler_ins
 
     def init_event_manager(self):
         eventManager = EventManager()

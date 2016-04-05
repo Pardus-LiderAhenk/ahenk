@@ -31,14 +31,23 @@ class CustomScheduler(BaseScheduler):
         self.scheduledb.save(task)
         self.events.append(ScheduleTaskJob(task))
 
-    def remove_job(self,task):
-        self.scheduledb.delete(task)
+    def remove_job(self, task):
         for event in self.events:
             if event.task.id == task.id:
+                self.scheduledb.delete(task)
+                self.events.remove(event)
+
+    def remove_job_via_task_id(self,task_id):
+        for event in self.events:
+            if event.task.id == task_id:
+                self.scheduledb.delete(event.task)
                 self.events.remove(event)
 
     def stop(self):
         self.keep_run = False
+
+    def list_schedule_tasks(self):
+        return self.scheduledb.load()
 
     def run(self):
         t = datetime(*datetime.now().timetuple()[:5])
