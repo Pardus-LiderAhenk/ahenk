@@ -3,6 +3,7 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 import imp
 import os
+import json
 
 from base.Scope import Scope
 from base.plugin.Plugin import Plugin
@@ -94,9 +95,9 @@ class PluginManager(object):
     def processPolicy(self, policy):
         #TODO do you need username in profile?
 
-        username = policy.username
-        ahenk_profiles = policy.ahenk_profiles
-        user_profiles = policy.user_profiles
+        username = policy.get_username()
+        ahenk_profiles = policy.get_ahenk_profiles()
+        user_profiles = policy.get_user_profiles()
 
         if ahenk_profiles is not None:
             for profile in ahenk_profiles:
@@ -109,12 +110,12 @@ class PluginManager(object):
 
     def process_profile(self, profile):
         try:
-            plugin = profile.get_plugin()
-            plugin_name = plugin.name
+            plugin_name = profile.get_plugin().get_name()
             if plugin_name in self.pluginQueueDict:
                 self.pluginQueueDict[plugin_name].put(profile, 1)
         except Exception as e:
             print("Exception occured..")
+
             self.logger.error("Policy profile not processed " + str(profile.plugin.name))
 
     def checkPluginExists(self, plugin_name, version=None):

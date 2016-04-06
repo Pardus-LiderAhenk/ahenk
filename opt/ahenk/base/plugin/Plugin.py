@@ -68,15 +68,10 @@ class Plugin(threading.Thread):
                     self.context.empty_data()
 
                 elif obj_name == "PROFILE":
-                    plugin = item_obj.plugin
-                    plugin_name = plugin.name
-                    profile_data = item_obj.profile_data
-                    policy_module = Scope.getInstance().getPluginManager().findPolicyModule(plugin_name)
-
+                    profile_data = item_obj.get_profile_data()
+                    policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
-
                     policy_module.handle_policy(profile_data, self.context)
-
                     #TODO Message Code keep
                     response = Response(type=self.context.get('message_type'), id=item_obj.id, code=self.context.get('message_code'), message=self.context.get('message'), data=self.context.get('data'), content_type=self.context.get('content_type'), execution_id='get_execution_id')
                     #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
