@@ -21,10 +21,11 @@ from base.logger.AhenkLogger import Logger
 from base.messaging.MessageResponseQueue import MessageResponseQueue
 from base.messaging.Messager import Messager
 from base.messaging.Messaging import Messaging
-from base.plugin.PluginManager import PluginManager
+from base.plugin.plugin_manager import PluginManager
 from base.registration.Registration import Registration
 from base.task.TaskManager import TaskManager
 from base.scheduler.scheduler_factory import SchedulerFactory
+from base.plugin.plugin_manager_factory import PluginManagerFactory
 
 pidfilePath = '/var/run/ahenk.pid'
 
@@ -75,7 +76,7 @@ class AhenkDeamon(BaseDaemon):
         return messageManager
 
     def init_plugin_manager(self):
-        pluginManager = PluginManager()
+        pluginManager = PluginManagerFactory.get_instance()
         pluginManager.loadPlugins()
         Scope.getInstance().setPluginManager(pluginManager)
         return pluginManager
@@ -121,6 +122,29 @@ class AhenkDeamon(BaseDaemon):
             print('registration need')
             Scope.getInstance().getLogger().debug('[AhenkDeamon] Attempting to register')
             Scope.getInstance().getRegistration().registration_request()
+
+
+    def reload_plugins(self):
+        Scope.getInstance().getPluginManager().reloadPlugins()
+
+    def reload_configuration(self):
+        # Not implemented yet
+        pass
+
+    def reload_messaging(self):
+        #Not implemented yet
+        pass
+
+    def reload_logger(self):
+        #Not implemented yet
+        pass
+
+
+    def update_plugin_manager(self):
+        #TODO destroy plugin manager here
+        self.init_plugin_manager()
+
+
 
     def run(self):
         print('Ahenk running...')
