@@ -25,7 +25,7 @@ class AhenkDbService(object):
         self.check_and_create_table('task', ['id INTEGER', 'create_date TEXT', 'modify_date TEXT', 'command_cls_id TEXT', 'parameter_map BLOB', 'deleted INTEGER', 'plugin TEXT'])
         self.check_and_create_table('policy', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'type TEXT', 'version TEXT', 'name TEXT'])
         self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT', 'overridable INTEGER', 'active TEXT', 'deleted TEXT', 'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT'])
-        self.check_and_create_table('plugin', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'active TEXT', 'create_date TEXT', 'deleted TEXT', 'description TEXT', 'machine_oriented TEXT', 'modify_date TEXT', 'name TEXT', 'policy_plugin TEXT', 'profiles TEXT', 'user_oriented TEXT', 'version TEXT'])
+        self.check_and_create_table('plugin', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'active TEXT', 'create_date TEXT', 'deleted TEXT', 'description TEXT', 'machine_oriented TEXT', 'modify_date TEXT', 'name TEXT', 'policy_plugin TEXT', 'user_oriented TEXT', 'version TEXT'])
         self.check_and_create_table('registration', ['jid TEXT', 'password TEXT', 'registered INTEGER', 'dn TEXT', 'params TEXT', 'timestamp TEXT'])
 
     def connect(self):

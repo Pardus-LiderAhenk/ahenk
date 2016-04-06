@@ -6,7 +6,7 @@
 class PolicyBean(object):
     """docstring for PolicyBean"""
 
-    def __init__(self, ahenk_policy_version=None, user_policy_version=None, ahenk_profiles=None, user_profiles=None, timestamp=None, username=None, ahenk_execution_id=None, user_execution_id=None):
+    def __init__(self, ahenk_policy_version=None, user_policy_version=None, ahenk_profiles=None, user_profiles=None, timestamp=None, username=None, agent_execution_id=None, user_execution_id=None):
 
         self.ahenk_policy_version = ahenk_policy_version
         self.user_policy_version = user_policy_version
@@ -14,7 +14,7 @@ class PolicyBean(object):
         self.user_profiles = user_profiles
         self.timestamp = timestamp
         self.username = username
-        self.ahenk_execution_id = ahenk_execution_id
+        self.agent_execution_id = agent_execution_id
         self.user_execution_id = user_execution_id
 
     def get_ahenk_policy_version(self):
@@ -53,11 +53,11 @@ class PolicyBean(object):
     def set_username(self, username):
         self.username = username
 
-    def get_ahenk_execution_id(self):
-        return self.ahenk_execution_id
+    def get_agent_execution_id(self):
+        return self.agent_execution_id
 
-    def set_ahenk_execution_id(self, ahenk_execution_id):
-        self.ahenk_execution_id = ahenk_execution_id
+    def set_agent_execution_id(self, agent_execution_id):
+        self.agent_execution_id = agent_execution_id
 
     def set_user_execution_id(self, user_execution_id):
         self.user_execution_id = user_execution_id

@@ -7,7 +7,7 @@ import json
 class PluginBean(object):
     """docstring for PluginBean"""
 
-    def __init__(self, p_id=None, active=None, create_date=None, deleted=None, description=None, machine_oriented=None, modify_date=None, name=None, policy_plugin=None, profiles=None, user_oriented=None, version=None):
+    def __init__(self, p_id=None, active=None, create_date=None, deleted=None, description=None, machine_oriented=None, modify_date=None, name=None, policy_plugin=None, user_oriented=None, version=None):
         self.id = p_id
         self.active = active
         self.create_date = create_date
@@ -17,7 +17,6 @@ class PluginBean(object):
         self.modify_date = modify_date
         self.name = name
         self.policy_plugin = policy_plugin
-        self.profiles = profiles
         self.user_oriented = user_oriented
         self.version = version
 
@@ -26,12 +25,6 @@ class PluginBean(object):
 
     def set_user_oriented(self, user_oriented):
         self.user_oriented = user_oriented
-
-    def get_profiles(self):
-        return self.profiles
-
-    def set_profiles(self, profiles):
-        self.profiles = profiles
 
     def get_policy_plugin(self):
         return self.policy_plugin
