@@ -3,13 +3,13 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import json
 
-from base.model.Plugin import Plugin
+from base.model.PluginBean import PluginBean
 
 
 class ProfileBean(object):
     """docstring for Profile"""
 
-    def __init__(self, p_id, create_date, label, description, overridable, active, deleted, profile_data, modify_date, plugin, username=None):
+    def __init__(self, p_id=None, create_date=None, label=None, description=None, overridable=None, active=None, deleted=None, profile_data=None, modify_date=None, plugin=None, username=None):
         self.id = p_id
         self.create_date = create_date
         self.modify_date = modify_date
@@ -19,7 +19,7 @@ class ProfileBean(object):
         self.active = active
         self.deleted = deleted
         self.profile_data = profile_data
-        self.plugin = Plugin(plugin)
+        self.plugin = plugin
         self.username = username
 
     def get_id(self):
@@ -34,7 +34,7 @@ class ProfileBean(object):
     def set_create_date(self, create_date):
         self.create_date = create_date
 
-    def get_modify_dateself(self):
+    def get_modify_date(self):
         return self.modify_date
 
     def set_modify_date(self, modify_date):
@@ -80,10 +80,14 @@ class ProfileBean(object):
         return self.plugin
 
     def set_plugin(self, plugin):
-        self.plugin = Plugin(plugin)
+        self.plugin = plugin
 
     def get_username(self):
         return self.username
 
     def set_username(self, username):
         self.username = username
+
+    @property
+    def obj_name(self):
+        return "PROFILE"
