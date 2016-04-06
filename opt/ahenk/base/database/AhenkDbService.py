@@ -21,10 +21,11 @@ class AhenkDbService(object):
         self.cursor = None
 
     def initialize_table(self):
+
         self.check_and_create_table('task', ['id INTEGER', 'create_date TEXT', 'modify_date TEXT', 'command_cls_id TEXT', 'parameter_map BLOB', 'deleted INTEGER', 'plugin TEXT'])
         self.check_and_create_table('policy', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'type TEXT', 'version TEXT', 'name TEXT'])
-        self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT', 'overridable INTEGER', 'active INTEGER', 'deleted INTEGER', 'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT'])
-        self.check_and_create_table('plugin', ['version TEXT', 'name TEXT', 'description TEXT'])
+        self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT', 'overridable INTEGER', 'active TEXT', 'deleted TEXT', 'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT'])
+        self.check_and_create_table('plugin', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'active TEXT', 'create_date TEXT', 'deleted TEXT', 'description TEXT', 'machine_oriented TEXT', 'modify_date TEXT', 'name TEXT', 'policy_plugin TEXT', 'profiles TEXT', 'user_oriented TEXT', 'version TEXT'])
         self.check_and_create_table('registration', ['jid TEXT', 'password TEXT', 'registered INTEGER', 'dn TEXT', 'params TEXT', 'timestamp TEXT'])
 
     def connect(self):
@@ -61,8 +62,10 @@ class AhenkDbService(object):
                     sql = 'UPDATE ' + table_name + ' SET ' + update_list + ' where ' + criteria
                 self.cursor.execute(sql, tuple(args))
                 self.connection.commit()
+                return self.cursor.lastrowid
             else:
                 self.logger.warning('Could not update table cursor is None! Table Name : ' + str(table_name))
+                return None
         except Exception as e:
             self.logger.error('Updating table error ! Table Name : ' + str(table_name) + ' ' + str(e))
 
