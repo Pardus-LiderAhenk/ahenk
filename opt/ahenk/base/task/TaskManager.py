@@ -15,14 +15,18 @@ class TaskManager(object):
         self.pluginManager = scope.getPluginManager()
         self.logger = scope.getLogger()
         self.db_service = scope.getDbService()
+        self.scheduler = scope.get_scheduler()
 
     def addTask(self, task):
         try:
-            self.logger.debug('Adding task ... ')
-            self.saveTask(task)
-            self.logger.info('Task saved ')
-            # TODO send task received message
-            self.pluginManager.processTask(task)
+            if not task.cron_str == None or task.cron_str == '':
+                self.logger.debug('Adding task ... ')
+                self.saveTask(task)
+                self.logger.info('Task saved ')
+                # TODO send task received message
+                self.pluginManager.processTask(task)
+            else:
+                self.scheduler.save_and_add_job(task)
 
         except Exception as e:
             # TODO error log here
