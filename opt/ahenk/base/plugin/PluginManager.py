@@ -101,6 +101,7 @@ class PluginManager(object):
 
         if ahenk_profiles is not None:
             for profile in ahenk_profiles:
+                profile.set_username(None)
                 self.process_profile(profile)
 
         if user_profiles is not None:

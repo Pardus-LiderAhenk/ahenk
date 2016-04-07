@@ -72,14 +72,13 @@ class Plugin(threading.Thread):
                     policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
                     policy_module.handle_policy(profile_data, self.context)
-                    #TODO Message Code keep
+                    #TODO Message Code keep Set default message if not exist
                     response = Response(type=self.context.get('message_type'), id=item_obj.id, code=self.context.get('message_code'), message=self.context.get('message'), data=self.context.get('data'), content_type=self.context.get('content_type'), execution_id='get_execution_id')
                     #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response))#TODO REMOVE
 
                     # Empty context for next use
                     self.context.empty_data()
-
 
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False

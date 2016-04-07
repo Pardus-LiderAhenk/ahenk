@@ -8,6 +8,7 @@ import os
 import shutil
 import stat
 import subprocess
+import ast
 
 from base.Scope import Scope
 from base.model.Policy import Policy
@@ -65,6 +66,7 @@ class ExecutionManager(object):
 
                     plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()), str(plugin.get_description()), str(plugin.get_machine_oriented()), str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()), str(plugin.get_user_oriented()), str(plugin.get_version())]
                     plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
+
 
                     profile_args = [str(ahenk_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()), str(profile.get_label()), str(profile.get_description()), str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()), str(profile.get_profile_data()), plugin_id]
                     self.db_service.update('profile', profile_columns, profile_args)
@@ -200,6 +202,7 @@ class ExecutionManager(object):
         username = json_data['username']
         ahenk_prof_json_arr = json_data['agentPolicyProfiles']
         user_prof_json_arr = json_data['userPolicyProfiles']
+
         ahenk_prof_arr = []
         user_prof_arr = []
         if ahenk_prof_json_arr is not None:

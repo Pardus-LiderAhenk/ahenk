@@ -100,6 +100,7 @@ class PluginManager(object):
 
         if ahenk_profiles is not None:
             for profile in ahenk_profiles:
+                profile.set_username(None)
                 self.process_profile(profile)
 
         if user_profiles is not None:
@@ -110,7 +111,7 @@ class PluginManager(object):
     def process_profile(self, profile):
         try:
             plugin = profile.get_plugin()
-            plugin_name = plugin.name
+            plugin_name = plugin.get_name()
             if plugin_name in self.pluginQueueDict:
                 self.pluginQueueDict[plugin_name].put(profile, 1)
         except Exception as e:
