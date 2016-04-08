@@ -100,12 +100,14 @@ class Messaging(object):
     def registration_msg(self):
         data = {}
         data['type'] = 'REGISTER'
-        data['from'] = str(self.conf_manager.get('REGISTRATION', 'from'))
-        data['password'] = str(self.conf_manager.get('REGISTRATION', 'password'))
-        data['macAddresses'] = str(self.conf_manager.get('REGISTRATION', 'macAddresses'))
-        data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION', 'ipAddresses'))
-        data['hostname'] = str(self.conf_manager.get('REGISTRATION', 'hostname'))
-        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        data['from'] = self.db_service.select_one_result('registration','jid',' 1=1')#str(self.conf_manager.get('REGISTRATION', 'from'))
+        data['password'] = self.db_service.select_one_result('registration','password',' 1=1')
+        params = self.db_service.select_one_result('registration','params',' 1=1')
+        json_params = json.loads(str(params))
+        data['macAddresses'] = json_params['macAddresses']
+        data['ipAddresses'] = json_params['ipAddresses']
+        data['hostname'] = json_params['hostname']
+        data['timestamp'] = self.db_service.select_one_result('registration','timestamp',' 1=1')
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Registration message was created')
         return json_data

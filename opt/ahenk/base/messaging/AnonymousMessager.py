@@ -5,6 +5,7 @@
 import asyncio
 import slixmpp
 import sys
+import json
 
 sys.path.append('../..')
 from slixmpp.exceptions import IqError, IqTimeout
@@ -49,12 +50,13 @@ class AnonymousMessager(slixmpp.ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
+            print('ANON<---'+ msg['body'])
             self.logger.debug("[MessageSender] Received message: %s -> %s" % (msg['from'], msg['body']))
             self.disconnect()
             self.logger.debug('[MessageSender] Disconnecting...')
-            self.logger.debug('[MessageSender] Fired event is: confirm_registration')
-            self.event_manager.fireEvent('confirm_registration', str(msg['body']))
-            ##TODO type fire -- only anonymous account can fire confirm_registration
+            j = json.loads(str(msg['body']))
+            message_type = j['type']
+            self.event_manager.fireEvent(message_type, str(msg['body']))
 
     @asyncio.coroutine
     def session_start(self, event):
@@ -104,6 +106,7 @@ class AnonymousMessager(slixmpp.ClientXMPP):
 
     def send_direct_message(self, msg):
         self.logger.debug('[MessageSender] Sending message: ' + msg)
+        print('ANON-->'+msg)
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
 
     def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.

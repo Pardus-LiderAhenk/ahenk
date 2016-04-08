@@ -118,10 +118,15 @@ class AhenkDeamon(BaseDaemon):
 
     def check_registration(self):
         # TODO restrict number of attemption
-        while Scope.getInstance().getRegistration().is_registered() is False:
-            print('registration need')
-            Scope.getInstance().getLogger().debug('[AhenkDeamon] Attempting to register')
-            Scope.getInstance().getRegistration().registration_request()
+        try:
+            while Scope.getInstance().getRegistration().is_registered() is False:
+                print('registration need')
+                Scope.getInstance().getLogger().debug('[AhenkDeamon] Attempting to register')
+                Scope.getInstance().getRegistration().registration_request()
+        except Exception as e:
+            print(str(e))
+            raise
+
 
 
     def reload_plugins(self):
@@ -176,13 +181,13 @@ class AhenkDeamon(BaseDaemon):
         self.init_task_manager()
         logger.info('[AhenkDeamon] Task Manager was set')
 
-        #self.init_registration()
+        self.init_registration()
         logger.info('[AhenkDeamon] Registration was set')
 
         self.init_execution_manager()
         logger.info('[AhenkDeamon] Execution Manager was set')
 
-        #self.check_registration()
+        self.check_registration()
         logger.info('[AhenkDeamon] Ahenk is registered')
 
         messager = self.init_messager()

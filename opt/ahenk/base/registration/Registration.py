@@ -20,7 +20,10 @@ class Registration():
         self.message_manager = scope.getMessageManager()
         self.event_manager = scope.getEventManager()
         self.messager = scope.getMessager()
+        self.conf_manager = scope.getConfigurationManager()
         self.db_service = scope.getDbService()
+
+        self.event_manager.register_event('REGISTRATION_RESPONSE', self.registration_process)
 
         if self.is_registered():
             self.logger.debug('[Registration] Ahenk already registered')
@@ -36,33 +39,33 @@ class Registration():
         self.logger.debug('[Registration] Requesting LDAP registration')
         self.messager.send_Direct_message(self.message_manager.ldap_registration_msg())
 
-    def confirm_registration(self, reg_reply):
+    def registration_process(self, reg_reply):
         self.logger.debug('[Registration] Reading registration reply')
         j = json.loads(reg_reply)
         self.logger.debug('[Registration]' + j['message'])
         status = str(j['status']).lower()
         dn = str(j['agentDn']).lower()
+
         self.logger.debug('[Registration] Registration status: ' + str(status))
 
-        if 'registered' == str(status) or 'registered_without_ldap' == str(status):
+        if 'already_exists' == str(status) or 'registered' == str(status) or 'registered_without_ldap' == str(status):
             self.logger.debug('dn:' + dn)
-            self.update_conf_file(dn)
+            self.update_registration_attrs(dn)
         elif 'registration_error' == str(status):
             self.logger.info('[Registration] Registration is failed. New registration request will send')
             self.re_register()
             self.registration_request()
-        elif 'already_exists' == str(status):
-            self.update_conf_file(dn)
-            self.logger.info('[Registration] Ahenk already registered')
+        else:
+            self.logger.error('[Registration] Bad message type of registration response ')
 
-    def update_conf_file(self, dn=None):
+    def update_registration_attrs(self, dn=None):
         self.logger.debug('[Registration] Registration configuration is updating...')
         self.db_service.update('registration', ['dn', 'registered'], [dn, 1], ' registered = 0')
 
         if self.conf_manager.has_section('CONNECTION'):
-            self.conf_manager.set('CONNECTION', 'uid',self.conf_manager.get('REGISTRATION', 'from'))
-            self.conf_manager.set('CONNECTION', 'password',self.conf_manager.get('REGISTRATION', 'password'))
-            #TODO  get file path?
+            self.conf_manager.set('CONNECTION', 'uid', self.db_service.select_one_result('registration', 'jid', ' registered=1'))
+            self.conf_manager.set('CONNECTION', 'password', self.db_service.select_one_result('registration', 'password', ' registered=1'))
+            # TODO  get file path?
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
             self.logger.debug('[Registration] Registration configuration file is updated')
