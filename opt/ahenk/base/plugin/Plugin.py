@@ -24,7 +24,7 @@ class Context(object):
         self.data = {}
 
     def execute(self, command):
-        return subprocess.call(command, shell=True)
+        return subprocess.Popen(command, shell=True)
 
 
 class Plugin(threading.Thread):
