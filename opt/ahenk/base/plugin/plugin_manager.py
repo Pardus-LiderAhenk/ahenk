@@ -62,9 +62,10 @@ class PluginManager(object):
             return None
 
     def processTask(self, task):
+
         try:
-            if task.plugin.name.lower() in self.pluginQueueDict:
-                self.pluginQueueDict[task.plugin.name.lower()].put(task, 1)
+            if task.get_plugin().get_name().lower() in self.pluginQueueDict:
+                self.pluginQueueDict[task.get_plugin().get_name().lower()].put(task, 1)
         except Exception as e:
             # TODO update task - status to not found command
             self.logger.error("[PluginManager] Exception occurred when processing task " + str(e))

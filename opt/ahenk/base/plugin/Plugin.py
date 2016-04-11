@@ -35,6 +35,7 @@ class Plugin(threading.Thread):
 
     def __init__(self, name, InQueue):
         threading.Thread.__init__(self)
+        print('name:'+name)
         self.name = name
         self.InQueue = InQueue
 
@@ -55,12 +56,12 @@ class Plugin(threading.Thread):
                 obj_name = item_obj.obj_name
                 print(obj_name)
                 if obj_name == "TASK":
-                    command = Scope.getInstance().getPluginManager().findCommand(self.getName(), item_obj.command_cls_id)
+                    command = Scope.getInstance().getPluginManager().findCommand(self.getName(), item_obj.get_command_cls_id().lower())
                     command.handle_task(item_obj, self.context)
                     # TODO create response message from context and item_obj. item_obj is task
 
                     #TODO Message Code keep
-                    response = Response(type=MessageType.TASK_STATUS, id=item_obj.id, code=MessageCode.TASK_PROCESSED, message='__message__', data=self.context.get('data'), content_type=self.context.get('content_type'))
+                    response = Response(type=self.context.get('type'), id=self.context.get('taskId'), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
                     #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response)) #TODO REMOVE
 

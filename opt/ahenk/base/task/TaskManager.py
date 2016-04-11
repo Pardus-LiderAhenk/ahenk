@@ -19,9 +19,9 @@ class TaskManager(object):
 
     def addTask(self, task):
         try:
-            if not task.cron_str == None or task.cron_str == '':
+            if task.get_cron_str() == None or task.get_cron_str() == '':
                 self.logger.debug('Adding task ... ')
-                self.saveTask(task)
+                #self.saveTask(task)
                 self.logger.info('Task saved ')
                 # TODO send task received message
                 self.pluginManager.processTask(task)
@@ -42,10 +42,11 @@ class TaskManager(object):
             pass
 
     def saveTask(self, task):
-        cols = ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin']
-        values = [str(task.id), str(task.create_date), str(task.modify_date), str(task.command_cls_id), str(task.parameter_map), str(task.deleted), task.plugin.to_string()]
-        self.db_service.update('task', cols, values, None)
-        self.logger.debug('[TaskManager] Task has been saved to database (Task id:' + task.id + ')')
+        pass
+        #cols = ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin']
+        #values = [str(task.id), str(task.create_date), str(task.modify_date), str(task.command_cls_id), str(task.parameter_map), str(task.deleted), task.plugin.to_string()]
+        #self.db_service.update('task', cols, values, None)
+        #self.logger.debug('[TaskManager] Task has been saved to database (Task id:' + task.id + ')')
 
     def updateTask(self, task):
         # TODO not implemented yet
