@@ -8,7 +8,7 @@ class Plugin(object):
     """docstring for Plugin"""
 
     def __init__(self, message):
-        self.plugin = message
+        self.plugin = message['plugin']
 
     @property
     def id(self):

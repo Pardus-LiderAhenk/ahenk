@@ -30,7 +30,7 @@ class Task(object):
 
     @property
     def command_cls_id(self):
-        return self.task['commandClsId']
+        return json.loads(str(self.task))['commandClsId']
 
     @property
     def parameter_map(self):
@@ -42,7 +42,7 @@ class Task(object):
 
     @property
     def plugin(self):
-        return Plugin(self.task['plugin'])
+        return Plugin(json.loads(str(self.task)))
 
     @property
     def cron_str(self):
