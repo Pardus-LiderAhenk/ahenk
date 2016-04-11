@@ -16,6 +16,7 @@ from base.model.PluginBean import PluginBean
 from base.model.PolicyBean import PolicyBean
 from base.model.ProfileBean import ProfileBean
 from base.model.Task import Task
+from base.model.TaskBean import TaskBean
 from base.model.MessageType import MessageType
 
 
@@ -34,11 +35,11 @@ class ExecutionManager(object):
         self.db_service = scope.getDbService()
 
         # TODO DEBUG
-        self.event_manager.register_event(str(MessageType.EXECUTE_SCRIPT), self.execute_script)
-        self.event_manager.register_event(str(MessageType.REQUEST_FILE), self.request_file)
-        self.event_manager.register_event(str(MessageType.MOVE_FILE), self.move_file)
-        self.event_manager.register_event(str(MessageType.EXECUTE_TASK), self.execute_task)
-        self.event_manager.register_event('EXECUTE_POLICY', self.execute_policy)
+        self.event_manager.register_event(MessageType.EXECUTE_SCRIPT.value, self.execute_script)
+        self.event_manager.register_event(MessageType.REQUEST_FILE.value, self.request_file)
+        self.event_manager.register_event(MessageType.MOVE_FILE.value, self.move_file)
+        self.event_manager.register_event(MessageType.EXECUTE_TASK.value, self.execute_task)
+        self.event_manager.register_event(MessageType.EXECUTE_POLICY.value, self.execute_policy)
 
     def execute_policy(self, arg):
         self.logger.debug('[ExecutionManager] Updating policies...')
@@ -55,6 +56,7 @@ class ExecutionManager(object):
         if policy.get_ahenk_policy_version() != ahenk_policy_ver:
             ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
             if ahenk_policy_id is not None:
+                #TODO remove profiles' plugins
                 self.db_service.delete('profile', 'id=' + str(ahenk_policy_id))
                 self.db_service.update('policy', ['version'], [str(policy.get_ahenk_policy_version())], 'type=\'A\'')
             else:
@@ -82,6 +84,7 @@ class ExecutionManager(object):
         if policy.get_user_policy_version() != user_policy_version:
             user_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'U\' and name=\'' + policy.get_username() + '\'')
             if user_policy_id is not None:
+                # TODO remove profiles' plugins
                 self.db_service.delete('profile', 'id=' + str(user_policy_id))
                 self.db_service.update('policy', ['version'], [str(policy.get_user_policy_version())], 'type=\'U\' and name=\'' + policy.get_username() + '\'')
             else:
@@ -156,10 +159,30 @@ class ExecutionManager(object):
         return p_list
 
     def execute_task(self, arg):
+
+        str_task=json.loads(arg)['task']
+        json_task=json.loads(str_task)
+        task = self.json_to_TaskBean(json_task)
+
+        print(task.get_command_cls_id())
         self.logger.debug('[ExecutionManager] Adding new  task...')
-        task = Task(json.loads(arg))
+
+        #a=json.loads(arg)
+        #json_task=a['task']
+        #task = Task(json.loads(arg))
+
+
         self.task_manager.addTask(task)
         self.logger.debug('[ExecutionManager] Task added')
+
+    def json_to_TaskBean(self,json_data):
+
+        plu = json_data['plugin']
+        plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'])
+
+        return TaskBean(_id=json_data['id'], create_date=json_data['createDate'], modify_date=json_data['modifyDate'], command_cls_id=json_data['commandClsId'], parameter_map=json_data['parameterMap'], deleted=json_data['deleted'], plugin=plugin, cron_str=json_data['cronExpression'])
+
+
 
     def move_file(self, arg):
         default_file_path = self.config_manager.get('CONNECTION', 'receiveFileParam')
