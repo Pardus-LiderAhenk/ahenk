@@ -127,8 +127,6 @@ class AhenkDeamon(BaseDaemon):
             print(str(e))
             raise
 
-
-
     def reload_plugins(self):
         Scope.getInstance().getPluginManager().reloadPlugins()
 
@@ -137,19 +135,16 @@ class AhenkDeamon(BaseDaemon):
         pass
 
     def reload_messaging(self):
-        #Not implemented yet
+        # Not implemented yet
         pass
 
     def reload_logger(self):
-        #Not implemented yet
+        # Not implemented yet
         pass
 
-
     def update_plugin_manager(self):
-        #TODO destroy plugin manager here
+        # TODO destroy plugin manager here
         self.init_plugin_manager()
-
-
 
     def run(self):
         print('Ahenk running...')
@@ -194,7 +189,6 @@ class AhenkDeamon(BaseDaemon):
         logger.info('[AhenkDeamon] Messager was set')
 
         self.init_message_response_queue()
-
 
         # if registration.is_ldap_registered() is False:
         #    logger.debug('[AhenkDeamon] Attempting to registering ldap')
@@ -244,10 +238,10 @@ class AhenkDeamon(BaseDaemon):
             scope.getMessager().send_direct_message(message)
             logger.debug('[AhenkDeamon] logout event is handled for user:' + params[1])
         elif 'exit' == str(params[0]):
-            print("exit:"+str(params[0]))
+            print("exit:" + str(params[0]))
             scope = Scope.getInstance()
             scope.getMessager().disconnect()
-            #TODO kill thread
+            # TODO kill thread
             print('stopping ahenk')
         else:
             logger.error('[AhenkDeamon] Unknown command error. Command:' + params[0])
