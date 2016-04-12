@@ -18,6 +18,7 @@ class Messaging(object):
         self.db_service = scope.getDbService()
         self.event_manger = scope.getEventManager()
 
+    """
     def response_msg(self, response):
         print("response message")
         data = {}
@@ -32,6 +33,7 @@ class Messaging(object):
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Response message was created')
         return str(json_data)
+    """
 
     def task_status_msg(self, response):
         data = {}
@@ -50,8 +52,8 @@ class Messaging(object):
     def policy_status_msg(self, response):
         data = {}
         data['type'] = response.get_type()
-        data['policyVersion'] = response.get_id()
-        data['commandExecutionId'] = response.get_id()
+        data['policyVersion'] = response.get_policy_version()
+        data['commandExecutionId'] = response.get_execution_id()
         data['responseCode'] = response.get_code()
         data['responseMessage'] = response.get_message()
         data['responseData'] = response.get_data()
@@ -61,6 +63,7 @@ class Messaging(object):
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Policy status message was created')
         return str(json_data)
+
 
 
     def login_msg(self, username):
