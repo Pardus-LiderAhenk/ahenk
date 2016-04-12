@@ -61,3 +61,6 @@ class PolicyBean(object):
 
     def set_user_execution_id(self, user_execution_id):
         self.user_execution_id = user_execution_id
+
+    def get_user_execution_id(self):
+        return self.user_execution_id

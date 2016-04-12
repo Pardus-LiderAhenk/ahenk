@@ -8,7 +8,7 @@ import datetime
 class Response(object):
     """docstring for Plugin"""
 
-    def __init__(self, type, id, code=None, message=None, data=None, content_type=None, execution_id=None):
+    def __init__(self, type, id, code=None, message=None, data=None, content_type=None, execution_id=None, policy_version=None):
         self.type = type
         self.id = id
         self.code = code
@@ -16,6 +16,7 @@ class Response(object):
         self.data = data
         self.content_type = content_type
         self.execution_id = execution_id
+        self.policy_version = policy_version
         self.timestamp = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
 
     def get_type(self):
@@ -37,7 +38,7 @@ class Response(object):
         self.code = code
 
     def get_message(self):
-        return self.id
+        return self.message
 
     def set_message(self, message):
         self.message = message
@@ -63,3 +64,8 @@ class Response(object):
     def set_execution_id(self, execution_id):
         self.execution_id = execution_id
 
+    def get_policy_version(self):
+        return self.policy_version
+
+    def set_policy_version(self, policy_version):
+        self.policy_version = policy_version
