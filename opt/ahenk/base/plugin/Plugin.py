@@ -1,13 +1,12 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
-import threading
 import subprocess
+import threading
+
 from base.Scope import Scope
-from base.model.Response import Response
 from base.model.MessageType import MessageType
-from base.model.MessageCode import MessageCode
-from base.messaging.Messaging import Messaging
+from base.model.Response import Response
 
 
 class Context(object):
@@ -35,7 +34,6 @@ class Plugin(threading.Thread):
 
     def __init__(self, name, InQueue):
         threading.Thread.__init__(self)
-        print('name:'+name)
         self.name = name
         self.InQueue = InQueue
 
@@ -43,7 +41,8 @@ class Plugin(threading.Thread):
         self.logger = scope.getLogger()
         self.response_queue = scope.getResponseQueue()
         self.messaging = scope.getMessageManager()
-        self.messager =None
+        self.db_service = scope.getDbService()
+        self.messager = None
 
         self.keep_run = True
         self.context = Context()
@@ -54,16 +53,14 @@ class Plugin(threading.Thread):
             try:
                 item_obj = self.InQueue.get(block=True)
                 obj_name = item_obj.obj_name
-                print(obj_name)
                 if obj_name == "TASK":
                     command = Scope.getInstance().getPluginManager().findCommand(self.getName(), item_obj.get_command_cls_id().lower())
                     command.handle_task(item_obj, self.context)
                     # TODO create response message from context and item_obj. item_obj is task
 
-                    #TODO Message Code keep
-                    response = Response(type=self.context.get('type'), id=self.context.get('taskId'), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
-                    #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
-                    Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response)) #TODO REMOVE
+                    response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
+                    # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                    Scope.getInstance().getMessager().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
 
                     # Empty context for next use
                     self.context.empty_data()
@@ -73,10 +70,13 @@ class Plugin(threading.Thread):
                     policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
                     policy_module.handle_policy(profile_data, self.context)
-                    #TODO Message Code keep Set default message if not exist
-                    response = Response(type=self.context.get('message_type'), id=item_obj.id, code=self.context.get('message_code'), message=self.context.get('message'), data=self.context.get('data'), content_type=self.context.get('content_type'), execution_id='get_execution_id')
-                    #self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
-                    Scope.getInstance().getMessager().send_direct_message(self.messaging.response_msg(response))#TODO REMOVE
+
+                    execution_id = self.get_execution_id(item_obj.get_id())
+                    policy_ver = self.get_policy_version(item_obj.get_id())
+
+                    response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
+                    # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                    Scope.getInstance().getMessager().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
 
                     # Empty context for next use
                     self.context.empty_data()
@@ -89,6 +89,20 @@ class Plugin(threading.Thread):
             except Exception as e:
                 # TODO error log here
                 self.logger.error("[Plugin] Plugin running exception " + str(e))
+
+    def get_execution_id(self, profile_id):
+        try:
+            return self.db_service.select_one_result('policy', 'execution_id', ' id={}'.format(profile_id))
+        except Exception as e:
+            print(str(e))
+            return None
+
+    def get_policy_version(self, profile_id):
+        try:
+            return self.db_service.select_one_result('policy', 'version', ' id={}'.format(profile_id))
+        except Exception as e:
+            print(str(e))
+            return None
 
     def getName(self):
         return self.name
