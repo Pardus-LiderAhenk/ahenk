@@ -15,7 +15,6 @@ from base.Scope import Scope
 
 
 class Messager(slixmpp.ClientXMPP):
-
     global loop
 
     def __init__(self):
@@ -83,15 +82,14 @@ class Messager(slixmpp.ClientXMPP):
     def send_file(self, file_path):
         self.file = open(file_path, 'rb')
 
-        #TODO read conf file check file size if file size is bigger than max size, divide and send parts.after all send message about them
+        # TODO read conf file check file size if file size is bigger than max size, divide and send parts.after all send message about them
         self.logger.debug('[Messager] Sending file: ' + self.file.name)
-        self.logger.debug('[MessageSender] Sending file: ' + self.file.name)
         try:
-            self.logger.debug('[MessageSender] Handshaking for file transfering...')
+            self.logger.debug('[Messager] Handshaking for file transfering...')
             # Open the S5B stream in which to write to.
             proxy = yield from self['xep_0065'].handshake(self.receiver)
             # Send the entire file.
-            self.logger.debug('[MessageSender] Started to streaming file...')
+            self.logger.debug('[Messager] Started to streaming file...')
             while True:
                 data = self.file.read(1048576)
                 if not data:
@@ -100,23 +98,23 @@ class Messager(slixmpp.ClientXMPP):
             # And finally close the stream.
             proxy.transport.write_eof()
         except (IqError, IqTimeout):
-            self.logger.error('[MessageSender] File transfer errored')
+            self.logger.error('[Messager] File transfer errored')
         else:
-            self.logger.debug('[MessageSender] File transfer finished successfully')
+            self.logger.debug('[Messager] File transfer finished successfully')
         finally:
             self.file.close()
 
     def send_direct_message(self, msg):
         self.logger.debug('[Messager] Sending message: ' + msg)
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
-        print('<---'+msg)
+        print('<---' + msg)
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
             j = json.loads(str(msg['body']))
             message_type = j['type']
             self.logger.debug('[Messager] Fired event is: ' + message_type)
-            print('----->'+str(msg['body']))
+            print('----->' + str(msg['body']))
             self.event_manger.fireEvent(message_type, str(msg['body']))
 
     def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.
@@ -132,7 +130,6 @@ class Messager(slixmpp.ClientXMPP):
             self.logger.error('[Messager] Connection to server is failed! ' + e)
             return False
 
-
     def set_file_name_md5(self):
         self.logger.debug('[Messager] Renaming file as md5 hash')
         md5_hash = self.execution_manager.get_md5_file(self.file.name)
@@ -146,10 +143,10 @@ class Messager(slixmpp.ClientXMPP):
             self.register_plugin('xep_0065', {'auto_accept': True})  # SOCKS5 Bytestreams
             self.register_plugin('xep_0047', {'auto_accept': True})  # In-band Bytestreams
 
-            self.logger.debug('Extension were registered: xep_0030,xep_0045,xep_0199,xep_0065,xep_0047')
+            self.logger.debug('[Messager]Extension were registered: xep_0030,xep_0045,xep_0199,xep_0065,xep_0047')
             return True
         except Exception as e:
-            self.logger.error('Extension registration is failed!(%s)\n' % (e.errno, e.strerror))
+            self.logger.error('[Messager]Extension registration is failed!(%s)\n' % (e.errno, e.strerror))
             return False
 
     '''
