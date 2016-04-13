@@ -13,6 +13,8 @@ sys.path.append('../..')
 from slixmpp.exceptions import IqError, IqTimeout
 from base.Scope import Scope
 
+from base.messaging.FileTransfer import FileTransfer
+
 
 class Messager(slixmpp.ClientXMPP):
     global loop
@@ -78,10 +80,13 @@ class Messager(slixmpp.ClientXMPP):
     def session_end(self):
         print("disconnect")
 
-    # TODO need check
     def send_file(self, file_path):
-        self.file = open(file_path, 'rb')
+        FileTransfer.run(file_path)
 
+    """
+    @asyncio.coroutine
+    def send_file(self, file_path):
+        self.file = open('/tmp/volkan.txt', 'rb')
         # TODO read conf file check file size if file size is bigger than max size, divide and send parts.after all send message about them
         self.logger.debug('[Messager] Sending file: ' + self.file.name)
         try:
@@ -103,6 +108,7 @@ class Messager(slixmpp.ClientXMPP):
             self.logger.debug('[Messager] File transfer finished successfully')
         finally:
             self.file.close()
+    """
 
     def send_direct_message(self, msg):
         self.logger.debug('[Messager] Sending message: ' + msg)
@@ -141,7 +147,7 @@ class Messager(slixmpp.ClientXMPP):
             self.register_plugin('xep_0045')  # Multi-User Chat
             self.register_plugin('xep_0199')  # XMPP Ping
             self.register_plugin('xep_0065', {'auto_accept': True})  # SOCKS5 Bytestreams
-            self.register_plugin('xep_0047', {'auto_accept': True})  # In-band Bytestreams
+            # self.register_plugin('xep_0047', {'auto_accept': True})  # In-band Bytestreams
 
             self.logger.debug('[Messager]Extension were registered: xep_0030,xep_0045,xep_0199,xep_0065,xep_0047')
             return True
