@@ -4,9 +4,9 @@
 
 import datetime
 import json
-import netifaces
 import socket
 import uuid
+import os
 from uuid import getnode as get_mac
 
 from base.Scope import Scope
@@ -95,7 +95,7 @@ class Registration():
 
     def get_registration_params(self):
         params = {
-            'ipAddresses': str(self.get_ipAddresses()),
+            'ipAddresses': str(self.get_ip_address()),
             'macAddresses': str(':'.join(("%012X" % get_mac())[i:i + 2] for i in range(0, 12, 2))),
             'hostname': str(socket.gethostname())
         }
@@ -123,6 +123,12 @@ class Registration():
     def generate_password(self):
         return uuid.uuid4()
 
+    def get_ip_address(self):
+        f = os.popen('ifconfig eth0 | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1')
+        return f.read()
+
+    """
+    #TODO disabled because of netifaces dependency
     def get_ipAddresses(self):
         self.logger.debug('[Registration] looking for network interfaces')
         ip_address = ""
@@ -131,3 +137,4 @@ class Registration():
                 ip_address += str(netifaces.ifaddresses(interface)[netifaces.AF_INET])
         self.logger.debug('[Registration] returning ip addresses from every interfaces')
         return ip_address
+    """
