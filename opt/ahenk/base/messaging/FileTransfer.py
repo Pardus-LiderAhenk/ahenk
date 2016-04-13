@@ -13,7 +13,9 @@ from base.Scope import Scope
 class FileTransfer(slixmpp.ClientXMPP):
     def __init__(self, file_path):
 
-        print('init')
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         scope = Scope().getInstance()
 
         self.logger = scope.getLogger()
@@ -24,7 +26,10 @@ class FileTransfer(slixmpp.ClientXMPP):
         self.my_pass = str(self.configuration_manager.get('CONNECTION', 'password'))
         self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/Smack'
 
-        slixmpp.ClientXMPP.__init__(self, self.my_jid, self.my_pass)
+        try:
+            slixmpp.ClientXMPP.__init__(self, self.my_jid, self.my_pass)
+        except Exception as e:
+            print(str(e))
 
         self.register_plugin('xep_0030')  # Service Discovery
         self.register_plugin('xep_0065')
