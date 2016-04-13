@@ -21,11 +21,10 @@ from base.logger.AhenkLogger import Logger
 from base.messaging.MessageResponseQueue import MessageResponseQueue
 from base.messaging.Messager import Messager
 from base.messaging.Messaging import Messaging
-from base.plugin.plugin_manager import PluginManager
-from base.registration.Registration import Registration
-from base.task.TaskManager import TaskManager
-from base.scheduler.scheduler_factory import SchedulerFactory
 from base.plugin.plugin_manager_factory import PluginManagerFactory
+from base.registration.Registration import Registration
+from base.scheduler.scheduler_factory import SchedulerFactory
+from base.task.TaskManager import TaskManager
 
 pidfilePath = '/var/run/ahenk.pid'
 
