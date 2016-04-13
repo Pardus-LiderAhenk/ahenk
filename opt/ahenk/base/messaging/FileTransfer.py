@@ -5,6 +5,7 @@
 import asyncio
 
 import slixmpp
+import time
 from slixmpp.exceptions import IqError, IqTimeout
 
 from base.Scope import Scope
@@ -45,21 +46,26 @@ class FileTransfer(slixmpp.ClientXMPP):
             proxy = yield from self['xep_0065'].handshake(self.receiver)
 
             # Send the entire file.
+            i = 0
             while True:
-                data = self.file.read(1048576)
+                data = self.file.read(1000)
+                i += 1
+                print('-->'+str(i)+'--'+str(len(data)))
                 if not data:
                     break
                 yield from proxy.write(data)
 
+            time.sleep(10)
             # And finally close the stream.
             proxy.transport.write_eof()
-        except (IqError, IqTimeout) as e:
-            print('File transfer errored' + str(e))
+
+        except Exception as e:
+            print('File transfer errored:' + str(e))
         else:
             print('File transfer finished')
         finally:
-            self.file.close()
             self.disconnect()
+            self.file.close()
 
     @staticmethod
     def run(file_path):
