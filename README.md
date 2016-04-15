@@ -54,4 +54,4 @@ See [changelog](https://github.com/Pardus-Kurumsal/lider/wiki/Changelog) to lear
 
 ## License
 
-Lider Ahenk and its sub projects are licensed under the [LGPL v3](https://github.com/Pardus-Kurumsal/lider/blob/master/LICENSE).
+Lider Ahenk and its sub projects are licensed under the [LGPL v3](https://github.com/Pardus-Kurumsal/ahenk/blob/master/LICENSE).
