@@ -25,6 +25,7 @@ class Context(object):
     def execute(self, command):
         return subprocess.Popen(command, shell=True)
 
+    #TODO send file,...
 
 class Plugin(threading.Thread):
     """
