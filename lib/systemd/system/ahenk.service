@@ -3,9 +3,9 @@ Description=Starts Ahenk at system startup
 After=network.target
 
 [Service]
-Type=forking
-ExecStart=python3 "/opt/ahenk/ahenkd.py start"
-ExecStop=python3 "/opt/ahenk/ahenkd.py stop"
+Type=simple
+ExecStart=/usr/bin/python3 /opt/ahenk/ahenkd.py start
+ExecStop=/usr/bin/python3 /opt/ahenk/ahenkd.py stop
 PIDFile=/var/run/ahenkd.pid
 
 [Install]
