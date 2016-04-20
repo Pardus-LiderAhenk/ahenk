@@ -5,8 +5,8 @@ import subprocess
 import threading
 
 from base.Scope import Scope
-from base.model.MessageType import MessageType
 from base.model.Response import Response
+from base.model.enum.MessageType import MessageType
 
 
 class Context(object):
