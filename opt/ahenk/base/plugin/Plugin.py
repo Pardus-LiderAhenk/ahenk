@@ -85,6 +85,11 @@ class Plugin(threading.Thread):
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False
                     self.logger.debug('[Plugin] Killing queue ! Plugin Name : ' + str(self.name))
+                elif obj_name == "SAFE_MODE":
+                    username  = item_obj.username
+                    safe_mode_module = Scope.getInstance().getPluginManager().find_safe_mode_module(self.name)
+                    safe_mode_module.handle_safe_mode(username,self.context)
+                    self.context.empty_data()
                 else:
                     self.logger.warning("[Plugin] Not supported object type " + obj_name)
             except Exception as e:
