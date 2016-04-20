@@ -3,10 +3,9 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
 import asyncio
+import time
 
 import slixmpp
-import time
-from slixmpp.exceptions import IqError, IqTimeout
 
 from base.Scope import Scope
 
