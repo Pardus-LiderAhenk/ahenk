@@ -10,7 +10,6 @@ import sys
 import slixmpp
 
 sys.path.append('../..')
-from slixmpp.exceptions import IqError, IqTimeout
 from base.Scope import Scope
 
 from base.messaging.FileTransfer import FileTransfer
@@ -36,8 +35,7 @@ class Messager(slixmpp.ClientXMPP):
         self.file = None
         self.hostname = self.configuration_manager.get('CONNECTION', 'host')
         self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/Smack'
-        self.nick = self.configuration_manager.get('CONNECTION', 'nick')
-        self.receive_file_path = self.configuration_manager.get('CONNECTION', 'receiveFileParam')
+        self.receive_file_path = self.configuration_manager.get('CONNECTION', 'receivefileparam')
         self.logger.debug('[Messager] XMPP Receiver parameters were set')
 
         self.register_extensions()
