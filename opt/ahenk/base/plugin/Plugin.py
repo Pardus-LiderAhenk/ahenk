@@ -5,13 +5,25 @@ import subprocess
 import threading
 
 from base.Scope import Scope
+from base.model.MessageType import MessageType
 from base.model.Response import Response
-from base.model.enum.MessageType import MessageType
 
 
 class Context(object):
     def __init__(self):
         self.data = {}
+        self.scope = Scope().getInstance()
+        self.logger = self.scope.getLogger()
+        self.config_manager = self.scope.getConfigurationManager()
+
+    def debug(self, message):
+        self.logger.debug('[PLUGIN]' + message)
+
+    def info(self, message):
+        self.logger.info('[PLUGIN]' + message)
+
+    def error(self, message):
+        self.logger.error('[PLUGIN]' + message)
 
     def put(self, var_name, data):
         self.data[var_name] = data
@@ -25,7 +37,11 @@ class Context(object):
     def execute(self, command):
         return subprocess.Popen(command, shell=True)
 
-    #TODO send file,...
+    def get_path(self):
+        return self.config_manager.get('PLUGIN', 'pluginfolderpath')
+
+        # TODO send file,...
+
 
 class Plugin(threading.Thread):
     """
@@ -86,28 +102,27 @@ class Plugin(threading.Thread):
                     self.keep_run = False
                     self.logger.debug('[Plugin] Killing queue ! Plugin Name : ' + str(self.name))
                 elif obj_name == "SAFE_MODE":
-                    username  = item_obj.username
+                    username = item_obj.username
                     safe_mode_module = Scope.getInstance().getPluginManager().find_safe_mode_module(self.name)
-                    safe_mode_module.handle_safe_mode(username,self.context)
+                    safe_mode_module.handle_safe_mode(username, self.context)
                     self.context.empty_data()
                 else:
                     self.logger.warning("[Plugin] Not supported object type " + obj_name)
             except Exception as e:
-                # TODO error log here
-                self.logger.error("[Plugin] Plugin running exception " + str(e))
+                self.logger.error("[Plugin] Plugin running exception. Exception Message: {} ".format(str(e)))
 
     def get_execution_id(self, profile_id):
         try:
             return self.db_service.select_one_result('policy', 'execution_id', ' id={}'.format(profile_id))
         except Exception as e:
-            print(str(e))
+            self.logger.error("[Plugin] A problem occurred while getting execution id. Exception Message: {} ".format(str(e)))
             return None
 
     def get_policy_version(self, profile_id):
         try:
             return self.db_service.select_one_result('policy', 'version', ' id={}'.format(profile_id))
         except Exception as e:
-            print(str(e))
+            self.logger.error("[Plugin] A problem occurred while getting policy version . Exception Message: {} ".format(str(e)))
             return None
 
     def getName(self):
