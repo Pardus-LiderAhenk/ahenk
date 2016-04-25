@@ -3,9 +3,10 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 import asyncio
-import slixmpp
-import sys
 import json
+import sys
+
+import slixmpp
 
 sys.path.append('../..')
 from slixmpp.exceptions import IqError, IqTimeout
@@ -22,13 +23,16 @@ class AnonymousMessager(slixmpp.ClientXMPP):
         self.registration = scope.getRegistration()
         self.event_manager = scope.getEventManager()
 
-        self.my_jid = str(self.configuration_manager.get('CONNECTION', 'host'))
+        self.host = str(self.configuration_manager.get('CONNECTION', 'host'))
+        self.service = str(self.configuration_manager.get('CONNECTION', 'servicename'))
+        self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
+        self.receive_file_path = str(self.configuration_manager.get('CONNECTION', 'receivefileparam'))
 
-        slixmpp.ClientXMPP.__init__(self, self.my_jid, None)
+        slixmpp.ClientXMPP.__init__(self, self.service, None)
 
         self.message = None
         self.file = None
-        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'host') + '/Smack'
+        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/Smack'
 
         if file_path is not None and file_path != '':
             self.file = open(file_path, 'rb')
@@ -50,10 +54,10 @@ class AnonymousMessager(slixmpp.ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
-            print('ANON<---'+ msg['body'])
-            self.logger.debug("[MessageSender] Received message: %s -> %s" % (msg['from'], msg['body']))
+            print('ANON<---' + msg['body'])
+            self.logger.debug("[MessageSender] (Anonymous) Received message: {} -> {}".format(msg['from'], msg['body']))
             self.disconnect()
-            self.logger.debug('[MessageSender] Disconnecting...')
+            self.logger.debug('[MessageSender] (Anonymous) Disconnecting...')
             j = json.loads(str(msg['body']))
             message_type = j['type']
             self.event_manager.fireEvent(message_type, str(msg['body']))
@@ -68,9 +72,9 @@ class AnonymousMessager(slixmpp.ClientXMPP):
             self.send_direct_message(self.message)
 
         if self.file is not None:
-            self.logger.debug('[MessageSender] Sending file: ' + self.file.name)
+            self.logger.debug('[MessageSender] Sending file: {}'.format(self.file.name))
             try:
-                self.logger.debug('[MessageSender] Handshaking for file transfering...')
+                self.logger.debug('[MessageSender] Handshaking for file transferring...')
                 # Open the S5B stream in which to write to.
                 proxy = yield from self['xep_0065'].handshake(self.receiver)
                 # Send the entire file.
@@ -82,8 +86,8 @@ class AnonymousMessager(slixmpp.ClientXMPP):
                     yield from proxy.write(data)
                 # And finally close the stream.
                 proxy.transport.write_eof()
-            except (IqError, IqTimeout):
-                self.logger.error('[MessageSender] File transfer errored')
+            except (IqError, IqTimeout) as e:
+                self.logger.error('[MessageSender] A problem occurred while transferring file to server. Error Message: {}'.format(str(e)))
             else:
                 self.logger.debug('[MessageSender] File transfer finished successfully')
             finally:
@@ -106,18 +110,18 @@ class AnonymousMessager(slixmpp.ClientXMPP):
 
     def send_direct_message(self, msg):
         self.logger.debug('[MessageSender] Sending message: ' + msg)
-        print('ANON-->'+msg)
+        print('ANON-->' + msg)
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
 
     def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.
         try:
             self.logger.debug('[MessageSender] Connecting to server...')
-            self.connect()
+            self.connect((self.host, self.port))
             self.process(forever=False)
             self.logger.debug('[MessageSender] Connection were established successfully')
             return True
         except Exception as e:
-            self.logger.error('[MessageSender] Connection to server is failed! ' + e)
+            self.logger.error('[MessageSender] Connection to server is failed! Error Message: {}'.format(str(e)))
             return False
 
     def register_extensions(self):
@@ -131,5 +135,5 @@ class AnonymousMessager(slixmpp.ClientXMPP):
             self.logger.debug('[MessageSender] Extension were registered: xep_0030,xep_0045,xep_0199,xep_0065,xep_0047')
             return True
         except Exception as e:
-            self.logger.error('[MessageSender] Extension registration is failed!(%s)\n' % (e.errno, e.strerror))
+            self.logger.error('[MessageSender] Extension registration is failed! Error Message: {}'.format(str(e)))
             return False
