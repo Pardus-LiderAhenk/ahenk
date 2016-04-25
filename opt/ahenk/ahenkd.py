@@ -10,6 +10,7 @@ import signal
 import sys
 import threading
 import time
+import subprocess
 
 from base.Scope import Scope
 from base.config.ConfigManager import ConfigManager
@@ -241,6 +242,7 @@ class AhenkDeamon(BaseDaemon):
             scope = Scope.getInstance()
             scope.getMessager().disconnect()
             # TODO kill thread
+            subprocess.Popen('kill -9 '+get_pid_number(), shell=True)
             print('stopping ahenk')
         else:
             logger.error('[AhenkDeamon] Unknown command error. Command:' + params[0])
