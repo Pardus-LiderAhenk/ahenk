@@ -36,10 +36,22 @@ class Messager(slixmpp.ClientXMPP):
         self.hostname = self.configuration_manager.get('CONNECTION', 'host')
         self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/Smack'
         self.receive_file_path = self.configuration_manager.get('CONNECTION', 'receivefileparam')
-        self.logger.debug('[Messager] XMPP Receiver parameters were set')
+        self.logger.debug('[Messager] XMPP Messager parameters were set')
 
         self.register_extensions()
         self.add_listeners()
+
+    def ping_lider(self):
+        try:
+            result = self['xep_0199'].send_ping(jid=self.receiver,timeout=10)
+            if result is False:
+                self.logger.debug('[Messager] Couldn\'t send ping to lider.')
+                return False
+            else:
+                return True
+        except Exception as e:
+            self.logger.error('[Messager] A problem occurred while pinging to lider. Error Message:{}'.format(str(e)))
+            return False
 
     def add_listeners(self):
         self.add_event_handler('session_start', self.session_start)
@@ -109,15 +121,19 @@ class Messager(slixmpp.ClientXMPP):
     """
 
     def send_direct_message(self, msg):
-        self.logger.debug('[Messager] Sending message: ' + msg)
-        self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
-        print('<---' + msg)
+        try:
+            self.logger.debug('[Messager] Sending message: ' + msg)
+            self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
+            print('<---' + msg)
+        except Exception as e:
+            self.logger.debug('[Messager] A problem occurred while sending direct message. Error Message: {}'.format(str(e)))
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('chat', 'normal'):
             j = json.loads(str(msg['body']))
+            self.logger.debug('[Messager] Received message: {}'.format(str(msg['body'])))
             message_type = j['type']
-            self.logger.debug('[Messager] Fired event is: ' + message_type)
+            self.logger.debug('[Messager] Fired event is: {}' .format(message_type))
             print('----->' + str(msg['body']))
             self.event_manger.fireEvent(message_type, str(msg['body']))
 
