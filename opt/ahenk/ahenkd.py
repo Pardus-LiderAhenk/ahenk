@@ -7,10 +7,10 @@ import configparser
 import os
 import queue
 import signal
+import subprocess
 import sys
 import threading
 import time
-import subprocess
 
 from base.Scope import Scope
 from base.config.ConfigManager import ConfigManager
@@ -97,16 +97,16 @@ class AhenkDeamon(BaseDaemon):
         return execution_manager
 
     def init_messager(self):
-        messager = Messager()
-        messanger_thread = threading.Thread(target=messager.connect_to_server)
+        messenger = Messager()
+        messanger_thread = threading.Thread(target=messenger.connect_to_server)
         messanger_thread.start()
 
-        while messager.is_connected() is False:
+        while messenger.is_connected() is False:
             time.sleep(1)
         time.sleep(5)
 
-        Scope.getInstance().setMessager(messager)
-        return messager
+        Scope.getInstance().setMessager(messenger)
+        return messenger
 
     def init_message_response_queue(self):
         responseQueue = queue.Queue()
@@ -117,15 +117,25 @@ class AhenkDeamon(BaseDaemon):
         return responseQueue
 
     def check_registration(self):
-        # TODO restrict number of attemption
+        # TODO get number of attemption
+        max_attemp_number = 50
+        logger = Scope.getInstance().getLogger()
         try:
             while Scope.getInstance().getRegistration().is_registered() is False:
-                print('registration need')
-                Scope.getInstance().getLogger().debug('[AhenkDeamon] Attempting to register')
+                max_attemp_number -= 1
+                logger.debug('[AhenkDeamon] Ahenk is not registered. Attempting for registration')
                 Scope.getInstance().getRegistration().registration_request()
+
+                if max_attemp_number < 0:
+                    logger.warning('[AhenkDeamon] Number of Attempting for registration is over')
+                    self.registration_failed()
+                    break
         except Exception as e:
-            print(str(e))
-            raise
+            logger.error('[AhenkDeamon] Registration failed. Error message: {}'.format(str(e)))
+
+    def registration_failed(self):
+        # TODO registration fail protocol implement
+        pass
 
     def reload_plugins(self):
         Scope.getInstance().getPluginManager().reloadPlugins()
@@ -214,10 +224,13 @@ class AhenkDeamon(BaseDaemon):
         messager.send_direct_message('test')
 
         while True:
+            if messager.ping_lider() is False:
+                Scope.getInstance().getLogger().warning('[AhenkDeamon] Connection is lost. Ahenk is trying for reconnection')
+                messager=self.init_messager()
             time.sleep(1)
 
     def signal_handler(self, num, stack):
-        print("signal handled")
+
         # TODO######
         config = configparser.ConfigParser()
         config._interpolation = configparser.ExtendedInterpolation()
@@ -229,20 +242,28 @@ class AhenkDeamon(BaseDaemon):
         scope = Scope().getInstance()
         logger = scope.getLogger()
 
+        message_manager = scope.getMessageManager()
+        messenger = scope.getMessager()
+
+        logger.debug('[AhenkDeamon] Signal handled')
+
         if 'login' == str(params[0]):
-            message = scope.getMessageManager().policy_request_msg(params[1])
-            scope.getMessager().send_direct_message(message)
+            logger.debug('[AhenkDeamon] Signal is :{}'.format(str(params[0])))
+            login_message = message_manager.login_msg(params[1])
+            messenger.send_direct_message(login_message)
+            get_policy_message = message_manager.policy_request_msg(params[1])
+            messenger.send_direct_message(get_policy_message)
             logger.debug('[AhenkDeamon] login event is handled for user:' + params[1])
         elif 'logout' == str(params[0]):
-            message = scope.getMessageManager().logout_msg(params[1])
-            scope.getMessager().send_direct_message(message)
+            logger.debug('[AhenkDeamon] Signal is {}'.format(str(params[0])))
+            message = message_manager.logout_msg(params[1])
+            messenger.send_direct_message(message)
             logger.debug('[AhenkDeamon] logout event is handled for user:' + params[1])
         elif 'exit' == str(params[0]):
-            print("exit:" + str(params[0]))
-            scope = Scope.getInstance()
-            scope.getMessager().disconnect()
+            logger.debug('[AhenkDeamon] Signal is {}'.format(str(params[0])))
+            messenger.disconnect()
             # TODO kill thread
-            subprocess.Popen('kill -9 '+get_pid_number(), shell=True)
+            subprocess.Popen('kill -9 ' + get_pid_number(), shell=True)
             print('stopping ahenk')
         else:
             logger.error('[AhenkDeamon] Unknown command error. Command:' + params[0])
