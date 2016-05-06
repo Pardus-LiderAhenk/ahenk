@@ -7,6 +7,8 @@ import json
 import socket
 import uuid
 import os
+import platform
+import psutil
 from uuid import getnode as get_mac
 
 from base.Scope import Scope
@@ -97,10 +99,31 @@ class Registration():
         params = {
             'ipAddresses': str(self.get_ip_address()),
             'macAddresses': str(':'.join(("%012X" % get_mac())[i:i + 2] for i in range(0, 12, 2))),
-            'hostname': str(socket.gethostname())
+            'hostname': str(socket.gethostname()),
+            'system':str(platform.system()),
+            'node':str(platform.node()),
+            'release':str(platform.release()),
+            'version':str(platform.version()),
+            'machine':str(platform.machine()),
+            'processor':str(platform.processor()),
+            'architecture':str(platform.architecture()),
+            'cpuCount':str(psutil.cpu_count()),
+            'diskInfo':self.get_disks()
         }
 
         return json.dumps(params)
+
+    def get_disks(self):
+        disk_info = []
+        for _disk in psutil.disk_partitions():
+            disk = {}
+            disk['device'] = str(_disk[0])
+            disk['mountPoint'] = str(_disk[1])
+            disk['fsType'] = str(_disk[2])
+            disk['opts'] = str(_disk[3])
+            json_data = json.dumps(disk)
+            disk_info.append(json_data)
+        return disk_info
 
     def unregister(self):
         self.logger.debug('[Registration] Ahenk is unregistering...')
