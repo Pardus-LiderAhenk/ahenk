@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
-from base.model.enum.MessageFactory import MessageFactory
+from base.model.MessageFactory import MessageFactory
 
 from base.Scope import Scope
 from base.model.enum.MessageType import MessageType
