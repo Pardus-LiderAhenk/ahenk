@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
+from base.model.enum.MessageFactory import MessageFactory
+
 from base.Scope import Scope
-from base.model.MessageFactory import MessageFactory
-from base.model.MessageType import MessageType
+from base.model.enum.MessageType import MessageType
 
 
 class TaskManager(object):
@@ -35,18 +36,17 @@ class TaskManager(object):
 
     def addPolicy(self, policy):
         try:
-            print("adding policy")
             self.pluginManager.processPolicy(policy)
         except Exception as e:
             self.logger.error("Exception occured when adding policy ")
             pass
 
     def saveTask(self, task):
-        pass
-        #cols = ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin']
-        #values = [str(task.id), str(task.create_date), str(task.modify_date), str(task.command_cls_id), str(task.parameter_map), str(task.deleted), task.plugin.to_string()]
-        #self.db_service.update('task', cols, values, None)
-        #self.logger.debug('[TaskManager] Task has been saved to database (Task id:' + task.id + ')')
+
+        cols = ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin']
+        values = [str(task.get_id()), str(task.get_create_date()), str(task.get_modify_date()), str(task.get_command_cls_id()), str(task.get_parameter_map()), str(task.get_deleted()), task.plugin.to_string()]
+        self.db_service.update('task', cols, values, None)
+        self.logger.debug('[TaskManager] Task has been saved to database (Task id:' + task.id + ')')
 
     def updateTask(self, task):
         # TODO not implemented yet
