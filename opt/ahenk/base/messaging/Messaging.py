@@ -18,6 +18,16 @@ class Messaging(object):
         self.db_service = scope.getDbService()
         self.event_manger = scope.getEventManager()
 
+    def missing_plugin_message(self, plugin):
+        data = {}
+        data['type'] = 'MISSING_PLUGIN'
+        data['pluginName'] = plugin.get_name()
+        data['pluginVersion'] = plugin.get_version()
+
+        json_data = json.dumps(data)
+        self.logger.debug('[Messaging]Missing plugin message was created')
+        return str(json_data)
+
     """
     def response_msg(self, response):
         print("response message")
@@ -64,8 +74,6 @@ class Messaging(object):
         self.logger.debug('[Messaging] Policy status message was created')
         return str(json_data)
 
-
-
     def login_msg(self, username):
         data = {}
         data['type'] = 'LOGIN'
@@ -103,14 +111,14 @@ class Messaging(object):
     def registration_msg(self):
         data = {}
         data['type'] = 'REGISTER'
-        data['from'] = self.db_service.select_one_result('registration','jid',' 1=1')#str(self.conf_manager.get('REGISTRATION', 'from'))
-        data['password'] = self.db_service.select_one_result('registration','password',' 1=1')
-        params = self.db_service.select_one_result('registration','params',' 1=1')
+        data['from'] = self.db_service.select_one_result('registration', 'jid', ' 1=1')  # str(self.conf_manager.get('REGISTRATION', 'from'))
+        data['password'] = self.db_service.select_one_result('registration', 'password', ' 1=1')
+        params = self.db_service.select_one_result('registration', 'params', ' 1=1')
         json_params = json.loads(str(params))
         data['macAddresses'] = json_params['macAddresses']
         data['ipAddresses'] = json_params['ipAddresses']
         data['hostname'] = json_params['hostname']
-        data['timestamp'] = self.db_service.select_one_result('registration','timestamp',' 1=1')
+        data['timestamp'] = self.db_service.select_one_result('registration', 'timestamp', ' 1=1')
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Registration message was created')
         return json_data
