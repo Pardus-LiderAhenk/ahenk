@@ -25,11 +25,10 @@ class FileTransfer(slixmpp.ClientXMPP):
         self.my_jid = str(self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/sender')
         self.my_pass = str(self.configuration_manager.get('CONNECTION', 'password'))
         self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/Smack'
+        self.logger.debug('[FileTransfer] File transfer client was configured.')
 
-        try:
-            slixmpp.ClientXMPP.__init__(self, self.my_jid, self.my_pass)
-        except Exception as e:
-            print(str(e))
+        slixmpp.ClientXMPP.__init__(self, self.my_jid, self.my_pass)
+        self.logger.debug('[FileTransfer] XMPP Client was created for file transfer.')
 
         self.register_plugin('xep_0030')  # Service Discovery
         self.register_plugin('xep_0065')
@@ -38,7 +37,7 @@ class FileTransfer(slixmpp.ClientXMPP):
 
     @asyncio.coroutine
     def start(self, event):
-        print('sending...')
+        self.logger.debug('[FileTransfer] Sending file ...')
 
         try:
             # Open the S5B stream in which to write to.
@@ -49,7 +48,7 @@ class FileTransfer(slixmpp.ClientXMPP):
             while True:
                 data = self.file.read(1000)
                 i += 1
-                print('-->'+str(i)+'--'+str(len(data)))
+                print('-->' + str(i) + '--' + str(len(data)))
                 if not data:
                     break
                 yield from proxy.write(data)
@@ -59,12 +58,14 @@ class FileTransfer(slixmpp.ClientXMPP):
             proxy.transport.write_eof()
 
         except Exception as e:
-            print('File transfer errored:' + str(e))
+            self.logger.debug('[FileTransfer] A problem occurred while file transferring. Error Message: {}'.format(str(e)))
         else:
-            print('File transfer finished')
+            self.logger.debug('[FileTransfer] File transfer is finished.')
         finally:
+            self.logger.debug('[FileTransfer] Disconnecting file transfer resource.')
             self.disconnect()
             self.file.close()
+            self.logger.debug('[FileTransfer] Disconnected file transfer resource.')
 
     @staticmethod
     def run(file_path):
