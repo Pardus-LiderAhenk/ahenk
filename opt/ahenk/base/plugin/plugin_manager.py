@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import imp
 import os
 
@@ -8,6 +9,8 @@ from base.Scope import Scope
 from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
 from base.model.PluginKillSignal import PluginKillSignal
+from base.model.PluginBean import PluginBean
+
 
 # TODO create base abstract class
 class PluginManager(object):
@@ -22,8 +25,11 @@ class PluginManager(object):
         self.plugins = []
         self.pluginQueueDict = dict()
         self.logger = self.scope.getLogger()
+        self.message_manager = self.scope.getMessageManager()
+        self.delayed_profiles = {}
+        self.delayed_tasks = {}
 
-    #TODO version?
+    # TODO version?
     def loadPlugins(self):
         """
             This method loads plugins
@@ -41,16 +47,25 @@ class PluginManager(object):
             try:
                 self.loadSinglePlugin(pname)
             except Exception as e:
-                self.logger.error('Exception occured when loading plugin ! Plugin name : ' + str(pname) + ' Exception : ' + str(e))
+                self.logger.error('[PluginManager] Exception occured when loading plugin ! Plugin name : ' + str(pname) + ' Exception : ' + str(e))
         self.logger.info('[PluginManager] Loaded plugins successfully.')
 
-    def loadSinglePlugin(self, pluginName):
+    def loadSinglePlugin(self, plugin_name):
         # TODO check already loaded plugin
-        self.pluginQueueDict[pluginName] = PluginQueue()
-        plugin = Plugin(pluginName, self.pluginQueueDict[pluginName])
+        self.pluginQueueDict[plugin_name] = PluginQueue()
+        plugin = Plugin(plugin_name, self.pluginQueueDict[plugin_name])
         plugin.setDaemon(True)
         plugin.start()
         self.plugins.append(plugin)
+
+        self.logger.debug('[PluginManager] New plugin was loaded.')
+
+        if len(self.delayed_profiles) > 0:
+            self.pluginQueueDict[plugin_name].put(self.delayed_profiles[plugin_name], 1)
+            self.logger.debug('[PluginManager] Delayed profile was found for this plugin. It will be run.')
+        if len(self.delayed_tasks) > 0:
+            self.pluginQueueDict[plugin_name].put(self.delayed_tasks[plugin_name], 1)
+            self.logger.debug('[PluginManager] Delayed task was found for this plugin. It will be run.')
 
     def findCommand(self, pluginName, commandId):
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pluginName)
@@ -63,15 +78,25 @@ class PluginManager(object):
 
     def processTask(self, task):
 
+        ##
+        scope = Scope().getInstance()
+        self.messenger = scope.getMessager()
+        ##
+
         try:
-            if task.get_plugin().get_name().lower() in self.pluginQueueDict:
-                self.pluginQueueDict[task.get_plugin().get_name().lower()].put(task, 1)
+            plugin_name = task.get_plugin().get_name().lower()
+            plugin_ver = task.get_plugin().get_version()
+            if plugin_name in self.pluginQueueDict:
+                self.pluginQueueDict[plugin_name].put(task, 1)
+            else:
+                self.logger.warning('[PluginManager] {} plugin not found. Task was delayed. Ahenk will request plugin from Lider if distribution available'.format(plugin_name))
+                self.delayed_tasks[plugin_name] = task
+                msg = self.message_manager.missing_plugin_message(PluginBean(name=plugin_name, version=plugin_ver))
+                self.messenger.send_direct_message(msg)
         except Exception as e:
-            # TODO update task - status to not found command
-            self.logger.error("[PluginManager] Exception occurred when processing task " + str(e))
+            self.logger.error('[PluginManager] Exception occurred while processing task. Error Message: {}'.format(str(e)))
 
     def reloadPlugins(self):
-        #TODO
         try:
             self.logger.info('[PluginManager]  Reloading plugins... ')
             kill_sgnl = PluginKillSignal()
@@ -93,35 +118,47 @@ class PluginManager(object):
             return None
 
     def processPolicy(self, policy):
-        #TODO do you need username in profile?
 
+        self.logger.info('[PluginManager] Processing policies...')
         username = policy.username
         ahenk_profiles = policy.ahenk_profiles
         user_profiles = policy.user_profiles
 
         if ahenk_profiles is not None:
+            self.logger.info('[PluginManager] Working on Ahenk profiles...')
             for profile in ahenk_profiles:
                 profile.set_username(None)
                 self.process_profile(profile)
 
         if user_profiles is not None:
+            self.logger.info('[PluginManager] Working on User profiles...')
             for profile in user_profiles:
                 profile.set_username(username)
                 self.process_profile(profile)
 
     def process_profile(self, profile):
+
+        ##
+        scope = Scope().getInstance()
+        self.messenger = scope.getMessager()
+        ##
         try:
             plugin = profile.get_plugin()
             plugin_name = plugin.get_name()
+            plugin_ver = plugin.get_version()
             if plugin_name in self.pluginQueueDict:
                 self.pluginQueueDict[plugin_name].put(profile, 1)
+            else:
+                self.logger.warning('[PluginManager] {} plugin not found. Profile was delayed. Ahenk will request plugin from Lider if distribution available'.format(plugin_name))
+                self.delayed_profiles[plugin_name] = profile
+                msg = self.message_manager.missing_plugin_message(PluginBean(name=plugin_name, version=plugin_ver))
+                self.messenger.send_direct_message(msg)
         except Exception as e:
-            print("Exception occured..")
-            self.logger.error("Policy profile not processed " + str(profile.plugin.name))
+            self.logger.error('[PluginManager] Exception occurred while processing profile. Error Message: {}'.format(str(e)))
 
     def checkPluginExists(self, plugin_name, version=None):
 
-        criteria = ' name=\''+plugin_name+'\''
+        criteria = ' name=\'' + plugin_name + '\''
         if version is not None:
             criteria += ' and version=\'' + str(version) + '\''
         result = self.db_service.select('plugin', 'name', criteria)
@@ -142,4 +179,3 @@ class PluginManager(object):
 
     def printQueueSize(self):
         print("size " + str(len(self.pluginQueueDict)))
-

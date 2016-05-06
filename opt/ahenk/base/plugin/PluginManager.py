@@ -24,6 +24,7 @@ class PluginManager(object):
         self.plugins = []
         self.pluginQueueDict = dict()
         self.logger = self.scope.getLogger()
+        
 
     #TODO version?
     def loadPlugins(self):
@@ -94,7 +95,6 @@ class PluginManager(object):
             return None
 
     def processPolicy(self, policy):
-        #TODO do you need username in profile?
 
         username = policy.get_username()
         ahenk_profiles = policy.get_ahenk_profiles()

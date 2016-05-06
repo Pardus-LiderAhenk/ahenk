@@ -8,13 +8,16 @@ import os
 import shutil
 import stat
 import subprocess
+import uuid
+
 
 from base.Scope import Scope
-from base.model.MessageType import MessageType
+from base.messaging.ssh_file_transfer import FileTransfer
 from base.model.PluginBean import PluginBean
 from base.model.PolicyBean import PolicyBean
 from base.model.ProfileBean import ProfileBean
 from base.model.TaskBean import TaskBean
+from base.model.enum.MessageType import MessageType
 
 
 class ExecutionManager(object):
@@ -27,26 +30,70 @@ class ExecutionManager(object):
         self.config_manager = scope.getConfigurationManager()
         self.event_manager = scope.getEventManager()
         self.task_manager = scope.getTaskManager()
-        self.messager = scope.getMessager()
+        self.messenger = scope.getMessager()
         self.logger = scope.getLogger()
         self.db_service = scope.getDbService()
+        self.message_manager = scope.getMessageManager()
+        self.plugin_manager = scope.getPluginManager()
 
         self.event_manager.register_event(MessageType.EXECUTE_SCRIPT.value, self.execute_script)
         self.event_manager.register_event(MessageType.REQUEST_FILE.value, self.request_file)
         self.event_manager.register_event(MessageType.MOVE_FILE.value, self.move_file)
         self.event_manager.register_event(MessageType.EXECUTE_TASK.value, self.execute_task)
         self.event_manager.register_event(MessageType.EXECUTE_POLICY.value, self.execute_policy)
+        self.event_manager.register_event(MessageType.INSTALL_PLUGIN.value, self.install_plugin)
+
+    def install_plugin(self, arg):
+        plugin = json.loads(arg)
+        self.logger.debug('[ExecutionManager] Installing missing plugin')
+        try:
+            plugin_name = plugin['pluginName']
+            plugin_version = plugin['pluginVersion']
+            parameter_map = json.loads(json.dumps(plugin['parameterMap']))
+
+            temp_file = self.config_manager.get('CONNECTION', 'receivefileparam') + str(uuid.uuid4()) + '.deb'
+
+            if str(plugin['protocol']).lower() == 'ssh':
+                self.logger.debug('[ExecutionManager] Distribution protocol is {}'.format(str(plugin['protocol']).lower()))
+                host = parameter_map['host']
+                username = parameter_map['username']
+                password = parameter_map['password']
+                port = parameter_map['port']
+                path = parameter_map['path']
+
+                transfer = FileTransfer(host, port, username, password)
+                transfer.connect()
+                transfer.get_file(temp_file, path)
+
+            elif plugin['protocol'].lower() == 'http':
+                self.logger.debug('[ExecutionManager] Distribution protocol is {}.'.format(str(plugin['protocol']).lower()))
+                #TODO
+                #wget.download(parameter_map['url'], temp_file)
+                pass
+
+            self.logger.debug('[ExecutionManager] Plugin package downloaded via {}.'.format(str(plugin['protocol']).lower()))
+            self.install_deb(temp_file)
+            self.logger.debug('[ExecutionManager] Plugin installed.')
+            self.remove_file(temp_file)
+            self.logger.debug('[ExecutionManager] Temp files were removed.')
+            self.plugin_manager.loadSinglePlugin(plugin_name)
+
+        except Exception as e:
+            self.logger.error('[ExecutionManager] A problem occurred while installing new ahenk plugin. Error Message:{}'.format(str(e)))
 
     def execute_policy(self, arg):
+
+        ##
+        scope = Scope().getInstance()
+        self.messenger = scope.getMessager()
+        ##
+
         self.logger.debug('[ExecutionManager] Updating policies...')
         policy = self.json_to_PolicyBean(json.loads(arg))
         machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
         ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
         user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + policy.get_username() + '\'')
 
-        # TODO get installed plugins
-        # installed_plugins = self.get_installed_plugins()
-        # missing_plugins = []
         profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'plugin']
         plugin_columns = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version']
 
@@ -68,11 +115,6 @@ class ExecutionManager(object):
 
                 profile_args = [str(ahenk_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()), str(profile.get_label()), str(profile.get_description()), str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()), str(profile.get_profile_data()), plugin_id]
                 self.db_service.update('profile', profile_columns, profile_args)
-
-                """
-                if profile.plugin.name not in installed_plugins and profile.plugin.name not in missing_plugins:
-                    missing_plugins.append(profile.plugin.name)
-                    """
 
         else:
             self.logger.debug('[ExecutionManager] Already there is ahenk policy')
@@ -97,15 +139,8 @@ class ExecutionManager(object):
                 profile_args = [str(user_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()), str(profile.get_label()), str(profile.get_description()), str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()), str(profile.get_profile_data()), plugin_id]
                 self.db_service.update('profile', profile_columns, profile_args)
 
-                """
-                if profile.get_plugin()['name'] not in installed_plugins and profile.get_plugin()['name'] not in missing_plugins:
-                    missing_plugins.append(profile.get_plugin()['name'])
-                """
         else:
             self.logger.debug('[ExecutionManager] Already there is user policy')
-
-        # TODO check plugins
-        # print("but first need these plugins:" + str(missing_plugins))
 
         policy = self.get_active_policies(policy.get_username())
         self.task_manager.addPolicy(policy)
@@ -161,8 +196,7 @@ class ExecutionManager(object):
         json_task = json.loads(str_task)
         task = self.json_to_TaskBean(json_task)
 
-        print(task.get_command_cls_id())
-        self.logger.debug('[ExecutionManager] Adding new  task...')
+        self.logger.debug('[ExecutionManager] Adding new  task...Task is:{}'.format(task.get_command_cls_id()))
 
         self.task_manager.addTask(task)
         self.logger.debug('[ExecutionManager] Task added')
@@ -200,7 +234,7 @@ class ExecutionManager(object):
         file_path = str(j['filePath']).lower()
         time_stamp = str(j['timestamp']).lower()
         self.logger.debug('[ExecutionManager] Requested file is ' + file_path)
-        self.messager.send_file(file_path)
+        self.messenger.send_file(file_path)
 
     def get_md5_file(self, fname):
         self.logger.debug('[ExecutionManager] md5 hashing')
@@ -231,3 +265,17 @@ class ExecutionManager(object):
                 user_prof_arr.append(ProfileBean(prof['id'], prof['createDate'], prof['label'], prof['description'], prof['overridable'], prof['active'], prof['deleted'], json.dumps(prof['profileData']), prof['modifyDate'], plugin, username))
 
         return PolicyBean(ahenk_policy_version=json_data['agentPolicyVersion'], user_policy_version=json_data['userPolicyVersion'], ahenk_profiles=ahenk_prof_arr, user_profiles=user_prof_arr, timestamp=json_data['timestamp'], username=json_data['username'], agent_execution_id=json_data['agentCommandExecutionId'], user_execution_id=json_data['userCommandExecutionId'])
+
+    def install_deb(self, full_path):
+        try:
+            process = subprocess.Popen('gdebi -n ' + full_path, shell=True)
+            process.wait()
+        except Exception as e:
+            self.logger.error('[ExecutionManager] Deb package couldn\'t install properly. Error Message: {}'.format(str(e)))
+
+    def remove_file(self, full_path):
+        try:
+            subprocess.Popen('rm ' + full_path, shell=True)
+            self.logger.debug('[ExecutionManager] Removed file is {}'.format(full_path))
+        except Exception as e:
+            self.logger.debug('[ExecutionManager] File couldn\'t removed. Error Message: {}'.format(str(e)))

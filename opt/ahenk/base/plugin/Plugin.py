@@ -5,8 +5,8 @@ import subprocess
 import threading
 
 from base.Scope import Scope
-from base.model.MessageType import MessageType
 from base.model.Response import Response
+from base.model.enum.MessageType import MessageType
 
 
 class Context(object):
@@ -59,44 +59,55 @@ class Plugin(threading.Thread):
         self.response_queue = scope.getResponseQueue()
         self.messaging = scope.getMessageManager()
         self.db_service = scope.getDbService()
-        self.messager = None
+        # self.messager = None
 
         self.keep_run = True
         self.context = Context()
 
     def run(self):
-
         while self.keep_run:
             try:
-                item_obj = self.InQueue.get(block=True)
-                obj_name = item_obj.obj_name
+                try:
+                    item_obj = self.InQueue.get(block=True)
+                    obj_name = item_obj.obj_name
+                except Exception as e:
+                    self.logger.error('[Plugin] A problem occurred while executing process. Error Message: {}'.format())
+
                 if obj_name == "TASK":
+                    self.logger.debug('[Plugin] Executing task')
                     command = Scope.getInstance().getPluginManager().findCommand(self.getName(), item_obj.get_command_cls_id().lower())
                     command.handle_task(item_obj, self.context)
                     # TODO create response message from context and item_obj. item_obj is task
 
                     response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
                     # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
-                    Scope.getInstance().getMessager().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
+                    # Scope.getInstance().getMessager().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
 
                     # Empty context for next use
                     self.context.empty_data()
 
                 elif obj_name == "PROFILE":
+                    self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
-                    policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
-                    self.context.put('username', item_obj.get_username())
-                    policy_module.handle_policy(profile_data, self.context)
 
-                    execution_id = self.get_execution_id(item_obj.get_id())
-                    policy_ver = self.get_policy_version(item_obj.get_id())
+                    try:
+                        policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
+                    except Exception as e:
+                        self.logger.error('[Plugin] A problem occurred while getting module. Error Message: {}'.format(str(e)))
 
-                    response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
-                    # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
-                    Scope.getInstance().getMessager().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
+                    if policy_module is not None:
+                        self.context.put('username', item_obj.get_username())
+                        policy_module.handle_policy(profile_data, self.context)
 
-                    # Empty context for next use
-                    self.context.empty_data()
+                        execution_id = self.get_execution_id(item_obj.get_id())
+                        policy_ver = self.get_policy_version(item_obj.get_id())
+
+                        response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
+                        # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                        # Scope.getInstance().getMessager().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
+
+                        # Empty context for next use
+                        self.context.empty_data()
 
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False
