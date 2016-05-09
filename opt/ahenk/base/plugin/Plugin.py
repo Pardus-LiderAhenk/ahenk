@@ -40,6 +40,12 @@ class Context(object):
     def get_path(self):
         return self.config_manager.get('PLUGIN', 'pluginfolderpath')
 
+    def create_response(self, code=None, message=None, data=None, content_type=None):
+        self.data['responseCode'] = code
+        self.data['responseMessage'] = message
+        self.data['responseData'] = data
+        self.data['contentType'] = content_type
+
         # TODO send file,...
 
 
@@ -66,7 +72,6 @@ class Plugin(threading.Thread):
 
     def run(self):
 
-
         while self.keep_run:
             try:
                 try:
@@ -84,31 +89,21 @@ class Plugin(threading.Thread):
                     # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
 
-                    # Empty context for next use
-                    self.context.empty_data()
-
                 elif obj_name == "PROFILE":
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
 
-                    try:
-                        policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
-                    except Exception as e:
-                        self.logger.error('[Plugin] A problem occurred while getting module. Error Message: {}'.format(str(e)))
+                    policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
 
-                    if policy_module is not None:
-                        self.context.put('username', item_obj.get_username())
-                        policy_module.handle_policy(profile_data, self.context)
+                    self.context.put('username', item_obj.get_username())
+                    policy_module.handle_policy(profile_data, self.context)
 
-                        execution_id = self.get_execution_id(item_obj.get_id())
-                        policy_ver = self.get_policy_version(item_obj.get_id())
+                    execution_id = self.get_execution_id(item_obj.get_id())
+                    policy_ver = self.get_policy_version(item_obj.get_id())
 
-                        response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
-                        # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
-                        Scope.getInstance().getMessager().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
-
-                        # Empty context for next use
-                        self.context.empty_data()
+                    response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
+                    # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                    Scope.getInstance().getMessager().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
 
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False
@@ -117,9 +112,11 @@ class Plugin(threading.Thread):
                     username = item_obj.username
                     safe_mode_module = Scope.getInstance().getPluginManager().find_safe_mode_module(self.name)
                     safe_mode_module.handle_safe_mode(username, self.context)
-                    self.context.empty_data()
                 else:
                     self.logger.warning("[Plugin] Not supported object type " + obj_name)
+
+                 # Empty context for next use
+                self.context.empty_data()
             except Exception as e:
                 self.logger.error("[Plugin] Plugin running exception. Exception Message: {} ".format(str(e)))
 

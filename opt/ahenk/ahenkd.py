@@ -241,6 +241,7 @@ class AhenkDeamon(BaseDaemon):
         params = event.split()
         scope = Scope().getInstance()
         logger = scope.getLogger()
+        plugin_manager = scope.getPluginManager()
 
         message_manager = scope.getMessageManager()
         messenger = scope.getMessager()
@@ -258,6 +259,7 @@ class AhenkDeamon(BaseDaemon):
             logger.debug('[AhenkDeamon] Signal is {}'.format(str(params[0])))
             message = message_manager.logout_msg(params[1])
             messenger.send_direct_message(message)
+            plugin_manager.process_safe_mode(str(params[1]))
             logger.debug('[AhenkDeamon] logout event is handled for user:' + params[1])
         elif 'exit' == str(params[0]):
             logger.debug('[AhenkDeamon] Signal is {}'.format(str(params[0])))
