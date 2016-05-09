@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
-from base.model.MessageFactory import MessageFactory
-
 from base.Scope import Scope
+from base.model.MessageFactory import MessageFactory
 from base.model.enum.MessageType import MessageType
 
 
@@ -38,7 +37,7 @@ class TaskManager(object):
         try:
             self.pluginManager.processPolicy(policy)
         except Exception as e:
-            self.logger.error("Exception occured when adding policy ")
+            self.logger.error("Exception occured when adding policy. Error Message: {}".format(str(e)))
             pass
 
     def saveTask(self, task):
