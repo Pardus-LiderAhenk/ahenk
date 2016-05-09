@@ -10,6 +10,7 @@ from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
 from base.model.PluginKillSignal import PluginKillSignal
 from base.model.PluginBean import PluginBean
+from base.model.safe_mode import SafeMode
 
 
 # TODO create base abstract class
@@ -167,6 +168,22 @@ class PluginManager(object):
             return False
         else:
             return True
+
+    def find_safe_mode_module(self, plugin_name):
+        location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
+        if os.path.isdir(location) and "safe.py" in os.listdir(location):
+            info = imp.find_module("safe", [location])
+            return imp.load_module("safe", *info)
+        else:
+            self.logger.warning('[PluginManager] safe.py not found Plugin Name : ' + str(plugin_name))
+            return None
+
+    def process_safe_mode(self, username):
+        for plugin_name in self.pluginQueueDict:
+            try:
+                self.pluginQueueDict[plugin_name].put(SafeMode(username), 1)
+            except Exception as e:
+                self.logger.error('Exception occured when switching safe mode ' + str(e))
 
     def reloadSinglePlugin(self, pluginName):
         # Not implemented yet
