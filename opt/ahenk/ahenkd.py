@@ -250,7 +250,7 @@ class AhenkDeamon(BaseDaemon):
         if 'login' == str(params[0]):
             logger.debug('[AhenkDeamon] Signal is :{}'.format(str(params[0])))
             login_message = message_manager.login_msg(params[1])
-            messenger.send_direct_message(login_message)
+            #messenger.send_direct_message(login_message)
             get_policy_message = message_manager.policy_request_msg(params[1])
             messenger.send_direct_message(get_policy_message)
             logger.debug('[AhenkDeamon] login event is handled for user:' + params[1])
