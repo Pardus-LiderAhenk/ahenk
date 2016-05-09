@@ -9,6 +9,7 @@ import shutil
 import stat
 import subprocess
 import uuid
+import urllib.request
 
 
 from base.Scope import Scope
@@ -67,9 +68,7 @@ class ExecutionManager(object):
 
             elif plugin['protocol'].lower() == 'http':
                 self.logger.debug('[ExecutionManager] Distribution protocol is {}.'.format(str(plugin['protocol']).lower()))
-                #TODO
-                #wget.download(parameter_map['url'], temp_file)
-                pass
+                urllib.request.urlretrieve(parameter_map['url'],  temp_file)
 
             self.logger.debug('[ExecutionManager] Plugin package downloaded via {}.'.format(str(plugin['protocol']).lower()))
             self.install_deb(temp_file)
