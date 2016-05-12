@@ -226,7 +226,7 @@ class AhenkDeamon(BaseDaemon):
         while True:
             if messager.ping_lider() is False:
                 Scope.getInstance().getLogger().warning('[AhenkDeamon] Connection is lost. Ahenk is trying for reconnection')
-                messager=self.init_messager()
+                messager = self.init_messager()
             time.sleep(1)
 
     def signal_handler(self, num, stack):
@@ -251,7 +251,7 @@ class AhenkDeamon(BaseDaemon):
         if 'login' == str(params[0]):
             logger.debug('[AhenkDeamon] Signal is :{}'.format(str(params[0])))
             login_message = message_manager.login_msg(params[1])
-            #messenger.send_direct_message(login_message)
+            # messenger.send_direct_message(login_message)
             get_policy_message = message_manager.policy_request_msg(params[1])
             messenger.send_direct_message(get_policy_message)
             logger.debug('[AhenkDeamon] login event is handled for user:' + params[1])
