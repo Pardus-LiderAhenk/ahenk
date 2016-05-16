@@ -4,6 +4,7 @@
 
 import platform
 import psutil
+from uuid import getnode as get_mac
 
 
 class System:
@@ -141,6 +142,10 @@ class System:
             return platform.node()
 
     class Hardware(object):
+
+        @staticmethod
+        def mac_address():
+            return str(':'.join(("%012X" % get_mac())[i:i + 2] for i in range(0, 12, 2)))
 
         class Memory(object):
 
