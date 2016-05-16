@@ -12,6 +12,7 @@ import psutil
 from uuid import getnode as get_mac
 
 from base.Scope import Scope
+from base.system.system import System
 from base.messaging.AnonymousMessager import AnonymousMessager
 
 
@@ -96,22 +97,31 @@ class Registration():
         self.logger.debug('[Registration] Registration parameters were created')
 
     def get_registration_params(self):
+
+        print(System.Hardware.Network.ip_addresses())
         params = {
-            'ipAddresses': str(self.get_ip_address()),
-            'macAddresses': str(':'.join(("%012X" % get_mac())[i:i + 2] for i in range(0, 12, 2))),
+            'ipAddresses': self.get_ip_address(),
+            'macAddresses': System.Hardware.mac_address(),
             'hostname': str(socket.gethostname()),
-            'system':str(platform.system()),
-            'node':str(platform.node()),
-            'release':str(platform.release()),
-            'version':str(platform.version()),
-            'machine':str(platform.machine()),
-            'processor':str(platform.processor()),
-            'architecture':str(platform.architecture()),
-            'cpuCount':str(psutil.cpu_count()),
-            'diskInfo':self.get_disks()
+            'system': str(platform.system()),
+            'node': str(platform.node()),
+            'release': str(platform.release()),
+            'version': str(platform.version()),
+            'machine': str(platform.machine()),
+            'processor': str(platform.processor()),
+            'architecture': str(platform.architecture()),
+            'cpuCount': str(psutil.cpu_count()),
+            'diskInfo': self.get_disks()
         }
 
         return json.dumps(params)
+
+    def get_ip_address(self):
+        arr = []
+        for ip in System.Hardware.Network.ip_addresses():
+            if ip is not 'localhost' and ip is not '127.0.0.1':
+                arr.append(ip)
+        return str(arr).replace('[','').replace(']','')
 
     def get_disks(self):
         disk_info = []
@@ -146,11 +156,12 @@ class Registration():
     def generate_password(self):
         return uuid.uuid4()
 
+    """
     def get_ip_address(self):
         f = os.popen('ifconfig eth0 | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1')
         return f.read()
 
-    """
+
     #TODO disabled because of netifaces dependency
     def get_ipAddresses(self):
         self.logger.debug('[Registration] looking for network interfaces')
