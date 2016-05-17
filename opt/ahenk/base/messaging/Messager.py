@@ -41,18 +41,6 @@ class Messager(slixmpp.ClientXMPP):
         self.register_extensions()
         self.add_listeners()
 
-    def ping_lider(self):
-        try:
-            result = self['xep_0199'].send_ping(jid=self.receiver,timeout=10)
-            if result is False:
-                self.logger.debug('[Messager] Couldn\'t send ping to lider.')
-                return False
-            else:
-                return True
-        except Exception as e:
-            self.logger.error('[Messager] A problem occurred while pinging to lider. Error Message:{}'.format(str(e)))
-            return False
-
     def add_listeners(self):
         self.add_event_handler('session_start', self.session_start)
         self.add_event_handler('session_end', self.session_end)
@@ -133,7 +121,7 @@ class Messager(slixmpp.ClientXMPP):
             j = json.loads(str(msg['body']))
             self.logger.debug('[Messager] Received message: {}'.format(str(msg['body'])))
             message_type = j['type']
-            self.logger.debug('[Messager] Fired event is: {}' .format(message_type))
+            self.logger.debug('[Messager] Fired event is: {}'.format(message_type))
             print('----->' + str(msg['body']))
             self.event_manger.fireEvent(message_type, str(msg['body']))
 
@@ -147,7 +135,7 @@ class Messager(slixmpp.ClientXMPP):
             self.logger.debug('[Messager] Connection were established successfully')
             return True
         except Exception as e:
-            self.logger.error('[Messager] Connection to server is failed! ' + e)
+            self.logger.error('[Messager] Connection to server is failed! Error Message: {}'.format(str(e)))
             return False
 
     def set_file_name_md5(self):

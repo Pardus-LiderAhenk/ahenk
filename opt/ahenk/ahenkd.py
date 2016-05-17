@@ -98,8 +98,8 @@ class AhenkDeamon(BaseDaemon):
 
     def init_messager(self):
         messenger = Messager()
-        messanger_thread = threading.Thread(target=messenger.connect_to_server)
-        messanger_thread.start()
+        messenger_thread = threading.Thread(target=messenger.connect_to_server)
+        messenger_thread.start()
 
         while messenger.is_connected() is False:
             time.sleep(1)
@@ -219,12 +219,13 @@ class AhenkDeamon(BaseDaemon):
             signal.signal(signal.SIGALRM, self.signal_handler)
             logger.info('[AhenkDeamon] Signal handler is set up')
         except Exception as e:
-            logger.error('[AhenkDeamon] Signal handler could not set up :' + e.errno + '-' + e.strerror)
+            logger.error('[AhenkDeamon] Signal handler could not set up. Error Message: {} '.format(str(e)))
 
         messager.send_direct_message('test')
 
         while True:
-            if messager.ping_lider() is False:
+            if messager.is_connected() is False:
+                logger.debug('reconnecting')
                 Scope.getInstance().getLogger().warning('[AhenkDeamon] Connection is lost. Ahenk is trying for reconnection')
                 messager = self.init_messager()
             time.sleep(1)
