@@ -38,18 +38,22 @@ class PluginManager(object):
         self.logger.info('[PluginManager] Loading plugins...')
         self.plugins = []
         self.logger.debug('[PluginManager] Lookup for possible plugins...')
-        possibleplugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
-        self.logger.debug('[PluginManager] Possible plugins.. ' + str(possibleplugins))
-        for pname in possibleplugins:
-            location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pname)
-            if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
-                self.logger.debug('It is not a plugin location ! There is no main module - ' + str(location))
-                continue
-            try:
-                self.loadSinglePlugin(pname)
-            except Exception as e:
-                self.logger.error('[PluginManager] Exception occured when loading plugin ! Plugin name : ' + str(pname) + ' Exception : ' + str(e))
-        self.logger.info('[PluginManager] Loaded plugins successfully.')
+
+        try:
+            possible_plugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
+            self.logger.debug('[PluginManager] Possible plugins: {} '.format(str(possible_plugins)))
+            for plugin_name in possible_plugins:
+                location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
+                if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
+                    self.logger.debug('It is not a plugin location ! There is no main module - {}'.format(str(location)))
+                    continue
+                try:
+                    self.loadSinglePlugin(plugin_name)
+                except Exception as e:
+                    self.logger.error('[PluginManager] Exception occurred when loading plugin ! Plugin name : {} .Error Message: {}'.format(str(plugin_name), str(e)))
+            self.logger.info('[PluginManager] Loaded plugins successfully.')
+        except Exception as e:
+            self.logger.warning('[PluginManager] Plugin folder path not found. Error Message: {}'.format(str(e)))
 
     def loadSinglePlugin(self, plugin_name):
         # TODO check already loaded plugin

@@ -98,31 +98,32 @@ class Registration():
 
     def get_registration_params(self):
 
-        print(System.Hardware.Network.ip_addresses())
         params = {
-            'ipAddresses': self.get_ip_address(),
+            'ipAddresses': str(System.Hardware.Network.ip_addresses()).replace('\'localhost\'', '').replace('\'127.0.0.1\'', ''),
             'macAddresses': System.Hardware.mac_address(),
-            'hostname': str(socket.gethostname()),
-            'system': str(platform.system()),
-            'node': str(platform.node()),
-            'release': str(platform.release()),
-            'version': str(platform.version()),
-            'machine': str(platform.machine()),
-            'processor': str(platform.processor()),
-            'architecture': str(platform.architecture()),
-            'cpuCount': str(psutil.cpu_count()),
-            'diskInfo': self.get_disks()
+            'hostname': System.Os.hostname(),
+            'os.name': System.Os.name(),
+            'os.version': System.Os.version(),
+            'os.kernel': System.Os.kernel_release(),
+            'os.distributionName': System.Os.distribution_name(),
+            'os.distributionId': System.Os.distribution_id(),
+            'os.distributionVersion': System.Os.distribution_version(),
+            'os.architecture': System.Os.architecture(),
+            'hardware.cpu.architecture': System.Hardware.Cpu.architecture(),
+            'hardware..cpu.logicalCoreCount': System.Hardware.Cpu.logical_core_count(),
+            'hardware..cpu.physicalCoreCount': System.Hardware.Cpu.physical_core_count(),
+            'hardware.disk.total': System.Hardware.Disk.total(),
+            'hardware.disk.used': System.Hardware.Disk.used(),
+            'hardware.disk.free': System.Hardware.Disk.free(),
+            'hardware.disk.partitions': System.Hardware.Disk.partitions(),
+            'hardware.memory.total': System.Hardware.Memory.total(),
+            'hardware.network.ipAddresses': System.Hardware.Network.ip_addresses(),
+            'sessions.userNames': System.Sessions.user_name(),
         }
 
         return json.dumps(params)
 
-    def get_ip_address(self):
-        arr = []
-        for ip in System.Hardware.Network.ip_addresses():
-            if ip is not 'localhost' and ip is not '127.0.0.1':
-                arr.append(ip)
-        return str(arr).replace('[','').replace(']','')
-
+    """
     def get_disks(self):
         disk_info = []
         for _disk in psutil.disk_partitions():
@@ -134,6 +135,7 @@ class Registration():
             json_data = json.dumps(disk)
             disk_info.append(json_data)
         return disk_info
+    """
 
     def unregister(self):
         self.logger.debug('[Registration] Ahenk is unregistering...')

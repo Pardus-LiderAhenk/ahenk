@@ -10,6 +10,7 @@ import stat
 import subprocess
 import uuid
 import urllib.request
+import errno
 
 from base.Scope import Scope
 from base.messaging.ssh_file_transfer import FileTransfer
@@ -57,16 +58,21 @@ class ExecutionManager(object):
             temp_file = self.config_manager.get('CONNECTION', 'receivefileparam') + str(uuid.uuid4()) + '.deb'
 
             if str(plugin['protocol']).lower() == 'ssh':
-                self.logger.debug('[ExecutionManager] Distribution protocol is {}'.format(str(plugin['protocol']).lower()))
-                host = parameter_map['host']
-                username = parameter_map['username']
-                password = parameter_map['password']
-                port = parameter_map['port']
-                path = parameter_map['path']
+                try:
+                    self.logger.debug('[ExecutionManager] Distribution protocol is {}'.format(str(plugin['protocol']).lower()))
+                    host = parameter_map['host']
+                    username = parameter_map['username']
+                    password = parameter_map['password']
+                    port = parameter_map['port']
+                    path = parameter_map['path']
 
-                transfer = FileTransfer(host, port, username, password)
-                transfer.connect()
-                transfer.get_file(temp_file, path)
+                    transfer = FileTransfer(host, port, username, password)
+                    transfer.connect()
+                    transfer.get_file(temp_file, path)
+                except Exception as e:
+                    self.logger.error('[ExecutionManager] Plugin package could not fetch. Error Message: {}.'.format(str(e)))
+                    self.logger.error('[ExecutionManager] Plugin Installation is cancelling')
+                    return
 
             elif plugin['protocol'].lower() == 'http':
                 self.logger.debug('[ExecutionManager] Distribution protocol is {}.'.format(str(plugin['protocol']).lower()))
@@ -75,10 +81,19 @@ class ExecutionManager(object):
                 self.logger.debug('[ExecutionManager] Unsupported protocol is {}.'.format(str(plugin['protocol']).lower()))
 
             self.logger.debug('[ExecutionManager] Plugin package downloaded via {}.'.format(str(plugin['protocol']).lower()))
-            self.install_deb(temp_file)
-            self.logger.debug('[ExecutionManager] Plugin installed.')
-            self.remove_file(temp_file)
-            self.logger.debug('[ExecutionManager] Temp files were removed.')
+            try:
+                self.install_deb(temp_file)
+                self.logger.debug('[ExecutionManager] Plugin installed.')
+            except Exception as e:
+                self.logger.error('[ExecutionManager] Could not install plugin. Error Message: {}'.format(str(e)))
+                return
+
+            try:
+                self.remove_file(temp_file)
+                self.logger.debug('[ExecutionManager] Temp files were removed.')
+            except Exception as e:
+                self.logger.error('[ExecutionManager] Could not remove temp file. Error Message: {}'.format(str(e)))
+
             self.plugin_manager.loadSinglePlugin(plugin_name)
 
         except Exception as e:
