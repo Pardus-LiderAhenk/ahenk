@@ -37,6 +37,19 @@ class Context(object):
     def execute(self, command):
         return subprocess.Popen(command, shell=True)
 
+    def execute_script(self, script_path, parameters=None):
+        command = []
+        if script_path is not None:
+            command.append(script_path)
+        else:
+            raise Exception('[Context] Script is required')
+
+        if parameters is not None:
+            for p in parameters:
+                command.append(p)
+
+        return subprocess.check_call(command)
+
     def get_path(self):
         return self.config_manager.get('PLUGIN', 'pluginfolderpath')
 
@@ -115,7 +128,7 @@ class Plugin(threading.Thread):
                 else:
                     self.logger.warning("[Plugin] Not supported object type " + obj_name)
 
-                 # Empty context for next use
+                # Empty context for next use
                 self.context.empty_data()
             except Exception as e:
                 self.logger.error("[Plugin] Plugin running exception. Exception Message: {} ".format(str(e)))
