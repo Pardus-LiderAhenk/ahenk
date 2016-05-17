@@ -43,9 +43,10 @@ class FileTransfer(object):
             self.logger.debug('[FileTransfer] File was downloaded to {} from {}'.format(local_path, remote_path))
         except Exception as e:
             self.logger.error('[FileTransfer] A problem occurred while downloading file. Exception message: {}'.format(str(e)))
+            raise
         finally:
             self.connection.close()
-            self.logger.debug('[FileTransfer] Connection is closed successfully')
+        self.logger.debug('[FileTransfer] Connection is closed successfully')
 
     def connect(self):
         self.logger.debug('[FileTransfer]  Connecting to {} via {}'.format(self.target_hostname, self.port))
