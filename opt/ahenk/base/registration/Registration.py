@@ -123,20 +123,6 @@ class Registration():
 
         return json.dumps(params)
 
-    """
-    def get_disks(self):
-        disk_info = []
-        for _disk in psutil.disk_partitions():
-            disk = {}
-            disk['device'] = str(_disk[0])
-            disk['mountPoint'] = str(_disk[1])
-            disk['fsType'] = str(_disk[2])
-            disk['opts'] = str(_disk[3])
-            json_data = json.dumps(disk)
-            disk_info.append(json_data)
-        return disk_info
-    """
-
     def unregister(self):
         self.logger.debug('[Registration] Ahenk is unregistering...')
         self.db_service.delete('registration', ' 1==1 ')
