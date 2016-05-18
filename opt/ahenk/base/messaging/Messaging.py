@@ -115,7 +115,7 @@ class Messaging(object):
         data['password'] = self.db_service.select_one_result('registration', 'password', ' 1=1')
 
         params = self.db_service.select_one_result('registration', 'params', ' 1=1')
-        data['parameters'] = json.loads(str(params))
+        data['data'] = json.loads(str(params))
         json_params = json.loads(str(params))
         data['macAddresses'] = json_params['macAddresses']
         data['ipAddresses'] = json_params['ipAddresses']
