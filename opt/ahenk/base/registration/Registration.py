@@ -4,16 +4,12 @@
 
 import datetime
 import json
-import socket
 import uuid
-import os
-import platform
-import psutil
 from uuid import getnode as get_mac
 
 from base.Scope import Scope
-from base.system.system import System
 from base.messaging.AnonymousMessager import AnonymousMessager
+from base.system.system import System
 
 
 class Registration():
@@ -99,8 +95,8 @@ class Registration():
     def get_registration_params(self):
 
         params = {
-            'ipAddresses': str(System.Hardware.Network.ip_addresses()).replace('\'localhost\'', '').replace('\'127.0.0.1\'', ''),
-            'macAddresses': System.Hardware.mac_address(),
+            'ipAddresses': System.Hardware.Network.ip_addresses(),
+            'macAddresses': System.Hardware.Network.mac_addresses(),
             'hostname': System.Os.hostname(),
             'os.name': System.Os.name(),
             'os.version': System.Os.version(),
@@ -110,8 +106,8 @@ class Registration():
             'os.distributionVersion': System.Os.distribution_version(),
             'os.architecture': System.Os.architecture(),
             'hardware.cpu.architecture': System.Hardware.Cpu.architecture(),
-            'hardware..cpu.logicalCoreCount': System.Hardware.Cpu.logical_core_count(),
-            'hardware..cpu.physicalCoreCount': System.Hardware.Cpu.physical_core_count(),
+            'hardware.cpu.logicalCoreCount': System.Hardware.Cpu.logical_core_count(),
+            'hardware.cpu.physicalCoreCount': System.Hardware.Cpu.physical_core_count(),
             'hardware.disk.total': System.Hardware.Disk.total(),
             'hardware.disk.used': System.Hardware.Disk.used(),
             'hardware.disk.free': System.Hardware.Disk.free(),
@@ -143,20 +139,3 @@ class Registration():
 
     def generate_password(self):
         return uuid.uuid4()
-
-    """
-    def get_ip_address(self):
-        f = os.popen('ifconfig eth0 | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1')
-        return f.read()
-
-
-    #TODO disabled because of netifaces dependency
-    def get_ipAddresses(self):
-        self.logger.debug('[Registration] looking for network interfaces')
-        ip_address = ""
-        for interface in netifaces.interfaces():
-            if (str(interface) != "lo"):
-                ip_address += str(netifaces.ifaddresses(interface)[netifaces.AF_INET])
-        self.logger.debug('[Registration] returning ip addresses from every interfaces')
-        return ip_address
-    """

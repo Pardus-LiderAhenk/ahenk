@@ -4,6 +4,8 @@
 
 import platform
 import psutil
+import cpuinfo
+import re
 from uuid import getnode as get_mac
 
 
@@ -143,10 +145,6 @@ class System:
 
     class Hardware(object):
 
-        @staticmethod
-        def mac_address():
-            return str(':'.join(("%012X" % get_mac())[i:i + 2] for i in range(0, 12, 2)))
-
         class Memory(object):
 
             @staticmethod
@@ -216,7 +214,18 @@ class System:
             def ip_addresses():
                 arr = []
                 for iface in psutil.net_io_counters(pernic=True):
-                    arr.append(psutil.net_if_addrs()[str(iface)][0][1])
+                    ip = psutil.net_if_addrs()[str(iface)][0][1]
+                    if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$', ip) and str(ip) != 'localhost' and str(ip) != '127.0.0.1':
+                        arr.append(ip)
+                return arr
+
+            @staticmethod
+            def mac_addresses():
+                arr = []
+                for iface in psutil.net_io_counters(pernic=True):
+                    mac = psutil.net_if_addrs()[str(iface)][2][1]
+                    if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(mac) != '00:00:00:00:00:00':
+                        arr.append(mac.lower())
                 return arr
 
         class Cpu(object):
@@ -240,3 +249,31 @@ class System:
             @staticmethod
             def architecture():
                 return platform.processor()
+
+            @staticmethod
+            def vendor():
+                return cpuinfo.get_cpu_info()['vendor_id']
+
+            @staticmethod
+            def brand():
+                return cpuinfo.get_cpu_info()['brand']
+
+            @staticmethod
+            def hz_advertised():
+                return cpuinfo.get_cpu_info()['hz_advertised']
+
+            @staticmethod
+            def hz_actual():
+                return cpuinfo.get_cpu_info()['hz_actual']
+
+            @staticmethod
+            def bit():
+                return cpuinfo.get_cpu_info()['bits']
+
+            @staticmethod
+            def family():
+                return cpuinfo.get_cpu_info()['family']
+
+            @staticmethod
+            def model():
+                return cpuinfo.get_cpu_info()['model']
