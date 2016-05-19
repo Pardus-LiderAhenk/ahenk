@@ -95,8 +95,8 @@ class Registration():
     def get_registration_params(self):
 
         params = {
-            'ipAddresses': System.Hardware.Network.ip_addresses(),
-            'macAddresses': System.Hardware.Network.mac_addresses(),
+            'ipAddresses': str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', ''),
+            'macAddresses': str(System.Hardware.Network.mac_addresses()).replace('[', '').replace(']', ''),
             'hostname': System.Os.hostname(),
             'os.name': System.Os.name(),
             'os.version': System.Os.version(),
