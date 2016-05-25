@@ -13,17 +13,6 @@ class Context(object):
     def __init__(self):
         self.data = {}
         self.scope = Scope().getInstance()
-        self.logger = self.scope.getLogger()
-        self.config_manager = self.scope.getConfigurationManager()
-
-    def debug(self, message):
-        self.logger.debug('[PLUGIN]' + message)
-
-    def info(self, message):
-        self.logger.info('[PLUGIN]' + message)
-
-    def error(self, message):
-        self.logger.error('[PLUGIN]' + message)
 
     def put(self, var_name, data):
         self.data[var_name] = data
@@ -33,25 +22,6 @@ class Context(object):
 
     def empty_data(self):
         self.data = {}
-
-    def execute(self, command):
-        return subprocess.Popen(command, shell=True)
-
-    def execute_script(self, script_path, parameters=None):
-        command = []
-        if script_path is not None:
-            command.append(script_path)
-        else:
-            raise Exception('[Context] Script is required')
-
-        if parameters is not None:
-            for p in parameters:
-                command.append(p)
-
-        return subprocess.check_call(command)
-
-    def get_path(self):
-        return self.config_manager.get('PLUGIN', 'pluginfolderpath')
 
     def create_response(self, code=None, message=None, data=None, content_type=None):
         self.data['responseCode'] = code

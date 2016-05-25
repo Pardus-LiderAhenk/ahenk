@@ -6,8 +6,6 @@ import platform
 import psutil
 import cpuinfo
 import re
-from uuid import getnode as get_mac
-
 
 class System:
     class Process(object):
@@ -100,6 +98,11 @@ class System:
         @staticmethod
         def user_details():
             return psutil.users()
+
+        @staticmethod
+        def last_login_username():
+            #TODO
+            pass
 
     class Os(object):
 
