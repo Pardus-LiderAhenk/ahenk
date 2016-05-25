@@ -12,6 +12,7 @@ import sys
 import threading
 import time
 
+from base.system.system import System
 from base.Scope import Scope
 from base.config.ConfigManager import ConfigManager
 from base.database.AhenkDbService import AhenkDbService
@@ -28,6 +29,7 @@ from base.scheduler.scheduler_factory import SchedulerFactory
 from base.task.TaskManager import TaskManager
 
 pidfilePath = '/var/run/ahenk.pid'
+configFilePath = '/etc/ahenk/ahenk.conf'
 
 
 class AhenkDeamon(BaseDaemon):
@@ -162,7 +164,6 @@ class AhenkDeamon(BaseDaemon):
         globalscope = Scope()
         globalscope.setInstance(globalscope)
 
-        configFilePath = '/etc/ahenk/ahenk.conf'
         configfileFolderPath = '/etc/ahenk/config.d/'
 
         # configuration manager must be first load
@@ -252,7 +253,7 @@ class AhenkDeamon(BaseDaemon):
         if 'login' == str(params[0]):
             logger.debug('[AhenkDeamon] Signal is :{}'.format(str(params[0])))
             login_message = message_manager.login_msg(params[1])
-            # messenger.send_direct_message(login_message)
+            messenger.send_direct_message(login_message)
             get_policy_message = message_manager.policy_request_msg(params[1])
             messenger.send_direct_message(get_policy_message)
             logger.debug('[AhenkDeamon] login event is handled for user:' + params[1])
@@ -287,8 +288,29 @@ def set_event(event_param):
     config.read(pidfilePath)
     config.set('PID', 'event', event_param)
 
-    with open(pidfilePath, 'w') as config_file:
-        config.write(config_file)
+    with open(pidfilePath, 'w') as conf_file:
+        config.write(conf_file)
+
+
+def clean():
+    try:
+        config = configparser.ConfigParser()
+        config._interpolation = configparser.ExtendedInterpolation()
+        config.read(configFilePath)
+        db_path = config.get('BASE', 'dbPath')
+
+        os.remove(db_path)
+
+        config.set('BASE', 'uid', '')
+        config.set('BASE', 'password', '')
+
+        with open(configFilePath, 'w') as file:
+            config.write(file)
+
+        file.close()
+
+    except Exception as e:
+        print('Error while running clean command. Error Message {}'.format(str(e)))
 
 
 if __name__ == '__main__':
@@ -300,11 +322,19 @@ if __name__ == '__main__':
                 print('starting')
                 ahenkdaemon.run()
             elif sys.argv[1] == 'stop':
+                print('stopping')
+                # TODO
                 ahenkdaemon.stop()
             elif sys.argv[1] == 'restart':
+                # TODO
+                print('restarting')
                 ahenkdaemon.restart()
             elif sys.argv[1] == 'status':
+                # TODO
                 print('status')
+            elif sys.argv[1] == 'clean':
+                print('cleaning')
+                clean()
             else:
                 print('Unknown command. Usage : %s start|stop|restart|status' % sys.argv[0])
                 sys.exit(2)
