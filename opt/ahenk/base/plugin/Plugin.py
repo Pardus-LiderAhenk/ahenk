@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
-import subprocess
+
 import threading
 
 from base.Scope import Scope
@@ -61,42 +61,45 @@ class Plugin(threading.Thread):
                     item_obj = self.InQueue.get(block=True)
                     obj_name = item_obj.obj_name
                 except Exception as e:
-                    self.logger.error('[Plugin] A problem occurred while executing process. Error Message: {}'.format())
+                    self.logger.error('[Plugin] A problem occurred while executing process. Error Message: {}'.format(str(e)))
 
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
                     command = Scope.getInstance().getPluginManager().findCommand(self.getName(), item_obj.get_command_cls_id().lower())
+                    self.logger.debug('[Plugin] Handling task')
                     command.handle_task(item_obj, self.context)
-
+                    self.logger.debug('[Plugin] Creating response')
                     response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
                     # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                    self.logger.debug('[Plugin] Sending response')
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
 
                 elif obj_name == "PROFILE":
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
-
                     policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
-
                     self.context.put('username', item_obj.get_username())
-                    policy_module.handle_policy(profile_data, self.context)
 
+                    self.logger.debug('[Plugin] Handling profile')
+                    policy_module.handle_policy(profile_data, self.context)
                     execution_id = self.get_execution_id(item_obj.get_id())
                     policy_ver = self.get_policy_version(item_obj.get_id())
 
+                    self.logger.debug('[Plugin] Creating response')
                     response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
                     # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
+                    self.logger.debug('[Plugin] Sending response')
                     Scope.getInstance().getMessager().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
 
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False
-                    self.logger.debug('[Plugin] Killing queue ! Plugin Name : ' + str(self.name))
+                    self.logger.debug('[Plugin] Killing queue ! Plugin Name: {}'.format(str(self.name)))
                 elif obj_name == "SAFE_MODE":
                     username = item_obj.username
                     safe_mode_module = Scope.getInstance().getPluginManager().find_safe_mode_module(self.name)
                     safe_mode_module.handle_safe_mode(username, self.context)
                 else:
-                    self.logger.warning("[Plugin] Not supported object type " + obj_name)
+                    self.logger.warning("[Plugin] Not supported object type: {}".format(str(obj_name)))
 
                 # Empty context for next use
                 self.context.empty_data()
