@@ -116,7 +116,8 @@ class Util:
 
     @staticmethod
     def execute(command):
-        return subprocess.Popen(command, shell=True)
+        p = subprocess.Popen(command, shell=True)
+        return p.wait()
 
     @staticmethod
     def execute_script(script_path, parameters=None):
