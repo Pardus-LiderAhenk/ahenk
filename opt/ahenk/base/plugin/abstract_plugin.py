@@ -14,26 +14,27 @@ class AbstractPlugin(Util):
     def __init__(self):
         super(Util, self).__init__()
         self.scope = Scope.getInstance()
-        self.message_code = MessageCode
 
     def handle_task(profile_data, context):
-        Scope.getInstance().getLogger().error('[PluginPolicy] Handle function not found')
+        Scope.getInstance().getLogger().error('[AbstractPlugin] Handle function not found')
 
-    @property
-    def logger(self):
+    def get_message_code(self):
+        return MessageCode
+
+    def get_logger(self):
         try:
-            return self.scope.getLogger()
+            return Scope.getInstance().getLogger()
         except Exception as e:
-            self.scope.getLogger().error('[PluginPolicy] A problem occurred while getting logger. Error Message: {}'.format(str(e)))
+            self.scope.getLogger().error('[AbstractPlugin] A problem occurred while getting logger. Error Message: {}'.format(str(e)))
             return None
 
-    def configuration_manager(self):
-        try:
-            return self.scope.getConfigurationManager()
-        except Exception as e:
-            self.logger().error('[PluginPolicy] A problem occurred while getting configuration manager. Error Message: {}'.format(str(e)))
-            return None
+def configuration_manager(self):
+    try:
+        return self.scope.getConfigurationManager()
+    except Exception as e:
+        self.logger().error('[AbstractPlugin] A problem occurred while getting configuration manager. Error Message: {}'.format(str(e)))
+        return None
 
-    def plugin_path(self):
-        return self.configuration_manager().get('PLUGIN', 'pluginfolderpath')
 
+def plugin_path(self):
+    return self.configuration_manager().get('PLUGIN', 'pluginfolderpath')
