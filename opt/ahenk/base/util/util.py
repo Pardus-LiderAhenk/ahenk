@@ -115,9 +115,18 @@ class Util:
             raise
 
     @staticmethod
-    def execute(command):
-        p = subprocess.Popen(command, shell=True)
-        return p.wait()
+    def execute(command, stdin=None, env=None, cwd=None, shell=True):
+
+        try:
+            process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=shell)
+
+            result_code = process.wait()
+            p_out = ', '.join([str(x) for x in process.stdout.readlines()])
+            p_err = ', '.join([str(x) for x in process.stderr.readlines()])
+
+            return result_code, p_out, p_err
+        except Exception as e:
+            return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
 
     @staticmethod
     def execute_script(script_path, parameters=None):
@@ -174,3 +183,5 @@ class Util:
             return grp.getgrgid(gid)[0]
         except:
             raise
+
+
