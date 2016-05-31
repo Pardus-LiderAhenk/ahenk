@@ -121,8 +121,8 @@ class Util:
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=shell)
 
             result_code = process.wait()
-            p_out = ', '.join([str(x) for x in process.stdout.readlines()])
-            p_err = ', '.join([str(x) for x in process.stderr.readlines()])
+            p_out = process.stdout.read().decode("unicode_escape")
+            p_err = process.stderr.read().decode("unicode_escape")
 
             return result_code, p_out, p_err
         except Exception as e:
