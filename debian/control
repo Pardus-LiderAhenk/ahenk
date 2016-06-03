@@ -8,6 +8,6 @@ Homepage: http://www.liderahenk.org.tr
 
 Package: ahenk
 Architecture: any
-Depends:slixmpp, python3 (>= 3)
+Depends:python3 (>= 3), cython, libidn11, libidn11-dev, slixmpp, python3-dev, python3-pip, libffi-dev, libssl-dev, python3-paramiko, python3-psutil
 Description: LiderAhenk agent application
  Long Desc
