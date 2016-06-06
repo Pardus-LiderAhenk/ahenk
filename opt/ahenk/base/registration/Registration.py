@@ -53,7 +53,6 @@ class Registration():
         elif 'registration_error' == str(status):
             self.logger.info('[Registration] Registration is failed. New registration request will send')
             self.re_register()
-            self.registration_request()
         else:
             self.logger.error('[Registration] Bad message type of registration response ')
 
