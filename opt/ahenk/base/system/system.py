@@ -6,8 +6,78 @@ import platform
 import psutil
 import cpuinfo
 import re
+import os
+import configparser
+
 
 class System:
+    class Ahenk(object):
+
+        @staticmethod
+        def installed_plugins():
+            plugin_names = []
+            possible_plugins = os.listdir(System.Ahenk.plugins_path())
+            for plugin_name in possible_plugins:
+                location = os.path.join(System.Ahenk.plugins_path(), plugin_name)
+                if os.path.isdir(location) and System.Ahenk.module_name() + ".py" in os.listdir(location):
+                    plugin_names.append(plugin_name)
+            return plugin_names
+
+        @staticmethod
+        def db_path():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('BASE', 'dbPath')
+
+        @staticmethod
+        def plugins_path():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('PLUGIN', 'pluginfolderpath')
+
+        @staticmethod
+        def module_name():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('PLUGIN', 'mainModuleName')
+
+        @staticmethod
+        def get_pid_number():
+            pid_number = None
+            try:
+                if os.path.exists(System.Ahenk.pid_path()):
+                    file = open(System.Ahenk.pid_path(), 'r')
+                    pid_number = file.read()
+                    file.close()
+                return pid_number
+            except Exception as e:
+                return None
+
+        @staticmethod
+        def is_running():
+
+            try:
+                if System.Ahenk.get_pid_number() is not None:
+                    if psutil.Process(int(System.Ahenk.get_pid_number())).is_running() is True:
+                        return True
+                else:
+                    return False
+            except Exception as e:
+                return False
+
+
+
+        @staticmethod
+        def config_path():
+            return '/etc/ahenk/ahenk.conf'
+
+        @staticmethod
+        def pid_path():
+            return '/var/run/ahenk.pid'
+
     class Process(object):
 
         @staticmethod
@@ -20,6 +90,15 @@ class System:
                 if psutil.Process(id).name() == p_name:
                     return id
             return None
+
+
+        @staticmethod
+        def process_by_pid(pid):
+            return psutil.Process(pid)
+
+        @staticmethod
+        def kill_by_pid(pid):
+            return psutil.Process(pid).kill()
 
         @staticmethod
         def find_name_by_pid(pid):
@@ -101,7 +180,7 @@ class System:
 
         @staticmethod
         def last_login_username():
-            #TODO
+            # TODO
             pass
 
     class Os(object):
@@ -226,9 +305,13 @@ class System:
             def mac_addresses():
                 arr = []
                 for iface in psutil.net_io_counters(pernic=True):
-                    mac = psutil.net_if_addrs()[str(iface)][2][1]
-                    if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(mac) != '00:00:00:00:00:00':
-                        arr.append(mac.lower())
+                    try:
+                        addr_list=psutil.net_if_addrs()
+                        mac = addr_list[str(iface)][2][1]
+                        if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(mac) != '00:00:00:00:00:00':
+                            arr.append(mac.lower())
+                    except Exception as e:
+                        pass
                 return arr
 
         class Cpu(object):
@@ -280,3 +363,4 @@ class System:
             @staticmethod
             def model():
                 return cpuinfo.get_cpu_info()['model']
+
