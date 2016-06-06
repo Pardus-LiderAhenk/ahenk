@@ -28,23 +28,6 @@ class Messaging(object):
         self.logger.debug('[Messaging]Missing plugin message was created')
         return str(json_data)
 
-    """
-    def response_msg(self, response):
-        print("response message")
-        data = {}
-        data['type'] = response.get_type()
-        data['taskId'] = response.get_id()
-        data['responseCode'] = response.get_code()
-        data['responseMessage'] = response.get_message()
-        data['responseData'] = response.get_data()
-        data['contentType'] = response.get_content_type()
-        data['timestamp'] = response.get_timestamp()
-
-        json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Response message was created')
-        return str(json_data)
-    """
-
     def task_status_msg(self, response):
         data = {}
         data['type'] = response.get_type()

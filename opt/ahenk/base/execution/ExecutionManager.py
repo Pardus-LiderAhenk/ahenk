@@ -201,6 +201,7 @@ class ExecutionManager(object):
 
         return policy
 
+    #from db
     def get_installed_plugins(self):
         plugins = self.db_service.select('plugin', ['name', 'version'])
         p_list = []

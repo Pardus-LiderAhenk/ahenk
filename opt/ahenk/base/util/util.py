@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
-import os
+import grp
 import json
+import os
+import pwd
 import shutil
 import stat
-import pwd
-import grp
 import subprocess
 
 
@@ -183,5 +183,3 @@ class Util:
             return grp.getgrgid(gid)[0]
         except:
             raise
-
-
