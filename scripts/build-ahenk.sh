@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-# This script builds the project and generates Ahenk distribution (ahenk.deb)
+# This script generates Ahenk package (ahenk.deb)
 #
 # Generated file can be found under /tmp/ahenk
 ###
