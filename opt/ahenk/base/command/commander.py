@@ -180,7 +180,7 @@ class Commander(object):
     def status(self):
         ahenk_state = False
 
-        if System.Ahenk.get_pid_number():
+        if System.Ahenk.is_running() is True:
             ahenk_state = True
         return "Ahenk Active:{0}\nInstalled Plugins:{1}".format(ahenk_state, str(System.Ahenk.installed_plugins()))
 
