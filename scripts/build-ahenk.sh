@@ -5,6 +5,7 @@
 #
 # Generated file can be found under /tmp/ahenk
 ###
+set -e
 
 pushd $(dirname $0) > /dev/null
 PRJ_ROOT_PATH=$(dirname $(pwd -P))
