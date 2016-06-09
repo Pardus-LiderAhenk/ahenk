@@ -91,6 +91,8 @@ class System:
         def pids():
             return psutil.pids()
 
+
+
         @staticmethod
         def find_pid_by_name(p_name):
             for id in psutil.pids():
@@ -100,8 +102,27 @@ class System:
         """
 
         @staticmethod
+        def find_pids_by_name(p_name):
+            arr = []
+
+            for pid in psutil.get_pid_list():
+                if psutil.Process(pid).name==p_name:
+                    arr.append(pid)
+            return arr
+
+
+        @staticmethod
+        def is_running(pid):
+            return psutil.pid_exists(pid)
+
+        @staticmethod
         def kill_by_pid(pid):
             return psutil.Process(pid).kill()
+
+        @staticmethod
+        def kill_by_pids(pids):
+            for pid in pids:
+                psutil.Process(pid).kill()
 
         @staticmethod
         def find_name_by_pid(pid):
@@ -132,6 +153,7 @@ class System:
         @staticmethod
         def create_time(pid):
             return psutil.Process(pid).create_time()
+
 
 
         """
