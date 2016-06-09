@@ -9,6 +9,7 @@ import pwd
 import shutil
 import stat
 import subprocess
+import sys
 
 
 class Util:
@@ -115,16 +116,19 @@ class Util:
             raise
 
     @staticmethod
-    def execute(command, stdin=None, env=None, cwd=None, shell=True):
+    def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True):
 
         try:
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=shell)
 
-            result_code = process.wait()
-            p_out = process.stdout.read().decode("unicode_escape")
-            p_err = process.stderr.read().decode("unicode_escape")
+            if result is True:
+                result_code = process.wait()
+                p_out = process.stdout.read().decode("unicode_escape")
+                p_err = process.stderr.read().decode("unicode_escape")
 
-            return result_code, p_out, p_err
+                return result_code, p_out, p_err
+            else:
+                return None, None, None
         except Exception as e:
             return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
 
@@ -183,3 +187,35 @@ class Util:
             return grp.getgrgid(gid)[0]
         except:
             raise
+
+    @staticmethod
+    def install_with_gdebi(full_path):
+        try:
+            process = subprocess.Popen('gdebi -n ' + full_path, shell=True)
+            process.wait()
+        except:
+            raise
+
+    @staticmethod
+    def install_with_apt_get(package_name):
+        try:
+            process = subprocess.Popen('apt-get install --yes --force-yes ' + package_name, shell=True)
+            process.wait()
+        except:
+            raise
+
+    @staticmethod
+    def is_installed(package_name):
+
+        result_code, p_out, p_err = Util.execute('dpkg -s {}'.format(package_name))
+        try:
+            lines=str(p_out).split('\n')
+            for line in lines:
+                if len(line)>1:
+                    if line.split(None, 1)[0].lower() =='status:':
+                        if 'installed' in line.split(None, 1)[1].lower():
+                            return True
+            return False
+        except Exception as e:
+            return False
+
