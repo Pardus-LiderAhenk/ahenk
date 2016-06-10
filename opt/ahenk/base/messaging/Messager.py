@@ -27,14 +27,15 @@ class Messager(slixmpp.ClientXMPP):
         self.event_manger = scope.getEventManager()
         self.execution_manager = scope.getExecutionManager()
 
-        self.my_jid = str(self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/receiver')
+        self.my_jid = str(self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename'))
         self.my_pass = str(self.configuration_manager.get('CONNECTION', 'password'))
 
         slixmpp.ClientXMPP.__init__(self, self.my_jid, self.my_pass)
 
         self.file = None
         self.hostname = self.configuration_manager.get('CONNECTION', 'host')
-        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/Smack'
+        self.resource_name = self.configuration_manager.get('CONNECTION', 'receiverresource')
+        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/' + self.resource_name
         self.receive_file_path = self.configuration_manager.get('CONNECTION', 'receivefileparam')
         self.logger.debug('[Messager] XMPP Messager parameters were set')
 
