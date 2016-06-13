@@ -4,7 +4,7 @@
 
 import platform
 import psutil
-# import cpuinfo
+import cpuinfo
 import re
 import os
 import configparser
@@ -12,9 +12,11 @@ import socket
 import fcntl
 import struct
 from uuid import getnode as get_mac
+
 """
 some functions closed because of dependency management
 """
+
 
 class System:
     class Ahenk(object):
@@ -86,30 +88,17 @@ class System:
         def process_by_pid(pid):
             return psutil.Process(pid)
 
-        """
         @staticmethod
         def pids():
             return psutil.pids()
 
-
-
-        @staticmethod
-        def find_pid_by_name(p_name):
-            for id in psutil.pids():
-                if psutil.Process(id).name() == p_name:
-                    return id
-            return None
-        """
-
         @staticmethod
         def find_pids_by_name(p_name):
             arr = []
-
-            for pid in psutil.get_pid_list():
-                if psutil.Process(pid).name==p_name:
+            for pid in psutil.pids():
+                if psutil.Process(id).name() == p_name:
                     arr.append(pid)
             return arr
-
 
         @staticmethod
         def is_running(pid):
@@ -132,11 +121,9 @@ class System:
         def path(pid):
             return psutil.Process(pid).exe()
 
-        """
         @staticmethod
         def working_directory(pid):
             return psutil.Process(pid).cwd()
-        """
 
         @staticmethod
         def command_line(pid):
@@ -154,9 +141,6 @@ class System:
         def create_time(pid):
             return psutil.Process(pid).create_time()
 
-
-
-        """
         @staticmethod
         def cpu_times(pid):
             return psutil.Process(pid).cpu_times()
@@ -180,17 +164,14 @@ class System:
         @staticmethod
         def threads(pid):
             return psutil.Process(pid).threads()
-        """
 
         @staticmethod
         def nice(pid):
             return psutil.Process(pid).nice()
 
-        """
         @staticmethod
         def environment(pid):
             return psutil.Process(pid).environ()
-        """
 
         @staticmethod
         def details():
@@ -198,15 +179,6 @@ class System:
 
     class Sessions(object):
 
-        @staticmethod
-        def user_name():
-            arr = []
-            for user in psutil.get_users():
-                if str(user[0]) is not 'None' and user[0] not in arr:
-                    arr.append(user[0])
-            return arr
-
-        """
         @staticmethod
         def user_name():
             arr = []
@@ -219,27 +191,30 @@ class System:
         def user_details():
             return psutil.users()
 
-        """
-
-
-
         @staticmethod
         def last_login_username():
             # TODO
             pass
 
-    class Os(object):
+        """
+        @staticmethod
+        def user_name():
+            arr = []
+            for user in psutil.get_users():
+                if str(user[0]) is not 'None' and user[0] not in arr:
+                    arr.append(user[0])
+            return arr
+        """
 
+    class Os(object):
 
         @staticmethod
         def architecture():
             return platform.architecture()[0]
 
-        """
         @staticmethod
         def boot_time():
             return psutil.boot_time()
-        """
 
         @staticmethod
         def file_format():
@@ -346,39 +321,35 @@ class System:
                         arr.append(ip)
                 return arr
 
+            @staticmethod
+            def getHwAddr(ifname):
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                info = fcntl.ioctl(s.fileno(), 0x8927, struct.pack('256s', ifname[:15]))
+                return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
+
+            @staticmethod
+            def getHwAddr(ifname):
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                info = fcntl.ioctl(s.fileno(), 0x8927, struct.pack('256s', ifname[:15]))
+                return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
+
+            @staticmethod
+            def mac_addresses():
+                mac = get_mac()
+                ':'.join(("%012X" % mac)[i:i + 2] for i in range(0, 12, 2))
+                arr = []
+                for iface in psutil.net_io_counters(pernic=True):
+                    try:
+                        addr_list = psutil.net_if_addrs()
+                        mac = addr_list[str(iface)][2][1]
+                        if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(mac) != '00:00:00:00:00:00':
+                            arr.append(mac.lower())
+                    except Exception as e:
+                        pass
+
+                return arr
+
             """
-            @staticmethod
-            def getHwAddr(ifname):
-                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                info = fcntl.ioctl(s.fileno(), 0x8927, struct.pack('256s', ifname[:15]))
-                return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
-
-            @staticmethod
-            def getHwAddr(ifname):
-                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                info = fcntl.ioctl(s.fileno(), 0x8927, struct.pack('256s', ifname[:15]))
-                return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
-
-
-
-           @staticmethod
-           def mac_addresses():
-               mac = get_mac()
-               ':'.join(("%012X" % mac)[i:i+2] for i in range(0, 12, 2)
-
-               arr = []
-               for iface in psutil.net_io_counters(pernic=True):
-                   try:
-                       addr_list = psutil.net_if_addrs()
-                       mac = addr_list[str(iface)][2][1]
-                       if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(mac) != '00:00:00:00:00:00':
-                           arr.append(mac.lower())
-                   except Exception as e:
-                       pass
-
-               # return arr
-                """
-
             @staticmethod
             def mac_addresses():
                 arr=[]
@@ -387,8 +358,8 @@ class System:
                     if str(mac[0:17]) != "00:00:00:00:00:00":
                         arr.append(mac[0:17])
                 return arr
+            """
 
-        """
         @staticmethod
         def interfaces_details():
             return psutil.net_if_addrs()
@@ -401,7 +372,6 @@ class System:
                 if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$', ip) and str(ip) != 'localhost' and str(ip) != '127.0.0.1':
                     arr.append(ip)
             return arr
-        """
 
         class Cpu(object):
 
@@ -413,47 +383,42 @@ class System:
             def architecture():
                 return platform.processor()
 
-    """
-                @staticmethod
-                def physical_core_count():
-                    return psutil.cpu_count(logical=False)
+            @staticmethod
+            def physical_core_count():
+                return psutil.cpu_count(logical=False)
 
-                @staticmethod
-                def logical_core_count():
-                    return psutil.cpu_count(logical=True)
+            @staticmethod
+            def logical_core_count():
+                return psutil.cpu_count(logical=True)
 
-                @staticmethod
-                def stats():
-                    return psutil.cpu_stats()
-    """
+            @staticmethod
+            def stats():
+                return psutil.cpu_stats()
 
-    """
-                @staticmethod
-                def vendor():
-                    return cpuinfo.get_cpu_info()['vendor_id']
+            @staticmethod
+            def vendor():
+                return cpuinfo.get_cpu_info()['vendor_id']
 
-                @staticmethod
-                def brand():
-                    return cpuinfo.get_cpu_info()['brand']
+            @staticmethod
+            def brand():
+                return cpuinfo.get_cpu_info()['brand']
 
-                @staticmethod
-                def hz_advertised():
-                    return cpuinfo.get_cpu_info()['hz_advertised']
+            @staticmethod
+            def hz_advertised():
+                return cpuinfo.get_cpu_info()['hz_advertised']
 
-                @staticmethod
-                def hz_actual():
-                    return cpuinfo.get_cpu_info()['hz_actual']
+            @staticmethod
+            def hz_actual():
+                return cpuinfo.get_cpu_info()['hz_actual']
 
-                @staticmethod
-                def bit():
-                    return cpuinfo.get_cpu_info()['bits']
+            @staticmethod
+            def bit():
+                return cpuinfo.get_cpu_info()['bits']
 
-                @staticmethod
-                def family():
-                    return cpuinfo.get_cpu_info()['family']
+            @staticmethod
+            def family():
+                return cpuinfo.get_cpu_info()['family']
 
-                @staticmethod
-                def model():
-                    return cpuinfo.get_cpu_info()['model']
-
-    """
+            @staticmethod
+            def model():
+                return cpuinfo.get_cpu_info()['model']

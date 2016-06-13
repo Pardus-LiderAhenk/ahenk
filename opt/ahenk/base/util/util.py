@@ -156,7 +156,7 @@ class Util:
     @staticmethod
     def create_directory(dir_path):
         try:
-            os.makedirs(dir_path)
+            return os.makedirs(dir_path)
         except:
             raise
 
