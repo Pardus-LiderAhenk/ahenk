@@ -135,7 +135,8 @@ class ExecutionManager(object):
                 self.db_service.update('profile', profile_columns, profile_args)
 
         else:
-            self.logger.debug('[ExecutionManager] Already there is ahenk policy')
+            self.logger.debug('[ExecutionManager] Already there is ahenk policy. Command Execution Id is updating')
+            self.db_service.update('policy', ['execution_id'], [policy.get_agent_execution_id()],'type = \'A\'')
 
         if policy.get_user_policy_version() != user_policy_version:
             user_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'U\' and name=\'' + policy.get_username() + '\'')
@@ -158,7 +159,8 @@ class ExecutionManager(object):
                 self.db_service.update('profile', profile_columns, profile_args)
 
         else:
-            self.logger.debug('[ExecutionManager] Already there is user policy')
+            self.logger.debug('[ExecutionManager] Already there is user policy. . Command Execution Id is updating')
+            self.db_service.update('policy', ['execution_id'], [policy.get_user_execution_id()],'type = \'U\'')
 
         policy = self.get_active_policies(policy.get_username())
         self.task_manager.addPolicy(policy)
