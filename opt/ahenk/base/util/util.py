@@ -9,7 +9,7 @@ import pwd
 import shutil
 import stat
 import subprocess
-import sys
+import hashlib
 
 
 class Util:
@@ -218,3 +218,11 @@ class Util:
             return False
         except Exception as e:
             return False
+            
+    @staticmethod
+    def get_md5_file(fname):
+        hash_md5 = hashlib.md5()
+        with open(fname, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return str(hash_md5.hexdigest())
