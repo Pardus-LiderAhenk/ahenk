@@ -8,7 +8,27 @@ set -e
 
 case "$1" in
     configure)
-	
+
+while true; do
+    read -p "If any 'pam' configuration exists, it will be gone.Do you want to continue?" yn
+    case $yn in
+        [Yy]* ) 
+		if [ -d /etc/pam.d ]
+		then
+			if [ -f /etc/pam.d/common-session ]
+			then
+
+				sed -i '/pam_script.so/d' /etc/pam.d/common-session
+				echo "session required		pam_script.so"  >> /etc/pam.d/common-session
+			fi
+		fi
+	break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer y(yes) or n(no).";;
+    esac
+done
+
+
         systemctl --system daemon-reload
         systemctl enable ahenk.service
 
