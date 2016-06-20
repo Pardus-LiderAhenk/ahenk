@@ -31,7 +31,7 @@ class ExecutionManager(object):
         self.config_manager = scope.getConfigurationManager()
         self.event_manager = scope.getEventManager()
         self.task_manager = scope.getTaskManager()
-        self.messenger = scope.getMessager()
+        self.messenger = scope.getMessenger()
         self.logger = scope.getLogger()
         self.db_service = scope.getDbService()
         self.message_manager = scope.getMessageManager()
@@ -100,11 +100,6 @@ class ExecutionManager(object):
             self.logger.error('[ExecutionManager] A problem occurred while installing new ahenk plugin. Error Message:{}'.format(str(e)))
 
     def execute_policy(self, arg):
-
-        ##
-        scope = Scope().getInstance()
-        self.messenger = scope.getMessager()
-        ##
 
         self.logger.debug('[ExecutionManager] Updating policies...')
         policy = self.json_to_PolicyBean(json.loads(arg))

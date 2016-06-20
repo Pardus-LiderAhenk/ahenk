@@ -76,7 +76,7 @@ class Plugin(threading.Thread):
                         response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
                         # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                         self.logger.debug('[Plugin] Sending response')
-                        Scope.getInstance().getMessager().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
+                        Scope.getInstance().getMessenger().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
                     else:
                         self.logger.error('[Plugin] There is no Response. Plugin must create response after run a task!')
 
@@ -100,7 +100,7 @@ class Plugin(threading.Thread):
                         response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
                         # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                         self.logger.debug('[Plugin] Sending response')
-                        Scope.getInstance().getMessager().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
+                        Scope.getInstance().getMessenger().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
                     else:
                         self.logger.error('[Plugin] There is no Response. Plugin must create response after run a policy!')
 

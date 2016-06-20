@@ -16,7 +16,7 @@ class MessageResponseQueue(threading.Thread):
         super(MessageResponseQueue, self).__init__()
         scope = Scope.getInstance()
         self.logger = scope.getLogger()
-        self.messageManager = scope.getMessager()
+        self.messageManager = scope.getMessenger()
         self.outQueue = outQueue
 
     def run(self):

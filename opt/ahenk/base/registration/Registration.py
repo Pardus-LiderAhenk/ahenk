@@ -8,7 +8,7 @@ import uuid
 from uuid import getnode as get_mac
 
 from base.Scope import Scope
-from base.messaging.AnonymousMessager import AnonymousMessager
+from base.messaging.AnonymousMessenger import AnonymousMessager
 from base.system.system import System
 
 
@@ -18,7 +18,7 @@ class Registration():
         self.logger = scope.getLogger()
         self.message_manager = scope.getMessageManager()
         self.event_manager = scope.getEventManager()
-        self.messager = scope.getMessager()
+        self.messenger = scope.getMessenger()
         self.conf_manager = scope.getConfigurationManager()
         self.db_service = scope.getDbService()
 
@@ -31,12 +31,12 @@ class Registration():
 
     def registration_request(self):
         self.logger.debug('[Registration] Requesting registration')
-        anon_messager = AnonymousMessager(self.message_manager.registration_msg(), None)
+        anon_messager = AnonymousMessager(self.message_manager.registration_msg())
         anon_messager.connect_to_server()
 
     def ldap_registration_request(self):
         self.logger.debug('[Registration] Requesting LDAP registration')
-        self.messager.send_Direct_message(self.message_manager.ldap_registration_msg())
+        self.messenger.send_Direct_message(self.message_manager.ldap_registration_msg())
 
     def registration_process(self, reg_reply):
         self.logger.debug('[Registration] Reading registration reply')

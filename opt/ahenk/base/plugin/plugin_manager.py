@@ -85,7 +85,7 @@ class PluginManager(object):
 
         ##
         scope = Scope().getInstance()
-        self.messenger = scope.getMessager()
+        self.messenger = scope.getMessenger()
         ##
 
         try:
@@ -145,7 +145,7 @@ class PluginManager(object):
 
         ##
         scope = Scope().getInstance()
-        self.messenger = scope.getMessager()
+        self.messenger = scope.getMessenger()
         ##
         try:
             plugin = profile.get_plugin()

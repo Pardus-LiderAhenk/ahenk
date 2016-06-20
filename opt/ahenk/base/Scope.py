@@ -21,7 +21,7 @@ class Scope(object):
         self.eventManager = None
         self.executionManager = None
         self.dbService = None
-        self.messager = None
+        self.messenger = None
         self.scheduler = None
 
     @staticmethod
@@ -102,11 +102,11 @@ class Scope(object):
     def setDbService(self, dbService):
         self.dbService = dbService
 
-    def getMessager(self):
-        return self.messager
+    def getMessenger(self):
+        return self.messenger
 
-    def setMessager(self, messager):
-        self.messager = messager
+    def setMessenger(self, messenger):
+        self.messenger = messenger
 
     def set_scheduler(self, scheduler):
         self.scheduler = scheduler

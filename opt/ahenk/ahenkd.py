@@ -20,7 +20,7 @@ from base.event.EventManager import EventManager
 from base.execution.ExecutionManager import ExecutionManager
 from base.logger.AhenkLogger import Logger
 from base.messaging.MessageResponseQueue import MessageResponseQueue
-from base.messaging.Messager import Messager
+from base.messaging.Messenger import Messenger
 from base.messaging.Messaging import Messaging
 from base.plugin.plugin_manager_factory import PluginManagerFactory
 from base.registration.Registration import Registration
@@ -97,16 +97,10 @@ class AhenkDeamon(BaseDaemon):
         Scope.getInstance().setExecutionManager(execution_manager)
         return execution_manager
 
-    def init_messager(self):
-        messenger = Messager()
-        messenger_thread = threading.Thread(target=messenger.connect_to_server)
-        messenger_thread.start()
-
-        while messenger.is_connected() is False:
-            time.sleep(1)
-        time.sleep(5)
-
-        Scope.getInstance().setMessager(messenger)
+    def init_messenger(self):
+        messenger = Messenger()
+        messenger.connect_to_server()
+        Scope.getInstance().setMessenger(messenger)
         return messenger
 
     def init_message_response_queue(self):
@@ -118,7 +112,6 @@ class AhenkDeamon(BaseDaemon):
         return responseQueue
 
     def check_registration(self):
-        # TODO get number of attemption
         max_attemp_number = int(System.Hardware.Network.interface_size()) * 3
         logger = Scope.getInstance().getLogger()
         try:
@@ -197,7 +190,7 @@ class AhenkDeamon(BaseDaemon):
         self.check_registration()
         self.logger.info('[AhenkDeamon] Ahenk is registered')
 
-        messager = self.init_messager()
+        self.messenger = self.init_messenger()
         self.logger.info('[AhenkDeamon] Messager was set')
 
         self.init_message_response_queue()
@@ -217,13 +210,13 @@ class AhenkDeamon(BaseDaemon):
         except Exception as e:
             self.logger.error('[AhenkDeamon] Signal handler could not set up. Error Message: {} '.format(str(e)))
 
-        messager.send_direct_message('test')
+        self.messenger.send_direct_message('test')
 
         while True:
-            if messager.is_connected() is False:
-                self.logger.debug('reconnecting')
-                Scope.getInstance().getLogger().warning('[AhenkDeamon] Connection is lost. Ahenk is trying for reconnection')
-                messager = self.init_messager()
+            # if messager.is_connected() is False:
+            #     self.logger.debug('reconnecting')
+            #     Scope.getInstance().getLogger().warning('[AhenkDeamon] Connection is lost. Ahenk is trying for reconnection')
+            #     messager = self.init_messager()
             time.sleep(1)
 
     def run_command_from_fifo(self, num, stack):
@@ -235,7 +228,7 @@ class AhenkDeamon(BaseDaemon):
             plugin_manager = scope.getPluginManager()
 
             message_manager = scope.getMessageManager()
-            messenger = scope.getMessager()
+            messenger = scope.getMessenger()
 
             self.logger.debug('[AhenkDeamon] Signal handled')
             self.logger.debug('[AhenkDeamon] Signal is :{}'.format(str(json_data['event'])))
