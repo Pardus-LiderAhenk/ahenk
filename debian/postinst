@@ -10,9 +10,9 @@ case "$1" in
     configure)
 
 while true; do
-    read -p "If any 'pam' configuration exists, it will be gone.Do you want to continue?" yn
-    case $yn in
-        [Yy]* ) 
+    read -p "Eğer makinada var olan bir pam konfigurasyonu varsa geçersiz hale gelecektir.Devam etmek istiyor musunuz? [e/H]" eH
+    case $eH in
+        [e] ) 
 		if [ -d /etc/pam.d ]
 		then
 			if [ -f /etc/pam.d/common-session ]
@@ -23,8 +23,8 @@ while true; do
 			fi
 		fi
 	break;;
-        [Nn]* ) exit;;
-        * ) echo "Please answer y(yes) or n(no).";;
+        [H] ) exit;;
+        * ) echo "Lütfen e ya da H karakterleri ile yanıtlayın!";;
     esac
 done
 

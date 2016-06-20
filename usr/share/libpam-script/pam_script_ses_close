@@ -2,6 +2,5 @@
 if [ -n $PAM_USER ]; then
   if [ $PAM_USER != "root" ]; then
     sudo python3 /opt/ahenk/ahenkd.py logout $PAM_USER
-    echo "gittim" >> /home/lider/cemre.log
   fi
 fi
