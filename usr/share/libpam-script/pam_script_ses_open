@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ -n $PAM_USER ]; then
+  if [ $PAM_USER != "root" ]; then
+    sudo python3 /opt/ahenk/ahenkd.py login $PAM_USER
+    echo "geldim" >> /home/lider/cemre.log
+  fi
+fi
