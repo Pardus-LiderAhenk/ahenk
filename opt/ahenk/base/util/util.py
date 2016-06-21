@@ -209,16 +209,16 @@ class Util:
 
         result_code, p_out, p_err = Util.execute('dpkg -s {}'.format(package_name))
         try:
-            lines=str(p_out).split('\n')
+            lines = str(p_out).split('\n')
             for line in lines:
-                if len(line)>1:
-                    if line.split(None, 1)[0].lower() =='status:':
+                if len(line) > 1:
+                    if line.split(None, 1)[0].lower() == 'status:':
                         if 'installed' in line.split(None, 1)[1].lower():
                             return True
             return False
         except Exception as e:
             return False
-            
+
     @staticmethod
     def get_md5_file(fname):
         hash_md5 = hashlib.md5()
