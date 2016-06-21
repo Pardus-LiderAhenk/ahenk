@@ -232,7 +232,6 @@ class AhenkDeamon(BaseDaemon):
 
             self.logger.debug('[AhenkDeamon] Signal handled')
             self.logger.debug('[AhenkDeamon] Signal is :{}'.format(str(json_data['event'])))
-            print('event:{}'.format(str(json_data['event'])))
 
             if 'login' == str(json_data['event']):
                 self.logger.info('[AhenkDeamon] login event is handled for user: {}'.format(json_data['username']))
