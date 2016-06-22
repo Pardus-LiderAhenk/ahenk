@@ -179,6 +179,9 @@ class AhenkDeamon(BaseDaemon):
         self.init_plugin_manager()
         self.logger.info('[AhenkDeamon] Plugin Manager was set')
 
+        self.init_scheduler()
+        self.logger.info('[AhenkDeamon] Scheduler was set')
+
         self.init_task_manager()
         self.logger.info('[AhenkDeamon] Task Manager was set')
 
