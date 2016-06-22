@@ -65,6 +65,33 @@ class TaskBean(object):
     def set_cron_str(self, cron_str):
         self.cron_str = cron_str
 
+    def to_json(self):
+        plugin_data = {}
+        plugin_data['id'] = self.plugin.get_id()
+        plugin_data['name'] = self.plugin.get_name()
+        plugin_data['version'] = self.plugin.get_version()
+        plugin_data['description'] = self.plugin.get_description()
+        plugin_data['active'] = self.plugin.get_active()
+        plugin_data['deleted'] = self.plugin.get_deleted()
+        plugin_data['machineOriented'] = self.plugin.get_machine_oriented()
+        plugin_data['userOriented'] = self.plugin.get_user_oriented()
+        plugin_data['policyPlugin'] = self.plugin.get_policy_plugin()
+        plugin_data['taskPlugin'] = self.plugin.get_task_plugin()
+        plugin_data['xBased'] = self.plugin.get_x_based()
+        plugin_data['createDate'] = self.plugin.get_create_date()
+        plugin_data['modifyDate'] = self.plugin.get_modify_date()
+
+        task_data = {}
+        task_data['id'] = self._id
+        task_data['plugin'] = plugin_data
+        task_data['commandClsId'] = self.command_cls_id
+        task_data['parameterMap'] = self.parameter_map
+        task_data['deleted'] = self.deleted
+        task_data['cronExpression'] = self.cron_str
+        task_data['createDate'] = self.create_date
+        task_data['modifyDate'] = self.modify_date
+        return task_data
+
     @property
     def obj_name(self):
         return "TASK"
