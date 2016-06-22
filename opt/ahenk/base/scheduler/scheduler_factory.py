@@ -6,6 +6,7 @@ from base.scheduler.custom.custom_scheduler import CustomScheduler
 
 class SchedulerFactory():
 
-    def get_intstance(self):
+    def get_intstance():
         return CustomScheduler()
+
     get_intstance = staticmethod(get_intstance)
