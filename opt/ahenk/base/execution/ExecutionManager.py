@@ -8,9 +8,8 @@ import os
 import shutil
 import stat
 import subprocess
-import uuid
 import urllib.request
-import errno
+import uuid
 
 from base.Scope import Scope
 from base.messaging.ssh_file_transfer import FileTransfer
@@ -108,7 +107,7 @@ class ExecutionManager(object):
         user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + policy.get_username() + '\'')
 
         profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'plugin']
-        plugin_columns = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version']
+        plugin_columns = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
 
         if policy.get_ahenk_policy_version() != ahenk_policy_ver:
             ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
@@ -123,7 +122,7 @@ class ExecutionManager(object):
             for profile in policy.get_ahenk_profiles():
                 plugin = profile.get_plugin()
 
-                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()), str(plugin.get_description()), str(plugin.get_machine_oriented()), str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()), str(plugin.get_user_oriented()), str(plugin.get_version())]
+                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()), str(plugin.get_description()), str(plugin.get_machine_oriented()), str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()), str(plugin.get_user_oriented()), str(plugin.get_version()), str(plugin.get_task_plugin()), str(plugin.get_x_based())]
                 plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
 
                 profile_args = [str(ahenk_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()), str(profile.get_label()), str(profile.get_description()), str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()), str(profile.get_profile_data()), plugin_id]
@@ -131,7 +130,7 @@ class ExecutionManager(object):
 
         else:
             self.logger.debug('[ExecutionManager] Already there is ahenk policy. Command Execution Id is updating')
-            self.db_service.update('policy', ['execution_id'], [policy.get_agent_execution_id()],'type = \'A\'')
+            self.db_service.update('policy', ['execution_id'], [policy.get_agent_execution_id()], 'type = \'A\'')
 
         if policy.get_user_policy_version() != user_policy_version:
             user_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'U\' and name=\'' + policy.get_username() + '\'')
@@ -147,7 +146,7 @@ class ExecutionManager(object):
             for profile in policy.get_user_profiles():
                 plugin = profile.get_plugin()
 
-                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()), str(plugin.get_description()), str(plugin.get_machine_oriented()), str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()), str(plugin.get_user_oriented()), str(plugin.get_version())]
+                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()), str(plugin.get_description()), str(plugin.get_machine_oriented()), str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()), str(plugin.get_user_oriented()), str(plugin.get_version()), str(plugin.get_task_plugin()), str(plugin.get_x_based())]
                 plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
 
                 profile_args = [str(user_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()), str(profile.get_label()), str(profile.get_description()), str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()), str(profile.get_profile_data()), plugin_id]
@@ -155,7 +154,7 @@ class ExecutionManager(object):
 
         else:
             self.logger.debug('[ExecutionManager] Already there is user policy. . Command Execution Id is updating')
-            self.db_service.update('policy', ['execution_id'], [policy.get_user_execution_id()],'type = \'U\'')
+            self.db_service.update('policy', ['execution_id'], [policy.get_user_execution_id()], 'type = \'U\'')
 
         policy = self.get_active_policies(policy.get_username())
         self.task_manager.addPolicy(policy)
@@ -165,7 +164,7 @@ class ExecutionManager(object):
         user_policy = self.db_service.select('policy', ['id', 'version', 'name'], ' type=\'U\' and name=\'' + username + '\'')
         ahenk_policy = self.db_service.select('policy', ['id', 'version'], ' type=\'A\' ')
 
-        plugin_columns = ['id', 'active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version']
+        plugin_columns = ['id', 'active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
         profile_columns = ['id', 'create_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'modify_date', 'plugin']
 
         policy = PolicyBean(username=username)
@@ -198,7 +197,7 @@ class ExecutionManager(object):
 
         return policy
 
-    #from db
+    # from db
     def get_installed_plugins(self):
         plugins = self.db_service.select('plugin', ['name', 'version'])
         p_list = []
@@ -210,18 +209,16 @@ class ExecutionManager(object):
 
         str_task = json.loads(arg)['task']
         json_task = json.loads(str_task)
-        task = self.json_to_TaskBean(json_task)
+        task = self.json_to_task_bean(json_task)
 
         self.logger.debug('[ExecutionManager] Adding new  task...Task is:{}'.format(task.get_command_cls_id()))
 
         self.task_manager.addTask(task)
         self.logger.debug('[ExecutionManager] Task added')
 
-    def json_to_TaskBean(self, json_data):
-
+    def json_to_task_bean(self, json_data):
         plu = json_data['plugin']
-        plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'])
-
+        plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
         return TaskBean(_id=json_data['id'], create_date=json_data['createDate'], modify_date=json_data['modifyDate'], command_cls_id=json_data['commandClsId'], parameter_map=json_data['parameterMap'], deleted=json_data['deleted'], plugin=plugin, cron_str=json_data['cronExpression'])
 
     def move_file(self, arg):
@@ -296,13 +293,13 @@ class ExecutionManager(object):
         if ahenk_prof_json_arr is not None:
             for prof in ahenk_prof_json_arr:
                 plu = json.loads(json.dumps(prof['plugin']))
-                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'])
+                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
                 ahenk_prof_arr.append(ProfileBean(prof['id'], prof['createDate'], prof['label'], prof['description'], prof['overridable'], prof['active'], prof['deleted'], json.dumps(prof['profileData']), prof['modifyDate'], plugin, username))
 
         if user_prof_json_arr is not None:
             for prof in user_prof_json_arr:
                 plu = json.loads(json.dumps(prof['plugin']))
-                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'])
+                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
                 user_prof_arr.append(ProfileBean(prof['id'], prof['createDate'], prof['label'], prof['description'], prof['overridable'], prof['active'], prof['deleted'], json.dumps(prof['profileData']), prof['modifyDate'], plugin, username))
 
         return PolicyBean(ahenk_policy_version=json_data['agentPolicyVersion'], user_policy_version=json_data['userPolicyVersion'], ahenk_profiles=ahenk_prof_arr, user_profiles=user_prof_arr, timestamp=json_data['timestamp'], username=json_data['username'], agent_execution_id=json_data['agentCommandExecutionId'], user_execution_id=json_data['userCommandExecutionId'])
