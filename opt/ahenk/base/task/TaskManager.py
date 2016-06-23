@@ -28,14 +28,13 @@ class TaskManager(object):
                 self.scheduler.save_and_add_job(task)
 
         except Exception as e:
-            self.logger.debug('[TaskManager] Exception occured when adding task. Error Message: {}'.format(str(e)))
+            self.logger.debug('[TaskManager] Exception occurred when adding task. Error Message: {}'.format(str(e)))
 
     def addPolicy(self, policy):
         try:
             self.pluginManager.processPolicy(policy)
         except Exception as e:
-            self.logger.error("[TaskManager] Exception occured when adding policy. Error Message: {}".format(str(e)))
-            pass
+            self.logger.error("[TaskManager] Exception occurred when adding policy. Error Message: {}".format(str(e)))
 
     def saveTask(self, task):
         try:
@@ -45,9 +44,8 @@ class TaskManager(object):
             plugin_id = self.db_service.update('plugin', plu_cols, plugin_args)
             values = [str(task.get_id()), str(task.get_create_date()), str(task.get_modify_date()), str(task.get_command_cls_id()), str(task.get_parameter_map()), str(task.get_deleted()), str(plugin_id),str(task.get_cron_str())]
             self.db_service.update('task', task_cols, values, None)
-            # self.logger.debug('[TaskManager] Task has been saved to database (Task id:' + task.get_id() + ')')
         except Exception as e:
-            print(str(e))
+            self.logger.error("[TaskManager] Exception occurred while saving task. Error Message: {}".format(str(e)))
 
     def updateTask(self, task):
         # TODO not implemented yet
