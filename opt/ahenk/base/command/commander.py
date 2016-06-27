@@ -5,6 +5,7 @@ import os
 import queue as Queue
 import threading
 
+from base.Scope import Scope
 from base.command.fifo import Fifo
 from base.model.enum.ContentType import ContentType
 from base.model.enum.MessageCode import MessageCode
@@ -29,7 +30,14 @@ class Commander(object):
                 self.clean()
                 return False
 
-            elif (params[1] == 'login' or params[1] == 'logout') and len(params) == 3:
+            elif params[1] == 'login' and len(params) == 7:
+                print('{1} {0}ing'.format(str(params[1]), str(params[2])))
+                data['event'] = params[1]
+                data['username'] = params[2]
+                data['desktop'] = params[4]
+                data['display'] = params[6]
+
+            elif params[1] == 'logout' and len(params) == 3:
                 print('{1} {0}ing'.format(str(params[1]), str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
