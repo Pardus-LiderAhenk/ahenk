@@ -37,6 +37,7 @@ class Commander(object):
                 data['desktop'] = params[4]
                 data['display'] = params[6]
 
+
             elif params[1] == 'logout' and len(params) == 3:
                 print('{1} {0}ing'.format(str(params[1]), str(params[2])))
                 data['event'] = params[1]
