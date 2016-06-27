@@ -12,9 +12,15 @@ import socket
 import fcntl
 import struct
 from uuid import getnode as get_mac
+from base.Scope import Scope
 
 
 class System:
+    def __init__(self):
+        scope = Scope().getInstance()
+        self.db_service = scope.getDbService()
+        self.logger = scope.getLogger()
+
     class Ahenk(object):
 
         @staticmethod
@@ -187,12 +193,17 @@ class System:
         def user_details():
             return psutil.users()
 
-
+        @staticmethod
+        def display(username):
+            system = System()
+            display = system.db_service.select_one_result('session', 'display', " username='{0}'".format(username))
+            return display
 
         @staticmethod
-        def last_login_username():
-            # TODO
-            pass
+        def desktop(username):
+            system = System()
+            desktop = system.db_service.select_one_result('session', 'desktop', " username='{0}'".format(username))
+            return desktop
 
     class Os(object):
 
