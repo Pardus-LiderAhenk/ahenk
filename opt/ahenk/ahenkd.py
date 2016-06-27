@@ -10,7 +10,6 @@ import sys
 import threading
 import time
 import json
-
 from base.Scope import Scope
 from base.command.commander import Commander
 from base.config.ConfigManager import ConfigManager
@@ -27,6 +26,9 @@ from base.registration.Registration import Registration
 from base.scheduler.scheduler_factory import SchedulerFactory
 from base.system.system import System
 from base.task.TaskManager import TaskManager
+from base.agreement.agreement import Agreement
+from base.util.util import Util
+from multiprocessing import Process
 
 ahenkdaemon = None
 
@@ -155,7 +157,6 @@ class AhenkDeamon(BaseDaemon):
     def run(self):
         print('Ahenk running...')
 
-        self.signal_number = 0
         globalscope = Scope()
         globalscope.setInstance(globalscope)
 
@@ -196,6 +197,8 @@ class AhenkDeamon(BaseDaemon):
 
         self.messenger = self.init_messenger()
         self.logger.info('[AhenkDeamon] Messager was set')
+
+        Agreement().agreement_contract_update()
 
         self.init_message_response_queue()
 
@@ -238,16 +241,58 @@ class AhenkDeamon(BaseDaemon):
             self.logger.debug('[AhenkDeamon] Signal is :{}'.format(str(json_data['event'])))
 
             if 'login' == str(json_data['event']):
-                self.logger.info('[AhenkDeamon] login event is handled for user: {}'.format(json_data['username']))
-                login_message = message_manager.login_msg(json_data['username'])
+                username = json_data['username']
+                display = json_data['display']
+                desktop = json_data['desktop']
+                self.logger.info('[AhenkDeamon] login event is handled for user: {}'.format(username))
+                login_message = message_manager.login_msg(username)
                 messenger.send_direct_message(login_message)
-                get_policy_message = message_manager.policy_request_msg(json_data['username'])
-                messenger.send_direct_message(get_policy_message)
+
+                scope.getDbService().update('session', scope.getDbService().get_cols('session'), [username, display, desktop, Util.timestamp()])
+
+                agreement = Agreement()
+                agreement_choice = False
+                if agreement.check_agreement(username) is False:
+                    self.logger.debug('[AhenkDeamon] User {} has not accepted agreement.'.format(username))
+                    thread_ask = Process(target=agreement.ask, args=(username, display,))
+                    thread_ask.start()
+
+                    agreement_timeout = scope.getConfigurationManager().get('SESSION', 'agreement_timeout')
+
+                    timeout = int(agreement_timeout)  # sec
+                    timer = time.time()
+                    while 1:
+                        if thread_ask.is_alive() is False:
+                            self.logger.warning('[AhenkDeamon] {} was answered the question '.format(username))
+                            if Agreement().check_agreement(username):
+                                self.logger.warning('[AhenkDeamon] Choice of {} is YES'.format(username))
+                                agreement_choice = True
+                                break
+                            else:
+                                self.logger.warning('[AhenkDeamon] Choice of {} is NO'.format(username))
+                                agreement_choice = False
+                                break
+
+                        if (time.time() - timer) > timeout:
+                            if thread_ask.is_alive():
+                                thread_ask.terminate()
+                            Util.execute('pkill -9 -u {}'.format(username))
+                            self.logger.warning('[AhenkDeamon] Session of {} was ended because of timeout of contract agreement'.format(username))
+                            break
+                        time.sleep(0.1)
+                else:
+                    agreement_choice = True
+
+                if agreement_choice is True:
+                    get_policy_message = message_manager.policy_request_msg(username)
+                    messenger.send_direct_message(get_policy_message)
+
             elif 'logout' == str(json_data['event']):
-                self.logger.info('[AhenkDeamon] logout event is handled for user: {}'.format(str(json_data['username'])))
-                logout_message = message_manager.logout_msg(json_data['username'])
+                username = json_data['username']
+                self.logger.info('[AhenkDeamon] logout event is handled for user: {}'.format(username))
+                logout_message = message_manager.logout_msg(username)
                 messenger.send_direct_message(logout_message)
-                plugin_manager.process_safe_mode(str(json_data['username']))
+                plugin_manager.process_safe_mode(username)
             elif 'send' == str(json_data['event']):
                 self.logger.info('[AhenkDeamon] Sending message over ahenkd command. Response Message: {}'.format(str(json_data['message'])))
                 message = str(json.dumps(json_data['message']))
@@ -300,8 +345,6 @@ if __name__ == '__main__':
             elif result is True:
                 if System.Ahenk.is_running() is True:
                     os.kill(int(System.Ahenk.get_pid_number()), signal.SIGALRM)
-
-
     except(KeyboardInterrupt, SystemExit):
         if System.Ahenk.is_running() is True:
             print('Ahenk will be closed.')
