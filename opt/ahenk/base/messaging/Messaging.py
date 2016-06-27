@@ -3,9 +3,8 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import datetime
 import json
-import sys
 
-sys.path.append('../..')
+from base.system.system import System
 from base.Scope import Scope
 from base.util.util import Util
 
@@ -62,7 +61,8 @@ class Messaging(object):
         data = {}
         data['type'] = 'LOGIN'
         data['username'] = username
-        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        data['ipAddresses'] = str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', '')
+        data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Login message was created')
         return json_data
@@ -71,7 +71,7 @@ class Messaging(object):
         data = {}
         data['type'] = 'LOGOUT'
         data['username'] = str(username)
-        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Logout message was created')
         return json_data
@@ -87,7 +87,7 @@ class Messaging(object):
         data['agentPolicyVersion'] = machine_policy_number
 
         data['username'] = str(username)
-        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Get Policies message was created')
         return json_data
@@ -118,7 +118,7 @@ class Messaging(object):
         data['macAddresses'] = str(self.conf_manager.get('REGISTRATION', 'macAddresses'))
         data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION', 'ipAddresses'))
         data['hostname'] = str(self.conf_manager.get('REGISTRATION', 'hostname'))
-        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] LDAP Registration message was created')
         return json_data
@@ -132,7 +132,7 @@ class Messaging(object):
         data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION', 'ipAddresses'))
         data['hostname'] = str(self.conf_manager.get('REGISTRATION', 'hostname'))
         # data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
-        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Unregister message was created')
         return json_data
@@ -145,7 +145,7 @@ class Messaging(object):
             data['md5'] = Util.get_md5_text(contract_content)
         else:
             data['md5'] = ''
-        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Agreement request message was created')
         return json_data
