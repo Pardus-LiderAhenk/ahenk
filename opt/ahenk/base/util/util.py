@@ -10,6 +10,7 @@ import shutil
 import stat
 import subprocess
 import hashlib
+import datetime
 
 
 class Util:
@@ -116,9 +117,11 @@ class Util:
             raise
 
     @staticmethod
-    def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True):
+    def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True, as_user=None):
 
         try:
+            if as_user is not None:
+                command = 'su - {0} -c "{1}"'.format(as_user, command)
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=shell)
 
             if result is True:
@@ -226,3 +229,13 @@ class Util:
             for chunk in iter(lambda: f.read(4096), b""):
                 hash_md5.update(chunk)
         return str(hash_md5.hexdigest())
+
+    @staticmethod
+    def get_md5_text(content):
+        hash_md5 = hashlib.md5()
+        hash_md5.update(content.encode())
+        return str(hash_md5.hexdigest())
+
+    @staticmethod
+    def timestamp():
+        return str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
