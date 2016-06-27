@@ -25,7 +25,6 @@ if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
       TTY_DISPLAY="$PAM_TTY"
     fi
     log "login: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY"
-    sudo python3 /opt/ahenk/ahenkd.py login $PAM_USER SERVICE TTY_DISPLAY
+    sudo python3 /opt/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY
   fi
 fi
-
