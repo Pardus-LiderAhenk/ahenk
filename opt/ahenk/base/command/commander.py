@@ -29,7 +29,14 @@ class Commander(object):
                 self.clean()
                 return False
 
-            elif (params[1] == 'login' or params[1] == 'logout') and len(params) == 3:
+            elif params[1] == 'login' and len(params) == 7:
+                print('{1} {0}ing'.format(str(params[1]), str(params[2])))
+                data['event'] = params[1]
+                data['username'] = params[2]
+                data['service'] = params[4]
+                data['display'] = str(params[6]).replace(':', '')
+
+            elif params[1] == 'logout' and len(params) == 3:
                 print('{1} {0}ing'.format(str(params[1]), str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
