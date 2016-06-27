@@ -45,6 +45,12 @@ class ExecutionManager(object):
         self.event_manager.register_event(MessageType.EXECUTE_TASK.value, self.execute_task)
         self.event_manager.register_event(MessageType.EXECUTE_POLICY.value, self.execute_policy)
         self.event_manager.register_event(MessageType.INSTALL_PLUGIN.value, self.install_plugin)
+        self.event_manager.register_event(MessageType.RESPONSE_AGREEMENT.value, self.agreement_update)
+
+    def agreement_update(self, arg):
+        plugin = json.loads(arg)
+        if plugin['content'] != 'null' and plugin['content']!='':
+            self.db_service.update('contract',self.db_service.get_cols('contract'),[plugin['content'],plugin['title'],plugin['timestamp']])
 
     def install_plugin(self, arg):
         plugin = json.loads(arg)
