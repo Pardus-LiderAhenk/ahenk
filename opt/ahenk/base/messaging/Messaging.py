@@ -7,6 +7,7 @@ import sys
 
 sys.path.append('../..')
 from base.Scope import Scope
+from base.util.util import Util
 
 
 # TODO Message Factory
@@ -134,4 +135,17 @@ class Messaging(object):
         data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Unregister message was created')
+        return json_data
+
+    def agreement_request_msg(self):
+        data = {}
+        data['type'] = 'REQUEST_AGREEMENT'
+        contract_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
+        if contract_content is not None and contract_content != '':
+            data['md5'] = Util.get_md5_text(contract_content)
+        else:
+            data['md5'] = ''
+        data['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+        json_data = json.dumps(data)
+        self.logger.debug('[Messaging] Agreement request message was created')
         return json_data
