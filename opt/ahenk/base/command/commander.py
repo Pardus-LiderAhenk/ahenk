@@ -30,12 +30,12 @@ class Commander(object):
                 self.clean()
                 return False
 
-            elif params[1] == 'login' and len(params) == 7:
+            elif params[1] == 'login' and len(params) == 5:
                 print('{1} {0}ing'.format(str(params[1]), str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
-                data['desktop'] = params[4]
-                data['display'] = params[6]
+                data['desktop'] = params[3]
+                data['display'] = params[4]
 
 
             elif params[1] == 'logout' and len(params) == 3:
