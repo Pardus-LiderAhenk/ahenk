@@ -20,13 +20,27 @@ class AhenkDbService(object):
         self.connection = None
         self.cursor = None
 
+        # TODO get columns anywhere
+        # TODO scheduler db init get here
+
     def initialize_table(self):
 
-        self.check_and_create_table('task', ['id INTEGER', 'create_date TEXT', 'modify_date TEXT', 'command_cls_id TEXT', 'parameter_map BLOB', 'deleted INTEGER', 'plugin TEXT','cron_expr TEXT'])
+        self.check_and_create_table('task', ['id INTEGER', 'create_date TEXT', 'modify_date TEXT', 'command_cls_id TEXT', 'parameter_map BLOB', 'deleted INTEGER', 'plugin TEXT', 'cron_expr TEXT'])
         self.check_and_create_table('policy', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'type TEXT', 'version TEXT', 'name TEXT', 'execution_id TEXT'])
         self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT', 'overridable INTEGER', 'active TEXT', 'deleted TEXT', 'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT'])
         self.check_and_create_table('plugin', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'active TEXT', 'create_date TEXT', 'deleted TEXT', 'description TEXT', 'machine_oriented TEXT', 'modify_date TEXT', 'name TEXT', 'policy_plugin TEXT', 'user_oriented TEXT', 'version TEXT', 'task_plugin TEXT', 'x_based TEXT'])
         self.check_and_create_table('registration', ['jid TEXT', 'password TEXT', 'registered INTEGER', 'dn TEXT', 'params TEXT', 'timestamp TEXT'])
+        self.check_and_create_table('contract', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'content BLOB', 'title TEXT', 'timestamp TEXT'])
+        self.check_and_create_table('agreement', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'contract_id TEXT', 'username TEXT', 'timestamp TEXT', 'choice TEXT'])
+        self.check_and_create_table('session', ['username TEXT', 'display TEXT', 'desktop TEXT', 'timestamp TEXT'])
+
+    def get_cols(self, table_name):
+        if table_name == 'agreement':
+            return ['contract_id', 'username', 'timestamp', 'choice']
+        elif table_name == 'contract':
+            return ['content', 'title', 'timestamp']
+        elif table_name == 'session':
+            return ['username', 'display', 'desktop', 'timestamp']
 
     def connect(self):
         try:
@@ -97,7 +111,7 @@ class AhenkDbService(object):
                 self.cursor.execute(sql)
                 rows = self.cursor.fetchall()
                 return rows
-            except Exception as e:
+            except:
                 raise
         else:
             self.logger.warning('Could not select table cursor is None! Table Name : ' + str(table_name))
@@ -115,7 +129,7 @@ class AhenkDbService(object):
                     return row[0]
                 else:
                     return None
-            except Exception as e:
+            except:
                 raise
         else:
             self.logger.warning('Could not select table cursor is None! Table Name : ' + str(table_name))
