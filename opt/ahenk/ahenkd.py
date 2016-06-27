@@ -233,9 +233,10 @@ class AhenkDeamon(BaseDaemon):
         if json_data is not None:
             scope = Scope().getInstance()
             plugin_manager = scope.getPluginManager()
-
             message_manager = scope.getMessageManager()
             messenger = scope.getMessenger()
+            conf_manager = scope.getConfigurationManager()
+            db_service = scope.getDbService()
 
             self.logger.debug('[AhenkDeamon] Signal handled')
             self.logger.debug('[AhenkDeamon] Signal is :{}'.format(str(json_data['event'])))
@@ -248,8 +249,6 @@ class AhenkDeamon(BaseDaemon):
                 login_message = message_manager.login_msg(username)
                 messenger.send_direct_message(login_message)
 
-                scope.getDbService().update('session', scope.getDbService().get_cols('session'), [username, display, desktop, Util.timestamp()])
-
                 agreement = Agreement()
                 agreement_choice = False
                 if agreement.check_agreement(username) is False:
@@ -257,7 +256,7 @@ class AhenkDeamon(BaseDaemon):
                     thread_ask = Process(target=agreement.ask, args=(username, display,))
                     thread_ask.start()
 
-                    agreement_timeout = scope.getConfigurationManager().get('SESSION', 'agreement_timeout')
+                    agreement_timeout = conf_manager.get('SESSION', 'agreement_timeout')
 
                     timeout = int(agreement_timeout)  # sec
                     timer = time.time()
@@ -284,11 +283,14 @@ class AhenkDeamon(BaseDaemon):
                     agreement_choice = True
 
                 if agreement_choice is True:
+                    db_service.delete('session', 'username=\'{}\''.format(username))
+                    db_service.update('session', scope.getDbService().get_cols('session'), [username, display, desktop, Util.timestamp()])
                     get_policy_message = message_manager.policy_request_msg(username)
                     messenger.send_direct_message(get_policy_message)
 
             elif 'logout' == str(json_data['event']):
                 username = json_data['username']
+                db_service.delete('session', 'username=\'{}\''.format(username))
                 self.logger.info('[AhenkDeamon] logout event is handled for user: {}'.format(username))
                 logout_message = message_manager.logout_msg(username)
                 messenger.send_direct_message(logout_message)
