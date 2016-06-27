@@ -14,22 +14,22 @@ class ScheduleTaskDB(object):
 
     def initialize(self):
         self.logger.debug('[ScheduleTaskDB] Initializing scheduler database...')
-        self.db_service.check_and_create_table('schedule_task', ['id INTEGER', 'task_json TEXT'])
+        self.db_service.check_and_create_table('schedule_task', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'task_id TEXT'])
         self.logger.debug('[ScheduleTaskDB] Scheduler database is ok.')
 
     def save(self, task):
         self.logger.debug('[ScheduleTaskDB] Preparing schedule task for save operation... creating columns and values...')
-        cols = ['id', 'task_json']
-        values = [str(task.id), str(task.to_json())]
+        cols = ['task_id']
+        values = [task.get_id()]
         self.logger.debug('[ScheduleTaskDB] Saving scheduler task to db... ')
         self.db_service.update('schedule_task', cols, values, None)
         self.logger.debug('[ScheduleTaskDB] Scheduler task saved.')
 
-    def delete(self, task):
+    def delete(self, task_id):
         try:
-            self.logger.debug('[ScheduleTaskDB] Deleting schedule task. Task id=' + str(task.id))
-            self.db_service.delete('schedule_task', 'id=' + str(task.id))
-            self.logger.debug('[ScheduleTaskDB] Deleting schedule task deleted successfully. task id=' + str(task.id))
+            self.logger.debug('[ScheduleTaskDB] Deleting schedule task. Task id=' + str(task_id))
+            self.db_service.delete('schedule_task', 'task_id=' + str(task_id))
+            self.logger.debug('[ScheduleTaskDB] Deleting schedule task deleted successfully. task id=' + str(task_id))
         except Exception as e:
             self.logger.error('[ScheduleTaskDB] Exception occur when deleting schedule task ' + str(e))
 

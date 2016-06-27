@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
+
 from base.Scope import Scope
 from base.model.MessageFactory import MessageFactory
 from base.model.enum.MessageType import MessageType
@@ -19,33 +20,32 @@ class TaskManager(object):
 
     def addTask(self, task):
         try:
+            self.saveTask(task)
             if task.get_cron_str() == None or task.get_cron_str() == '':
-                self.logger.debug('Adding task ... ')
-                #self.saveTask(task)
-                self.logger.info('Task saved ')
-                # TODO send task received message
+                self.logger.debug('[TaskManager] Adding task ... ')
                 self.pluginManager.processTask(task)
             else:
                 self.scheduler.save_and_add_job(task)
 
         except Exception as e:
-            # TODO error log here
-            self.logger.debug('Exception occured when adding task ' + str(e))
-            pass
+            self.logger.debug('[TaskManager] Exception occurred when adding task. Error Message: {}'.format(str(e)))
 
     def addPolicy(self, policy):
         try:
             self.pluginManager.processPolicy(policy)
         except Exception as e:
-            self.logger.error("Exception occured when adding policy. Error Message: {}".format(str(e)))
-            pass
+            self.logger.error("[TaskManager] Exception occurred when adding policy. Error Message: {}".format(str(e)))
 
     def saveTask(self, task):
-
-        cols = ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin']
-        values = [str(task.get_id()), str(task.get_create_date()), str(task.get_modify_date()), str(task.get_command_cls_id()), str(task.get_parameter_map()), str(task.get_deleted()), task.plugin.to_string()]
-        self.db_service.update('task', cols, values, None)
-        self.logger.debug('[TaskManager] Task has been saved to database (Task id:' + task.id + ')')
+        try:
+            task_cols = ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin','cron_expr']
+            plu_cols = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version','task_plugin','x_based']
+            plugin_args = [str(task.get_plugin().get_active()), str(task.get_plugin().get_create_date()), str(task.get_plugin().get_deleted()), str(task.get_plugin().get_description()), str(task.get_plugin().get_machine_oriented()), str(task.get_plugin().get_modify_date()), str(task.get_plugin().get_name()), str(task.get_plugin().get_policy_plugin()), str(task.get_plugin().get_user_oriented()), str(task.get_plugin().get_version()), str(task.get_plugin().get_task_plugin()), str(task.get_plugin().get_x_based())]
+            plugin_id = self.db_service.update('plugin', plu_cols, plugin_args)
+            values = [str(task.get_id()), str(task.get_create_date()), str(task.get_modify_date()), str(task.get_command_cls_id()), str(task.get_parameter_map()), str(task.get_deleted()), str(plugin_id),str(task.get_cron_str())]
+            self.db_service.update('task', task_cols, values, None)
+        except Exception as e:
+            self.logger.error("[TaskManager] Exception occurred while saving task. Error Message: {}".format(str(e)))
 
     def updateTask(self, task):
         # TODO not implemented yet

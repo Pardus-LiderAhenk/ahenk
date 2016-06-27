@@ -114,12 +114,12 @@ class AhenkDeamon(BaseDaemon):
     def check_registration(self):
         max_attemp_number = int(System.Hardware.Network.interface_size()) * 3
         logger = Scope.getInstance().getLogger()
+
         try:
             while Scope.getInstance().getRegistration().is_registered() is False:
                 max_attemp_number -= 1
                 logger.debug('[AhenkDeamon] Ahenk is not registered. Attempting for registration')
-                # TODO 'Could not reach Registration response from Lider. Be sure Lider is awake and it is connected to XMPP server!'
-
+                # TODO 'Could not reach Registration response from Lider. Be sure Lider is running and it is connected to XMPP server!'
                 Scope.getInstance().getRegistration().registration_request()
                 if max_attemp_number < 0:
                     logger.warning('[AhenkDeamon] Number of Attempting for registration is over')
@@ -129,8 +129,9 @@ class AhenkDeamon(BaseDaemon):
             logger.error('[AhenkDeamon] Registration failed. Error message: {}'.format(str(e)))
 
     def registration_failed(self):
-        # TODO registration fail protocol implement
-        pass
+        self.logger.error('[AhenkDeamon] Registration failed. All registration attemps were failed. Ahenk is stopping...')
+        print('Registration failed. Ahenk is stopping..')
+        ahenkdaemon.stop()
 
     def reload_plugins(self):
         Scope.getInstance().getPluginManager().reloadPlugins()
@@ -177,6 +178,9 @@ class AhenkDeamon(BaseDaemon):
 
         self.init_plugin_manager()
         self.logger.info('[AhenkDeamon] Plugin Manager was set')
+
+        self.init_scheduler()
+        self.logger.info('[AhenkDeamon] Scheduler was set')
 
         self.init_task_manager()
         self.logger.info('[AhenkDeamon] Task Manager was set')
@@ -232,7 +236,6 @@ class AhenkDeamon(BaseDaemon):
 
             self.logger.debug('[AhenkDeamon] Signal handled')
             self.logger.debug('[AhenkDeamon] Signal is :{}'.format(str(json_data['event'])))
-            print('event:{}'.format(str(json_data['event'])))
 
             if 'login' == str(json_data['event']):
                 self.logger.info('[AhenkDeamon] login event is handled for user: {}'.format(json_data['username']))

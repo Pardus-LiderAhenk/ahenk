@@ -65,7 +65,7 @@ class Messenger(ClientXMPP):
             return False
 
     def session_end(self):
-        print("disconnect")
+        self.logger.warning('[Messenger] DISCONNECTED')
 
     def session_start(self, event):
         self.logger.debug('[Messenger] Session was started')
@@ -77,7 +77,7 @@ class Messenger(ClientXMPP):
             self.logger.debug('[Messenger] <<--------Sending message: {}'.format(msg))
             self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
         except Exception as e:
-            self.logger.debug('[Messenger] A problem occurred while sending direct message. Error Message: {}'.format(str(e)))
+            self.logger.error('[Messenger] A problem occurred while sending direct message. Error Message: {}'.format(str(e)))
 
     def recv_direct_message(self, msg):
         if msg['type'] in ('normal'):
@@ -87,6 +87,5 @@ class Messenger(ClientXMPP):
                 message_type = j['type']
                 self.event_manger.fireEvent(message_type, str(msg['body']))
                 self.logger.debug('[Messenger] Fired event is: {}'.format(message_type))
-
             except Exception as e:
-                self.logger.debug('[Messenger] A problem occurred while keeping message. Error Message: {}'.format(str(e)))
+                self.logger.error('[Messenger] A problem occurred while keeping message. Error Message: {}'.format(str(e)))

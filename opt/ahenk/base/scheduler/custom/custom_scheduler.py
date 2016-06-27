@@ -21,25 +21,33 @@ class CustomScheduler(BaseScheduler):
     def initialize(self):
         self.scheduledb.initialize()
         tasks = self.scheduledb.load()
-        for task in tasks:
-            self.add_job(ScheduleTaskJob(task))
+        if tasks:
+            for task in tasks:
+                self.add_job(ScheduleTaskJob(task))
 
     def add_job(self, job):
         self.events.append(job)
 
     def save_and_add_job(self, task):
-        self.scheduledb.save(task)
-        self.events.append(ScheduleTaskJob(task))
+        try:
+            self.logger.debug('[CustomScheduler] Saving scheduled task to database...')
+            self.scheduledb.save(task)
+            self.logger.debug('[CustomScheduler] Adding scheduled task to events...')
+            self.events.append(ScheduleTaskJob(task))
+        except Exception as e:
+            self.logger.error('[CustomScheduler] A problem occurred while saving and adding job. Error Message: {}'.format(str(e)))
 
-    def remove_job(self, task):
+    def remove_job(self, task_id):
         for event in self.events:
-            if event.task.id == task.id:
-                self.scheduledb.delete(task)
+            if event.task.get_id() == task_id:
+                self.scheduledb.delete(task_id)
+                self.logger.debug('[CustomScheduler] Task was deleted from scheduled tasks table')
                 self.events.remove(event)
+                self.logger.debug('[CustomScheduler] Task was removed from events')
 
     def remove_job_via_task_id(self,task_id):
         for event in self.events:
-            if event.task.id == task_id:
+            if event.task.get_id() == task_id:
                 self.scheduledb.delete(event.task)
                 self.events.remove(event)
 

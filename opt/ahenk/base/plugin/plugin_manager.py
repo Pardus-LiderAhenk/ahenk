@@ -63,7 +63,7 @@ class PluginManager(object):
         plugin.start()
         self.plugins.append(plugin)
 
-        self.logger.debug('[PluginManager] New plugin was loaded.')
+        self.logger.debug('[PluginManager] New plugin was loaded. Plugin Name: {}'.format(plugin_name))
 
         if len(self.delayed_profiles) > 0:
             self.pluginQueueDict[plugin_name].put(self.delayed_profiles[plugin_name], 1)

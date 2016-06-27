@@ -13,10 +13,6 @@ import fcntl
 import struct
 from uuid import getnode as get_mac
 
-"""
-some functions closed because of dependency management
-"""
-
 
 class System:
     class Ahenk(object):
@@ -191,20 +187,12 @@ class System:
         def user_details():
             return psutil.users()
 
+
+
         @staticmethod
         def last_login_username():
             # TODO
             pass
-
-        """
-        @staticmethod
-        def user_name():
-            arr = []
-            for user in psutil.get_users():
-                if str(user[0]) is not 'None' and user[0] not in arr:
-                    arr.append(user[0])
-            return arr
-        """
 
     class Os(object):
 
@@ -348,17 +336,6 @@ class System:
                         pass
 
                 return arr
-
-            """
-            @staticmethod
-            def mac_addresses():
-                arr=[]
-                for iface in psutil.net_io_counters(pernic=True):
-                    mac = open('/sys/class/net/' + iface + '/address').readline()
-                    if str(mac[0:17]) != "00:00:00:00:00:00":
-                        arr.append(mac[0:17])
-                return arr
-            """
 
         @staticmethod
         def interfaces_details():

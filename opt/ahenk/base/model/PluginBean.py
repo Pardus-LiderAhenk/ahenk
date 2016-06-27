@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-import json
 
 
 class PluginBean(object):
     """docstring for PluginBean"""
 
-    def __init__(self, p_id=None, active=None, create_date=None, deleted=None, description=None, machine_oriented=None, modify_date=None, name=None, policy_plugin=None, user_oriented=None, version=None):
+    def __init__(self, p_id=None, active=None, create_date=None, deleted=None, description=None, machine_oriented=None, modify_date=None, name=None, policy_plugin=None, task_plugin=None, user_oriented=None, version=None, x_based=None):
         self.id = p_id
         self.active = active
         self.create_date = create_date
@@ -19,6 +18,8 @@ class PluginBean(object):
         self.policy_plugin = policy_plugin
         self.user_oriented = user_oriented
         self.version = version
+        self.task_plugin = task_plugin
+        self.x_based = x_based
 
     def get_user_oriented(self):
         return self.user_oriented
@@ -85,3 +86,15 @@ class PluginBean(object):
 
     def set_version(self, version):
         self.version = version
+
+    def get_x_based(self):
+        return self.x_based
+
+    def set_x_based(self, x_based):
+        self.x_based = x_based
+
+    def get_task_plugin(self):
+        return self.task_plugin
+
+    def set_task_plugin(self, task_plugin):
+        self.task_plugin = task_plugin
