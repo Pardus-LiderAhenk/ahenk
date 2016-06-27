@@ -43,7 +43,7 @@ class TaskManager(object):
             plugin_args = [str(task.get_plugin().get_active()), str(task.get_plugin().get_create_date()), str(task.get_plugin().get_deleted()), str(task.get_plugin().get_description()), str(task.get_plugin().get_machine_oriented()), str(task.get_plugin().get_modify_date()), str(task.get_plugin().get_name()), str(task.get_plugin().get_policy_plugin()), str(task.get_plugin().get_user_oriented()), str(task.get_plugin().get_version()), str(task.get_plugin().get_task_plugin()), str(task.get_plugin().get_x_based())]
             plugin_id = self.db_service.update('plugin', plu_cols, plugin_args)
             values = [str(task.get_id()), str(task.get_create_date()), str(task.get_modify_date()), str(task.get_command_cls_id()), str(task.get_parameter_map()), str(task.get_deleted()), str(plugin_id),str(task.get_cron_str())]
-            self.db_service.update('task', task_cols, values, None)
+            self.db_service.update('task', task_cols, values)
         except Exception as e:
             self.logger.error("[TaskManager] Exception occurred while saving task. Error Message: {}".format(str(e)))
 

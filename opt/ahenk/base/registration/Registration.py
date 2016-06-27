@@ -12,7 +12,7 @@ from base.messaging.AnonymousMessenger import AnonymousMessager
 from base.system.system import System
 
 
-class Registration():
+class Registration:
     def __init__(self):
         scope = Scope().getInstance()
         self.logger = scope.getLogger()
