@@ -149,3 +149,19 @@ class Messaging(object):
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Agreement request message was created')
         return json_data
+
+    def agreement_answer_msg(self, username, answer):
+        data = {}
+        data['type'] = 'AGREEMENT_ANSWER'
+        data['username'] = username
+        data['answer'] = str(answer).upper()
+        data['timestamp'] = Util.timestamp()
+        contract_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
+        if contract_content is not None and contract_content != '':
+            data['md5'] = Util.get_md5_text(contract_content)
+        else:
+            data['md5'] = ''
+
+        json_data = json.dumps(data)
+        self.logger.debug('[Messaging] Agreement answer message was created')
+        return json_data

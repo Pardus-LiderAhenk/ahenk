@@ -250,8 +250,8 @@ class AhenkDeamon(BaseDaemon):
                 messenger.send_direct_message(login_message)
 
                 agreement = Agreement()
-                agreement_choice = False
-                if agreement.check_agreement(username) is False:
+                agreement_choice = None
+                if agreement.check_agreement(username) is not True:
                     self.logger.debug('[AhenkDeamon] User {} has not accepted agreement.'.format(username))
                     thread_ask = Process(target=agreement.ask, args=(username, display,))
                     thread_ask.start()
@@ -263,13 +263,14 @@ class AhenkDeamon(BaseDaemon):
                     while 1:
                         if thread_ask.is_alive() is False:
                             self.logger.warning('[AhenkDeamon] {} was answered the question '.format(username))
-                            if Agreement().check_agreement(username):
+                            if Agreement().check_agreement(username) is True:
                                 self.logger.warning('[AhenkDeamon] Choice of {} is YES'.format(username))
                                 agreement_choice = True
                                 break
-                            else:
+                            elif Agreement().check_agreement(username) is False:
                                 self.logger.warning('[AhenkDeamon] Choice of {} is NO'.format(username))
                                 agreement_choice = False
+                                Util.execute('pkill -9 -u {}'.format(username))
                                 break
 
                         if (time.time() - timer) > timeout:
@@ -278,7 +279,10 @@ class AhenkDeamon(BaseDaemon):
                             Util.execute('pkill -9 -u {}'.format(username))
                             self.logger.warning('[AhenkDeamon] Session of {} was ended because of timeout of contract agreement'.format(username))
                             break
-                        time.sleep(0.1)
+                        time.sleep(1)
+
+                    if agreement_choice is not None:
+                        messenger.send_direct_message(message_manager.agreement_answer_msg(username, agreement_choice))
                 else:
                     agreement_choice = True
 
