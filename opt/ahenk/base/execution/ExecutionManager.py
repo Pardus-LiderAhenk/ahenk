@@ -49,8 +49,8 @@ class ExecutionManager(object):
 
     def agreement_update(self, arg):
         plugin = json.loads(arg)
-        if plugin['content'] != 'null' and plugin['content']!='':
-            self.db_service.update('contract',self.db_service.get_cols('contract'),[plugin['content'],plugin['title'],plugin['timestamp']])
+        if plugin['content'] != 'null' and plugin['content'] != '':
+            self.db_service.update('contract', self.db_service.get_cols('contract'), [plugin['content'], plugin['title'], plugin['timestamp']])
 
     def install_plugin(self, arg):
         plugin = json.loads(arg)
