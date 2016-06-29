@@ -29,7 +29,6 @@ class Messenger(ClientXMPP):
         self.hostname = self.configuration_manager.get('CONNECTION', 'host')
         self.resource_name = self.configuration_manager.get('CONNECTION', 'receiverresource')
         self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/' + self.resource_name
-        self.receive_file_path = self.configuration_manager.get('CONNECTION', 'receivefileparam')
         self.logger.debug('[Messenger] XMPP Messager parameters were set')
 
         self.register_extensions()

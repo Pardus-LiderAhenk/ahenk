@@ -24,7 +24,6 @@ class AnonymousMessager(ClientXMPP):
         self.host = str(self.configuration_manager.get('CONNECTION', 'host'))
         self.service = str(self.configuration_manager.get('CONNECTION', 'servicename'))
         self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
-        self.receive_file_path = str(self.configuration_manager.get('CONNECTION', 'receivefileparam'))
 
         ClientXMPP.__init__(self, self.service, None)
 
