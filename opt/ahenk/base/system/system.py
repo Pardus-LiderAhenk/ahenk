@@ -12,6 +12,7 @@ import socket
 import fcntl
 import struct
 from uuid import getnode as get_mac
+from base.util.util import Util
 from base.Scope import Scope
 
 
@@ -83,6 +84,13 @@ class System:
         @staticmethod
         def pid_path():
             return '/var/run/ahenk.pid'
+
+        @staticmethod
+        def received_dir_path():
+            path = '/tmp/.ahenk/'
+            if Util.is_exist(path) is False:
+                Util.create_directory(path)
+            return path
 
     class Process(object):
 
@@ -204,6 +212,11 @@ class System:
             system = System()
             desktop = system.db_service.select_one_result('session', 'desktop', " username='{0}'".format(username))
             return desktop
+
+        @staticmethod
+        def user_home_path(username):
+            # TODO temp
+            return '/home/{}/'.format(str(username))
 
     class Os(object):
 

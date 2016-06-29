@@ -11,7 +11,7 @@ import stat
 import subprocess
 import hashlib
 import datetime
-
+import uuid
 
 class Util:
     def __init__(self):
@@ -81,14 +81,14 @@ class Util:
 
     @staticmethod
     def read_file(full_path, mode='r'):
-        file = None
+        content = None
         try:
-            file = open(full_path, mode)
-            return file.read()
+            with open(full_path,mode) as f:
+                content = f.read()
         except:
             raise
         finally:
-            file.close()
+            return content
 
     @staticmethod
     def write_file(full_path, content, mode='w'):
@@ -239,3 +239,7 @@ class Util:
     @staticmethod
     def timestamp():
         return str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
+
+    @staticmethod
+    def generate_uuid():
+        return uuid.uuid4()
