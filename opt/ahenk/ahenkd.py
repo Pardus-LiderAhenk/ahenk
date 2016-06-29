@@ -282,7 +282,7 @@ class AhenkDeamon(BaseDaemon):
                         time.sleep(1)
 
                     if agreement_choice is not None:
-                        messenger.send_direct_message(message_manager.agreement_answer_msg(username, agreement_choice))
+                        messenger.send_direct_message(message_manager.agreement_answer_msg(username, str(agreement_choice).lower()))
                 else:
                     agreement_choice = True
 

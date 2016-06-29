@@ -152,9 +152,9 @@ class Messaging(object):
 
     def agreement_answer_msg(self, username, answer):
         data = {}
-        data['type'] = 'AGREEMENT_ANSWER'
+        data['type'] = 'AGREEMENT_STATUS'
         data['username'] = username
-        data['answer'] = str(answer).upper()
+        data['accepted'] = str(answer).upper()
         data['timestamp'] = Util.timestamp()
         contract_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
         if contract_content is not None and contract_content != '':
