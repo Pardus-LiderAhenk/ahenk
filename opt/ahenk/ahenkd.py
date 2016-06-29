@@ -290,6 +290,8 @@ class AhenkDeamon(BaseDaemon):
                     db_service.delete('session', 'username=\'{}\''.format(username))
                     db_service.update('session', scope.getDbService().get_cols('session'), [username, display, desktop, Util.timestamp()])
                     get_policy_message = message_manager.policy_request_msg(username)
+
+                    plugin_manager.process_safe_mode(username)
                     messenger.send_direct_message(get_policy_message)
 
             elif 'logout' == str(json_data['event']):
