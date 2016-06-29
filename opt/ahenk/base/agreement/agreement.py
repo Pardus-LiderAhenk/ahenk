@@ -37,8 +37,6 @@ class Agreement:
 
         result = self.db_service.select('contract', ['content', 'title', 'id'], 'id =(select MAX(id) from contract)')
 
-        # TODO sec read from conf file
-
         if result is None or len(result) < 1:
             content = 'Ahenk kurulu bu bilgisayarda ilk defa oturum açıyorsunuz. ' \
                       'Devam ederseniz Lider-Ahenk in bilgisayar üzeride yapacağı ' \
@@ -48,9 +46,9 @@ class Agreement:
             title = 'Ahenk Kurulu Bilgisayar Kullanım Anlaşması'
             contract_id = '-1'
         else:
-            content = result[0]
-            title = result[1]
-            contract_id = result[2]
+            content = result[0][0]
+            title = result[0][1]
+            contract_id = result[0][2]
 
         try:
             command = 'export DISPLAY={0};python3 {1} \'{2}\' \'{3}\' '.format(display, self.ask_path, content, title)
