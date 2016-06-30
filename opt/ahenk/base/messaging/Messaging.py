@@ -140,11 +140,15 @@ class Messaging(object):
     def agreement_request_msg(self):
         data = {}
         data['type'] = 'REQUEST_AGREEMENT'
+
+        """
         contract_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
         if contract_content is not None and contract_content != '':
             data['md5'] = Util.get_md5_text(contract_content)
         else:
             data['md5'] = ''
+        """
+
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('[Messaging] Agreement request message was created')
@@ -154,7 +158,7 @@ class Messaging(object):
         data = {}
         data['type'] = 'AGREEMENT_STATUS'
         data['username'] = username
-        data['accepted'] = str(answer).upper()
+        data['accepted'] = answer
         data['timestamp'] = Util.timestamp()
         contract_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
         if contract_content is not None and contract_content != '':
