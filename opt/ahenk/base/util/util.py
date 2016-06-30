@@ -13,6 +13,7 @@ import hashlib
 import datetime
 import uuid
 
+
 class Util:
     def __init__(self):
         super().__init__()
@@ -83,7 +84,7 @@ class Util:
     def read_file(full_path, mode='r'):
         content = None
         try:
-            with open(full_path,mode) as f:
+            with open(full_path, mode) as f:
                 content = f.read()
         except:
             raise
@@ -243,3 +244,7 @@ class Util:
     @staticmethod
     def generate_uuid():
         return str(uuid.uuid4())
+
+    @staticmethod
+    def set_permission(path, permission_code):
+        Util.execute('chmod {} {}'.format(permission_code, path))
