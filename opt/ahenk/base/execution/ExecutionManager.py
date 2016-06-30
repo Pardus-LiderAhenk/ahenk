@@ -60,7 +60,7 @@ class ExecutionManager(object):
 
             agreement_content = Util.read_file(System.Ahenk.received_dir_path() + file_name)
             # TODO
-            title = 'Ahenk Agreement'
+            title = 'Kullanıcı Sözleşmesi'
 
             if agreement_content is not None and agreement_content != '':
                 self.db_service.update('contract', self.db_service.get_cols('contract'), [agreement_content, title, json_data['timestamp']])
