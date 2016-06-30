@@ -91,7 +91,7 @@ class Util:
             return content
 
     @staticmethod
-    def write_file(full_path, content, mode='w'):
+    def write_file(full_path, content, mode='w+'):
         file = None
         try:
             file = open(full_path, mode)
@@ -242,4 +242,4 @@ class Util:
 
     @staticmethod
     def generate_uuid():
-        return uuid.uuid4()
+        return str(uuid.uuid4())
