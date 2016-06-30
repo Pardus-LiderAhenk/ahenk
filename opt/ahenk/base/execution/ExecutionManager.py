@@ -59,9 +59,11 @@ class ExecutionManager(object):
             transfer_manager.transporter.disconnect()
 
             agreement_content = Util.read_file(System.Ahenk.received_dir_path() + file_name)
+            # TODO
+            title = 'Ahenk Agreement'
 
             if agreement_content is not None and agreement_content != '':
-                self.db_service.update('contract', self.db_service.get_cols('contract'), [agreement_content, json_data['title'], json_data['timestamp']])
+                self.db_service.update('contract', self.db_service.get_cols('contract'), [agreement_content, title, json_data['timestamp']])
         except Exception as e:
             self.logger.error('[ExecutionManager] A problem occurred while updating agreement. Error Message : {}'.format(str(e)))
 
@@ -212,17 +214,20 @@ class ExecutionManager(object):
 
         str_task = json.loads(arg)['task']
         json_task = json.loads(str_task)
-        task = self.json_to_task_bean(json_task)
+
+        file_server_conf = None
+
+        task = self.json_to_task_bean(json_task, file_server_conf)
 
         self.logger.debug('[ExecutionManager] Adding new  task...Task is:{}'.format(task.get_command_cls_id()))
 
         self.task_manager.addTask(task)
         self.logger.debug('[ExecutionManager] Task added')
 
-    def json_to_task_bean(self, json_data):
+    def json_to_task_bean(self, json_data, file_server_conf=None):
         plu = json_data['plugin']
         plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
-        return TaskBean(_id=json_data['id'], create_date=json_data['createDate'], modify_date=json_data['modifyDate'], command_cls_id=json_data['commandClsId'], parameter_map=json_data['parameterMap'], deleted=json_data['deleted'], plugin=plugin, cron_str=json_data['cronExpression'])
+        return TaskBean(_id=json_data['id'], create_date=json_data['createDate'], modify_date=json_data['modifyDate'], command_cls_id=json_data['commandClsId'], parameter_map=json_data['parameterMap'], deleted=json_data['deleted'], plugin=plugin, cron_str=json_data['cronExpression'], file_server=json.dumps(file_server_conf))
 
     def move_file(self, arg):
         default_file_path = System.Ahenk.received_dir_path()

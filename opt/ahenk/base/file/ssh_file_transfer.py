@@ -16,8 +16,8 @@ class Ssh(object):
         self.configuration_manager = scope.getConfigurationManager()
 
         try:
-            self.target_hostname = parameter_map['hostname']
-            self.port = parameter_map['port']
+            self.target_hostname = parameter_map['host']
+            self.port =parameter_map['port']
             self.target_username = parameter_map['username']
             self.target_path = parameter_map['path']
             self.target_password = None
@@ -32,13 +32,13 @@ class Ssh(object):
         self.connection = None
         self.logger.debug('[FileTransfer] Parameters set up')
 
-    def send_file(self, local_path, remote_path):
+    def send_file(self, local_path):
         self.logger.debug('[FileTransfer]  Sending file ...')
 
         try:
             sftp = paramiko.SFTPClient.from_transport(self.connection)
-            sftp.put(local_path, remote_path)
-            self.logger.debug('[FileTransfer] File was sent to {} from {}'.format(local_path, remote_path))
+            sftp.put(local_path, self.target_path)
+            self.logger.debug('[FileTransfer] File was sent to {} from {}'.format(local_path, self.target_path))
         except Exception as e:
             self.logger.error('[FileTransfer] A problem occurred while sending file. Exception message: {}'.format(str(e)))
         finally:

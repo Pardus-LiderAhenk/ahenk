@@ -1,5 +1,6 @@
 from base.Scope import Scope
 from base.util.util import Util
+from base.system.system import System
 
 
 class Agreement:
@@ -46,13 +47,14 @@ class Agreement:
             title = 'Ahenk Kurulu Bilgisayar Kullanım Anlaşması'
             contract_id = '-1'
         else:
-            content = result[0][0]
+            content = str(result[0][0])
             title = result[0][1]
             contract_id = result[0][2]
-
         try:
-            command = 'export DISPLAY={0};python3 {1} \'{2}\' \'{3}\' '.format(display, self.ask_path, content, title)
-            result_code, p_out, p_err = Util.execute(command, as_user=username)
+            agreement_path = System.Ahenk.received_dir_path() + Util.generate_uuid()
+            Util.write_file(agreement_path, content)
+            command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"$(cat {3})\" \"{4}\"\''.format(display, username, self.ask_path, agreement_path, title)
+            result_code, p_out, p_err = Util.execute(command)
             pout = str(p_out).replace('\n', '')
             if pout != 'Error':
                 if pout == 'Y':

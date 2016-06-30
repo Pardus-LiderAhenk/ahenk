@@ -17,4 +17,4 @@ if __name__ == '__main__':
         except Exception as e:
             print(str(e))
     else:
-        print('Error')
+        print('Argument fault. Check your parameters or content of parameters. Parameters: '+str(sys.argv))
