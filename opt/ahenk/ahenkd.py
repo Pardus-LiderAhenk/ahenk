@@ -282,7 +282,7 @@ class AhenkDeamon(BaseDaemon):
                         time.sleep(1)
 
                     if agreement_choice is not None:
-                        messenger.send_direct_message(message_manager.agreement_answer_msg(username, str(agreement_choice).lower()))
+                        messenger.send_direct_message(message_manager.agreement_answer_msg(username, agreement_choice))
                 else:
                     agreement_choice = True
 
@@ -321,7 +321,7 @@ if __name__ == '__main__':
         if len(sys.argv) == 2 and (sys.argv[1] == 'start' or sys.argv[1] == 'stop' or sys.argv[1] == 'restart' or sys.argv[1] == 'status'):
             if sys.argv[1] == 'start':
                 if System.Ahenk.is_running() is True:
-                    print('There is running Ahenk service. It will be killed.')
+                    print('There is already running Ahenk service. It will be killed.')
                     print(str(System.Ahenk.get_pid_number()))
                     System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
                 else:
