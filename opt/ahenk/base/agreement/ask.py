@@ -3,7 +3,7 @@ import easygui
 
 
 def ask(content, title):
-    choice = easygui.ynbox(content, title, ('Evet', 'Hayır'))
+    choice = easygui.textbox(msg=title, text=content, codebox=0)
     if choice:
         print('Y')
     else:
@@ -11,10 +11,11 @@ def ask(content, title):
 
 
 if __name__ == '__main__':
+
     if len(sys.argv) == 3:
         try:
             ask(sys.argv[1], sys.argv[2])
         except Exception as e:
             print(str(e))
     else:
-        print('Argument fault. Check your parameters or content of parameters. Parameters: '+str(sys.argv))
+        print('Argument fault. Check your parameters or content of parameters. Parameters: ' + str(sys.argv))

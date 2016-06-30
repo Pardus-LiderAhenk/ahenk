@@ -53,6 +53,7 @@ class Agreement:
         try:
             agreement_path = System.Ahenk.received_dir_path() + Util.generate_uuid()
             Util.write_file(agreement_path, content)
+            Util.set_permission(agreement_path, 777)
             command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"$(cat {3})\" \"{4}\"\''.format(display, username, self.ask_path, agreement_path, title)
             result_code, p_out, p_err = Util.execute(command)
             pout = str(p_out).replace('\n', '')
