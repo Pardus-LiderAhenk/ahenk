@@ -7,7 +7,7 @@
 class TaskBean(object):
     """docstring for TaskBean"""
 
-    def __init__(self, _id=None, create_date=None, modify_date=None, command_cls_id=None, parameter_map=None, deleted=None, plugin=None, cron_str=None):
+    def __init__(self, _id=None, create_date=None, modify_date=None, command_cls_id=None, parameter_map=None, deleted=None, plugin=None, cron_str=None, file_server=None):
         self._id = _id
         self.create_date = create_date
         self.modify_date = modify_date
@@ -16,6 +16,7 @@ class TaskBean(object):
         self.deleted = deleted
         self.plugin = plugin
         self.cron_str = cron_str
+        self.file_server = file_server
 
     def get_id(self):
         return self._id
@@ -65,6 +66,12 @@ class TaskBean(object):
     def set_cron_str(self, cron_str):
         self.cron_str = cron_str
 
+    def get_file_server(self):
+        return self.file_server
+
+    def set_file_server(self, file_server):
+        self.file_server = file_server
+
     def to_json(self):
         plugin_data = {}
         plugin_data['id'] = self.plugin.get_id()
@@ -90,6 +97,7 @@ class TaskBean(object):
         task_data['cronExpression'] = self.cron_str
         task_data['createDate'] = self.create_date
         task_data['modifyDate'] = self.modify_date
+        task_data['fileServerConf'] = self.file_server
         return task_data
 
     @property
