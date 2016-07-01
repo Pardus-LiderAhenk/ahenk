@@ -19,7 +19,7 @@ class Http(object):
         except Exception as e:
             self.logger.error('[Http] A problem occurred while parsing parameter map. Error Message: {}'.format(str(e)))
 
-    def send_file(self, local_path, remote_path):
+    def send_file(self, local_path, md5):
         pass
 
     def get_file(self):
