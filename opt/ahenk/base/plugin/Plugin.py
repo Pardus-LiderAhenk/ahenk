@@ -3,10 +3,14 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 import threading
-
+import json
 from base.Scope import Scope
 from base.model.Response import Response
+from base.file.file_transfer_manager import FileTransferManager
 from base.model.enum.MessageType import MessageType
+from base.model.enum.MessageCode import MessageCode
+from base.model.enum.ContentType import ContentType
+from base.system.system import System
 
 
 class Context(object):
@@ -72,11 +76,30 @@ class Plugin(threading.Thread):
 
                     self.logger.debug('[Plugin] Creating response')
 
-                    if self.context.get('responseCode') is not None:
+                    if self.context.data is not None and self.context.get('responseCode') is not None:
                         response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
-                        # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
-                        self.logger.debug('[Plugin] Sending response')
-                        Scope.getInstance().getMessenger().send_direct_message(self.messaging.task_status_msg(response))  # TODO REMOVE
+
+                        if response.get_data():
+                            if response.get_content_type() not in (ContentType.TEXT_PLAIN.value, ContentType.APPLICATION_JSON.value):
+
+                                file_manager = FileTransferManager(json.loads(item_obj.get_file_server())['protocol'], json.loads(item_obj.get_file_server())['parameterMap'])
+                                file_manager.transporter.connect()
+                                md5 = str(json.loads(response.get_data())['md5'])
+                                success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5, md5)
+                                file_manager.transporter.disconnect()
+
+                                self.logger.debug('[Plugin] Sending response')
+
+                                message = self.messaging.task_status_msg(response)
+                                if success is False:
+                                    response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=MessageCode.TASK_ERROR.value, message='[Ahenk Core] Task processed successfully but file transfer not completed. Check defined server conf')
+                                    message = self.messaging.task_status_msg(response)
+                                Scope.getInstance().getMessenger().send_direct_message(message)
+
+                        else:
+                            self.logger.debug('[Plugin] Sending response')
+                            Scope.getInstance().getMessenger().send_direct_message(self.messaging.task_status_msg(response))
+
                     else:
                         self.logger.error('[Plugin] There is no Response. Plugin must create response after run a task!')
 
@@ -95,8 +118,9 @@ class Plugin(threading.Thread):
                     self.logger.debug('[Plugin] Handling profile')
                     policy_module.handle_policy(profile_data, self.context)
 
-                    if self.context.get('responseCode') is not None:
+                    if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
+
                         response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
                         # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
                         self.logger.debug('[Plugin] Sending response')
