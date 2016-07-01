@@ -34,7 +34,7 @@ class Messaging(object):
         data['taskId'] = response.get_id()
         data['responseCode'] = response.get_code()
         data['responseMessage'] = response.get_message()
-        data['responseData'] = response.get_data()
+        data['responseData'] = json.loads(str(response.get_data()))
         data['contentType'] = response.get_content_type()
         data['timestamp'] = response.get_timestamp()
 
