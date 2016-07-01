@@ -248,3 +248,10 @@ class Util:
     @staticmethod
     def set_permission(path, permission_code):
         Util.execute('chmod {} {}'.format(permission_code, path))
+
+    @staticmethod
+    def has_attr_json(arg, attr_name):
+        for j in json.loads(json.dumps(arg)):
+            if attr_name in j:
+                return True
+        return False
