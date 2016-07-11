@@ -74,36 +74,39 @@ class Plugin(threading.Thread):
                     self.logger.debug('[Plugin] Handling task')
                     command.handle_task(task_data, self.context)
 
-                    self.logger.debug('[Plugin] Creating response')
-
                     if self.context.data is not None and self.context.get('responseCode') is not None:
+                        self.logger.debug('[Plugin] Creating response')
                         response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
 
-                        if response.get_data():
-                            if response.get_content_type() not in (ContentType.TEXT_PLAIN.value, ContentType.APPLICATION_JSON.value):
-
+                        if response.get_data() and response.get_content_type() != ContentType.APPLICATION_JSON.value:
+                            success = False
+                            try:
                                 file_manager = FileTransferManager(json.loads(item_obj.get_file_server())['protocol'], json.loads(item_obj.get_file_server())['parameterMap'])
                                 file_manager.transporter.connect()
                                 md5 = str(json.loads(response.get_data())['md5'])
                                 success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5, md5)
                                 file_manager.transporter.disconnect()
+                            except Exception as e:
+                                self.logger.error('[Plugin] A problem occurred while file transferring. Error Message :{}'.format(str(e)))
 
-                                self.logger.debug('[Plugin] Sending response')
+                            self.logger.debug('[Plugin] Sending response')
 
+                            message = self.messaging.task_status_msg(response)
+                            if success is False:
+                                response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=MessageCode.TASK_ERROR.value, message='[Ahenk Core] Task processed successfully but file transfer not completed. Check defined server conf')
                                 message = self.messaging.task_status_msg(response)
-                                if success is False:
-                                    response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=MessageCode.TASK_ERROR.value, message='[Ahenk Core] Task processed successfully but file transfer not completed. Check defined server conf')
-                                    message = self.messaging.task_status_msg(response)
-                                Scope.getInstance().getMessenger().send_direct_message(message)
+
+                            Scope.getInstance().getMessenger().send_direct_message(message)
 
                         else:
-                            self.logger.debug('[Plugin] Sending response')
+                            self.logger.debug('[Plugin] Sending task response')
                             Scope.getInstance().getMessenger().send_direct_message(self.messaging.task_status_msg(response))
 
                     else:
                         self.logger.error('[Plugin] There is no Response. Plugin must create response after run a task!')
 
                 elif obj_name == "PROFILE":
+
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
                     policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
@@ -120,14 +123,31 @@ class Plugin(threading.Thread):
 
                     if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
-
                         response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
-                        # self.response_queue.put(self.messaging.response_msg(response)) #TODO DEBUG
-                        self.logger.debug('[Plugin] Sending response')
-                        Scope.getInstance().getMessenger().send_direct_message(self.messaging.policy_status_msg(response))  # TODO REMOVE
+
+                        if response.get_data() and response.get_content_type() != ContentType.APPLICATION_JSON.value:
+                            success = False
+                            try:
+                                file_manager = FileTransferManager(json.loads(item_obj.get_file_server())['protocol'], json.loads(item_obj.get_file_server())['parameterMap'])
+                                file_manager.transporter.connect()
+                                md5 = str(json.loads(response.get_data())['md5'])
+                                success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5, md5)
+                                file_manager.transporter.disconnect()
+                            except Exception as e:
+                                self.logger.error('[Plugin] A problem occurred while file transferring. Error Message :{}'.format(str(e)))
+
+                            self.logger.debug('[Plugin] Sending response')
+
+                            message = self.messaging.task_status_msg(response)
+                            if success is False:
+                                response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=MessageCode.POLICY_ERROR.value, message='[Ahenk Core] Policy processed successfully but file transfer not completed. Check defined server conf')
+                                message = self.messaging.task_status_msg(response)
+                            Scope.getInstance().getMessenger().send_direct_message(message)
+                        else:
+                            self.logger.debug('[Plugin] Sending profile response')
+                            Scope.getInstance().getMessenger().send_direct_message(self.messaging.policy_status_msg(response))
                     else:
                         self.logger.error('[Plugin] There is no Response. Plugin must create response after run a policy!')
-
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False
                     self.logger.debug('[Plugin] Killing queue ! Plugin Name: {}'.format(str(self.name)))
