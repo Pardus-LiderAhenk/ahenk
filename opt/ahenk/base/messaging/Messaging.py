@@ -34,7 +34,10 @@ class Messaging(object):
         data['taskId'] = response.get_id()
         data['responseCode'] = response.get_code()
         data['responseMessage'] = response.get_message()
-        data['responseData'] = json.loads(str(response.get_data()))
+        response_data = None
+        if data['responseData'] is not None:
+            response_data = json.loads(str(response.get_data()))
+        data['responseData'] = response_data
         data['contentType'] = response.get_content_type()
         data['timestamp'] = response.get_timestamp()
 
@@ -49,7 +52,12 @@ class Messaging(object):
         data['commandExecutionId'] = response.get_execution_id()
         data['responseCode'] = response.get_code()
         data['responseMessage'] = response.get_message()
-        data['responseData'] = response.get_data()
+
+        response_data = None
+        if data['responseData'] is not None:
+            response_data = json.loads(str(response.get_data()))
+
+        data['responseData'] = response_data
         data['contentType'] = response.get_content_type()
         data['timestamp'] = response.get_timestamp()
 
