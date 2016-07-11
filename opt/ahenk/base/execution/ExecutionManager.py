@@ -59,11 +59,14 @@ class ExecutionManager(object):
             transfer_manager.transporter.disconnect()
 
             agreement_content = Util.read_file(System.Ahenk.received_dir_path() + file_name)
+            Util.delete_file(System.Ahenk.received_dir_path() + file_name)
             # TODO
             title = 'Kullanıcı Sözleşmesi'
 
             if agreement_content is not None and agreement_content != '':
-                self.db_service.update('contract', self.db_service.get_cols('contract'), [agreement_content, title, json_data['timestamp']])
+                old_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
+                if old_content is None or Util.get_md5_text(old_content) != Util.get_md5_text(agreement_content):
+                    self.db_service.update('contract', self.db_service.get_cols('contract'), [agreement_content, title, json_data['timestamp']])
         except Exception as e:
             self.logger.error('[ExecutionManager] A problem occurred while updating agreement. Error Message : {}'.format(str(e)))
 

@@ -66,6 +66,7 @@ class Agreement:
                     self.logger.debug('[Agreement] Agreement was ignored by {}. Session will be closed'.format(username))
                 else:
                     self.logger.error('[Agreement] A problem occurred while executing ask.py. Error Message: {}'.format(str(pout)))
+                Util.delete_file(agreement_path)
             else:
                 self.logger.error('[Agreement] A problem occurred while executing ask.py (Probably argument fault). Error Message: {}'.format(str(pout)))
 
