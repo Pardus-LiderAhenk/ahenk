@@ -6,11 +6,15 @@ import imp
 import os
 
 from base.Scope import Scope
+from base.model.PluginBean import PluginBean
+from base.model.PluginKillSignal import PluginKillSignal
+from base.model.modes.init_mode import InitMode
+from base.model.modes.login_mode import LoginMode
+from base.model.modes.logout_mode import LogoutMode
+from base.model.modes.safe_mode import SafeMode
+from base.model.modes.shutdown_mode import ShutdownMode
 from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
-from base.model.PluginKillSignal import PluginKillSignal
-from base.model.PluginBean import PluginBean
-from base.model.safe_mode import SafeMode
 
 
 # TODO create base abstract class
@@ -173,21 +177,38 @@ class PluginManager(object):
         else:
             return True
 
-    def find_safe_mode_module(self, plugin_name):
+    def process_mode(self, mode_type, username=None):
+        mode = None
+        if mode_type == 'init':
+            mode = InitMode()
+        elif mode_type == 'shutdown':
+            mode = ShutdownMode()
+        elif mode_type == 'login':
+            mode = LoginMode(username)
+        elif mode_type == 'logout':
+            mode = LogoutMode(username)
+        elif mode_type == 'safe':
+            mode = SafeMode(username)
+        else:
+            self.logger.error('[PluginManager] Unknown mode type: {}'.format(mode_type))
+
+        if mode is not None:
+            for plugin_name in self.pluginQueueDict:
+                try:
+                    self.pluginQueueDict[plugin_name].put(mode, 1)
+                except Exception as e:
+                    self.logger.error('[PluginManager] Exception occurred while switching safe mode. Error Message : {}'.format(str(e)))
+
+    def find_module(self, mode, plugin_name):
+        mode = mode.lower().replace('_mode', '')
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
-        if os.path.isdir(location) and "safe.py" in os.listdir(location):
-            info = imp.find_module("safe", [location])
-            return imp.load_module("safe", *info)
+
+        if os.path.isdir(location) and (mode + ".py") in os.listdir(location):
+            info = imp.find_module(mode, [location])
+            return imp.load_module(mode, *info)
         else:
             self.logger.warning('[PluginManager] safe.py not found Plugin Name : ' + str(plugin_name))
             return None
-
-    def process_safe_mode(self, username):
-        for plugin_name in self.pluginQueueDict:
-            try:
-                self.pluginQueueDict[plugin_name].put(SafeMode(username), 1)
-            except Exception as e:
-                self.logger.error('Exception occured when switching safe mode ' + str(e))
 
     def reloadSinglePlugin(self, pluginName):
         # Not implemented yet

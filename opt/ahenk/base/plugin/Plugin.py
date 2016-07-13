@@ -24,6 +24,9 @@ class Context(object):
     def get(self, var_name):
         return self.data[var_name]
 
+    def get_username(self):
+        return self.data['username']
+
     def empty_data(self):
         self.data = {}
 
@@ -151,17 +154,26 @@ class Plugin(threading.Thread):
                 elif obj_name == "KILL_SIGNAL":
                     self.keep_run = False
                     self.logger.debug('[Plugin] Killing queue ! Plugin Name: {}'.format(str(self.name)))
-                elif obj_name == "SAFE_MODE":
-                    username = item_obj.username
-                    safe_mode_module = Scope.getInstance().getPluginManager().find_safe_mode_module(self.name)
-                    safe_mode_module.handle_safe_mode(username, self.context)
+                elif 'MODE' in obj_name:
+                    module = Scope.getInstance().getPluginManager().find_module(obj_name, self.name)
+                    if module is not None:
+                        if item_obj.obj_name in ('LOGIN_MODE', 'LOGOUT_MODE', 'SAFE_MODE'):
+                            self.context.put('username', item_obj.username)
+                        try:
+                            self.logger.debug('[Plugin] {0} is running on {1} plugin'.format(str(item_obj.obj_name), str(self.name)))
+                            module.handle_mode(self.context)
+                        except Exception as e:
+                            self.logger.error('[Plugin] A problem occurred while running {0} on {1} plugin. Error Message: {2}'.format(str(obj_name), str(self.name), str(e)))
+
+                    if item_obj.obj_name is 'SHUTDOWN_MODE':
+                        self.logger.debug('[Plugin] {0} plugin is stopping...'.format(str(self.name)))
+                        self.keep_run = False
                 else:
                     self.logger.warning("[Plugin] Not supported object type: {}".format(str(obj_name)))
 
-                # Empty context for next use
                 self.context.empty_data()
             except Exception as e:
-                self.logger.error("[Plugin] Plugin running exception. Exception Message: {} ".format(str(e)))
+                self.logger.error("[Plugin] Plugin running exception about {0}. Exception Message: {1} ".format(obj_name, str(e)))
 
     def get_execution_id(self, profile_id):
         try:
