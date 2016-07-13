@@ -11,11 +11,11 @@ class Logout(AbstractPlugin):
         self.username = str(context.get_username())
         self.logger = self.get_logger()
 
-    def handle_mode(self):
+    def handle_logout_mode(self):
         # TODO Do what do you want to do!
         pass
 
 
 def handle_mode(context):
     logout = Logout(context)
-    logout.handle_mode()
+    logout.handle_logout_mode()

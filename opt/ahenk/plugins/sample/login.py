@@ -11,11 +11,11 @@ class Login(AbstractPlugin):
         self.username = str(context.get_username())
         self.logger = self.get_logger()
 
-    def handle_mode(self):
+    def handle_login_mode(self):
         # TODO Do what do you want to do!
         pass
 
 
 def handle_mode(context):
     login = Login(context)
-    login.handle_mode()
+    login.handle_login_mode()

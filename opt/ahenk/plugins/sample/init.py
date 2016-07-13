@@ -10,11 +10,11 @@ class Init(AbstractPlugin):
         self.context = context
         self.logger = self.get_logger()
 
-    def handle_mode(self):
+    def handle_init_mode(self):
         # TODO Do what do you want to do!
         pass
 
 
 def handle_mode(context):
     init = Init(context)
-    init.handle_mode()
+    init.handle_init_mode()
