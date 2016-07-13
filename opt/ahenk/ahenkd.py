@@ -22,6 +22,7 @@ from base.messaging.MessageResponseQueue import MessageResponseQueue
 from base.messaging.Messenger import Messenger
 from base.messaging.Messaging import Messaging
 from base.plugin.plugin_manager_factory import PluginManagerFactory
+from base.plugin.Plugin import Plugin
 from base.registration.Registration import Registration
 from base.scheduler.scheduler_factory import SchedulerFactory
 from base.system.system import System
@@ -130,6 +131,16 @@ class AhenkDeamon(BaseDaemon):
         except Exception as e:
             logger.error('[AhenkDeamon] Registration failed. Error message: {}'.format(str(e)))
 
+    def shutdown_mode(self):
+        scope = Scope().getInstance()
+        plugin_manager = scope.getPluginManager()
+        plugin_manager.process_mode('shutdown')
+
+    def init_mode(self):
+        scope = Scope().getInstance()
+        plugin_manager = scope.getPluginManager()
+        plugin_manager.process_mode('init')
+
     def registration_failed(self):
         self.logger.error('[AhenkDeamon] Registration failed. All registration attemps were failed. Ahenk is stopping...')
         print('Registration failed. Ahenk is stopping..')
@@ -193,7 +204,10 @@ class AhenkDeamon(BaseDaemon):
         self.logger.info('[AhenkDeamon] Execution Manager was set')
 
         self.check_registration()
-        self.logger.info('[AhenkDeamon] Ahenk is registered')
+        self.logger.info('[AhenkDeamon] Ahenk was registered')
+
+        self.init_mode()
+        self.logger.info('[AhenkDeamon] Plugins were initialized')
 
         self.messenger = self.init_messenger()
         self.logger.info('[AhenkDeamon] Messager was set')
@@ -226,6 +240,15 @@ class AhenkDeamon(BaseDaemon):
             #     messager = self.init_messager()
             time.sleep(1)
 
+    def running_plugin(self):
+        scope = Scope().getInstance()
+        plugin_manager = scope.getPluginManager()
+
+        for plugin in plugin_manager.plugins:
+            if plugin.keep_run is True:
+                return False
+        return True
+
     def run_command_from_fifo(self, num, stack):
 
         json_data = json.loads(Commander().get_event())
@@ -251,6 +274,7 @@ class AhenkDeamon(BaseDaemon):
 
                 agreement = Agreement()
                 agreement_choice = None
+
                 if agreement.check_agreement(username) is not True:
                     self.logger.debug('[AhenkDeamon] User {} has not accepted agreement.'.format(username))
                     thread_ask = Process(target=agreement.ask, args=(username, display,))
@@ -291,7 +315,9 @@ class AhenkDeamon(BaseDaemon):
                     db_service.update('session', scope.getDbService().get_cols('session'), [username, display, desktop, Util.timestamp()])
                     get_policy_message = message_manager.policy_request_msg(username)
 
-                    plugin_manager.process_safe_mode(username)
+                    plugin_manager.process_mode('safe', username)
+                    plugin_manager.process_mode('login', username)
+
                     messenger.send_direct_message(get_policy_message)
 
             elif 'logout' == str(json_data['event']):
@@ -300,11 +326,25 @@ class AhenkDeamon(BaseDaemon):
                 self.logger.info('[AhenkDeamon] logout event is handled for user: {}'.format(username))
                 logout_message = message_manager.logout_msg(username)
                 messenger.send_direct_message(logout_message)
-                plugin_manager.process_safe_mode(username)
+
+                plugin_manager.process_mode('logout', username)
+                plugin_manager.process_mode('safe', username)
+
             elif 'send' == str(json_data['event']):
                 self.logger.info('[AhenkDeamon] Sending message over ahenkd command. Response Message: {}'.format(str(json_data['message'])))
                 message = str(json.dumps(json_data['message']))
                 messenger.send_direct_message(message)
+
+            elif 'stop' == str(json_data['event']):
+                self.shutdown_mode()
+                self.logger.info('[AhenkDeamon] Shutdown mode activated.')
+
+                # TODO timeout
+                while self.running_plugin() is False:
+                    self.logger.debug('[AhenkDeamon] Waiting for progress of plugins...')
+                    time.sleep(0.5)
+
+                ahenkdaemon.stop()
             else:
                 self.logger.error('[AhenkDeamon] Unknown command error. Command:' + json_data['event'])
 
@@ -318,19 +358,17 @@ if __name__ == '__main__':
 
     ahenkdaemon = AhenkDeamon(System.Ahenk.pid_path())
     try:
-        if len(sys.argv) == 2 and (sys.argv[1] == 'start' or sys.argv[1] == 'stop' or sys.argv[1] == 'restart' or sys.argv[1] == 'status'):
+        if len(sys.argv) == 2 and (sys.argv[1] in ('start', 'stop', 'restart', 'status')):
             if sys.argv[1] == 'start':
                 if System.Ahenk.is_running() is True:
-                    print('There is already running Ahenk service. It will be killed.')
-                    print(str(System.Ahenk.get_pid_number()))
+                    print('There is already running Ahenk service. It will be killed.[{}]'.format(str(System.Ahenk.get_pid_number())))
                     System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
                 else:
                     print('Ahenk starting...')
                 ahenkdaemon.run()
             elif sys.argv[1] == 'stop':
                 if System.Ahenk.is_running() is True:
-                    print('Ahenk stopping...')
-                    ahenkdaemon.stop()
+                    raise SystemExit
                 else:
                     print('Ahenk not working!')
             elif sys.argv[1] == 'restart':
@@ -355,5 +393,10 @@ if __name__ == '__main__':
                     os.kill(int(System.Ahenk.get_pid_number()), signal.SIGALRM)
     except(KeyboardInterrupt, SystemExit):
         if System.Ahenk.is_running() is True:
-            print('Ahenk will be closed.')
-            ahenkdaemon.stop()
+            print('Ahenk stopping...')
+            result = Commander().set_event(['stop'])
+            if result is True:
+                if System.Ahenk.is_running() is True:
+                    os.kill(int(System.Ahenk.get_pid_number()), signal.SIGALRM)
+            else:
+                ahenkdaemon.stop()
