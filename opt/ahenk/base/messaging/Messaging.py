@@ -35,7 +35,7 @@ class Messaging(object):
         data['responseCode'] = response.get_code()
         data['responseMessage'] = response.get_message()
         response_data = None
-        if data['responseData'] is not None:
+        if response.get_data() is not None:
             response_data = json.loads(str(response.get_data()))
         data['responseData'] = response_data
         data['contentType'] = response.get_content_type()
@@ -54,7 +54,7 @@ class Messaging(object):
         data['responseMessage'] = response.get_message()
 
         response_data = None
-        if data['responseData'] is not None:
+        if response.get_data() is not None:
             response_data = json.loads(str(response.get_data()))
 
         data['responseData'] = response_data
