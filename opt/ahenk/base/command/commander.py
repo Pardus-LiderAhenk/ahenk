@@ -24,26 +24,28 @@ class Commander(object):
 
         if System.Ahenk.is_running() is True:
 
-            if params[1] == 'clean':
+            if len(params) > 1 and params[1] == 'clean':
                 print('Ahenk stopping')
                 System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
                 self.clean()
                 return False
 
-            elif params[1] == 'login' and len(params) == 5:
+            elif len(params) == 5 and params[1] == 'login':
                 print('{1} {0}ing'.format(str(params[1]), str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
                 data['desktop'] = params[3]
                 data['display'] = params[4]
 
-
-            elif params[1] == 'logout' and len(params) == 3:
+            elif len(params) == 3 and params[1] == 'logout':
                 print('{1} {0}ing'.format(str(params[1]), str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
 
-            elif params[1] == 'send' and len(params) > 5:
+            elif params[0] == 'stop':
+                data['event'] = 'stop'
+
+            elif len(params) > 5 and params[1] == 'send':
                 data['event'] = params[1]
                 response = {}
                 response['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
@@ -75,7 +77,7 @@ class Commander(object):
                             print('Wrong or missing parameter.(-e|-s|-w parameters are optional) Usage: send -t <task_id> -m|-f <message_content>|<file_path> -e|-s|-w')
                             return None
 
-                elif params[2] == '-p' and len(params) > 7:
+                elif len(params) > 7 and params[2] == '-p':
                     response['responseCode'] = MessageCode.POLICY_PROCESSED.value
                     response['type'] = MessageType.POLICY_STATUS.value
                     response['policyVersion'] = params[3]
