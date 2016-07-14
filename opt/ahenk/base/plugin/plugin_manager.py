@@ -126,6 +126,12 @@ class PluginManager(object):
             self.logger.warning('[PluginManager] policy.py not found Plugin Name : ' + str(plugin_name))
             return None
 
+    def is_profile_overridable(self, profiles, plugin_name):
+        for profile in profiles:
+            if profile.plugin.name == plugin_name and profile.overridable.lower() == 'true':
+                return True
+        return False
+
     def processPolicy(self, policy):
 
         self.logger.info('[PluginManager] Processing policies...')
@@ -135,15 +141,27 @@ class PluginManager(object):
 
         if ahenk_profiles is not None:
             self.logger.info('[PluginManager] Working on Ahenk profiles...')
-            for profile in ahenk_profiles:
-                profile.set_username(None)
-                self.process_profile(profile)
+            for agent_profile in ahenk_profiles:
+
+                if agent_profile.overridable.lower() != 'true' and self.is_profile_overridable(policy.user_profiles, agent_profile.plugin.name) is True:
+                    temp_list = []
+                    self.logger.debug('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
+                    for usr_profile in user_profiles:
+                        if usr_profile.plugin.name != agent_profile.plugin.name:
+                            temp_list.append(usr_profile)
+                    user_profiles = temp_list
+                else:
+                    self.logger.debug('[PluginManager] Agent profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
+                    continue
+
+                agent_profile.set_username(None)
+                self.process_profile(agent_profile)
 
         if user_profiles is not None:
             self.logger.info('[PluginManager] Working on User profiles...')
-            for profile in user_profiles:
-                profile.set_username(username)
-                self.process_profile(profile)
+            for user_profile in user_profiles:
+                user_profile.set_username(username)
+                self.process_profile(user_profile)
 
     def process_profile(self, profile):
 
