@@ -4,6 +4,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import imp
 import os
+from multiprocessing import Process
 
 from base.Scope import Scope
 from base.model.PluginBean import PluginBean
@@ -15,59 +16,65 @@ from base.model.modes.safe_mode import SafeMode
 from base.model.modes.shutdown_mode import ShutdownMode
 from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
+from base.plugin.plugin_install_listener import PluginInstallListener
+from base.system.system import System
 
 
 # TODO create base abstract class
 class PluginManager(object):
     """docstring for PluginManager"""
 
-    # implement logger
     def __init__(self):
         super(PluginManager, self).__init__()
         self.scope = Scope.getInstance()
         self.configManager = self.scope.getConfigurationManager()
         self.db_service = self.scope.getDbService()
+        self.message_manager = self.scope.getMessageManager()
+        self.logger = self.scope.getLogger()
         self.plugins = []
         self.pluginQueueDict = dict()
-        self.logger = self.scope.getLogger()
-        self.message_manager = self.scope.getMessageManager()
+
+        self.listener = self.install_listener()
         self.delayed_profiles = {}
         self.delayed_tasks = {}
 
     # TODO version?
-    def loadPlugins(self):
-        """
-            This method loads plugins
-        """
+    def load_plugins(self):
         self.logger.info('[PluginManager] Loading plugins...')
         self.plugins = []
         self.logger.debug('[PluginManager] Lookup for possible plugins...')
-
         try:
             possible_plugins = os.listdir(self.configManager.get("PLUGIN", "pluginFolderPath"))
             self.logger.debug('[PluginManager] Possible plugins: {} '.format(str(possible_plugins)))
             for plugin_name in possible_plugins:
-                location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
-                if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
-                    self.logger.debug('It is not a plugin location ! There is no main module - {}'.format(str(location)))
-                    continue
                 try:
-                    self.loadSinglePlugin(plugin_name)
+                    self.load_single_plugin(plugin_name)
                 except Exception as e:
-                    self.logger.error('[PluginManager] Exception occurred when loading plugin ! Plugin name : {} .Error Message: {}'.format(str(plugin_name), str(e)))
+                    self.logger.error('[PluginManager] Exception occurred while loading plugin ! Plugin name : {}. Error Message: {}'.format(str(plugin_name), str(e)))
             self.logger.info('[PluginManager] Loaded plugins successfully.')
         except Exception as e:
             self.logger.warning('[PluginManager] Plugin folder path not found. Error Message: {}'.format(str(e)))
 
-    def loadSinglePlugin(self, plugin_name):
+    def load_single_plugin(self, plugin_name):
         # TODO check already loaded plugin
-        self.pluginQueueDict[plugin_name] = PluginQueue()
-        plugin = Plugin(plugin_name, self.pluginQueueDict[plugin_name])
-        plugin.setDaemon(True)
-        plugin.start()
-        self.plugins.append(plugin)
+        location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
+        if not os.path.isdir(location) or not self.configManager.get("PLUGIN", "mainModuleName") + ".py" in os.listdir(location):
+            self.logger.debug('[PluginManager] It is not a plugin location ! There is no main module - {}'.format(str(location)))
+        else:
+            if self.is_plugin_loaded(plugin_name):
+                self.logger.debug('[PluginManager] {0} plugin was already loaded. Reloading {0} plugin'.format(plugin_name))
+                self.reload_single_plugin(plugin_name)
+            else:
+                self.pluginQueueDict[plugin_name] = PluginQueue()
+                plugin = Plugin(plugin_name, self.pluginQueueDict[plugin_name])
+                plugin.setDaemon(True)
+                plugin.start()
+                self.plugins.append(plugin)
+                self.logger.debug('[PluginManager] New plugin was loaded. Plugin Name: {}'.format(plugin_name))
 
-        self.logger.debug('[PluginManager] New plugin was loaded. Plugin Name: {}'.format(plugin_name))
+                # active init mode
+                mode = InitMode()
+                self.pluginQueueDict[plugin_name].put(mode, 1)
 
         if len(self.delayed_profiles) > 0:
             self.pluginQueueDict[plugin_name].put(self.delayed_profiles[plugin_name], 1)
@@ -76,7 +83,58 @@ class PluginManager(object):
             self.pluginQueueDict[plugin_name].put(self.delayed_tasks[plugin_name], 1)
             self.logger.debug('[PluginManager] Delayed task was found for this plugin. It will be run.')
 
-    def findCommand(self, pluginName, commandId):
+    def reload_plugins(self):
+        try:
+            self.logger.info('[PluginManager] Reloading plugins...')
+            kill_signal = PluginKillSignal()
+            for p_queue in self.pluginQueueDict:
+                p_queue.put(kill_signal)
+            self.plugins = []
+            self.load_plugins()
+            self.logger.info('[PluginManager] Plugin reloaded successfully.')
+        except Exception as e:
+            self.logger.error('[PluginManager] Exception occurred when reloading plugins ' + str(e))
+
+    def reload_single_plugin(self, plugin_name):
+        try:
+            self.logger.info('[PluginManager] {} plugin is reloading'.format(plugin_name))
+            self.logger.debug('[PluginManager] {} plugin is killing (in reloading action)'.format(plugin_name))
+            self.remove_single_plugin(plugin_name)
+            self.logger.debug('[PluginManager] {} plugin is loading (in reloading action)'.format(plugin_name))
+            self.load_single_plugin(plugin_name)
+        except Exception as e:
+            self.logger.error('[PluginManager] A problem  occurred while reloading {0} plugin. Error Message: {1}'.format(plugin_name, str(e)))
+
+    def remove_plugins(self):
+        try:
+            self.logger.debug('[PluginManager] Removing all plugins...')
+            for p_queue in self.pluginQueueDict:
+                p_queue.put(PluginKillSignal())
+                # todo check is running
+            self.plugins = []
+            self.pluginQueueDict = dict()
+            self.logger.debug('[PluginManager] All plugins were removed successfully.')
+        except Exception as e:
+            self.logger.debug('[PluginManager] A problem occurred while removing plugins. Error Message :{0}.'.format(str(e)))
+
+    def remove_single_plugin(self, plugin_name):
+        try:
+            self.logger.debug('[PluginManager] Trying to remove {} plugin...'.format(plugin_name))
+            if self.is_plugin_loaded(plugin_name):
+                self.logger.debug('[PluginManager] {} plugin is killing...'.format(plugin_name))
+                self.pluginQueueDict[plugin_name].put(PluginKillSignal(), 1)
+                del self.pluginQueueDict[plugin_name]
+
+                for plugin in self.plugins:
+                    if plugin.name == plugin_name:
+                        self.plugins.remove(plugin)
+                self.logger.debug('[PluginManager] {} plugin was removed.'.format(plugin_name))
+            else:
+                self.logger.warning('[PluginManager] {} plugin not found.'.format(plugin_name))
+        except Exception as e:
+            self.logger.error('[PluginManager] A problem occurred while removing {0} plugin. Error Message :{1}.'.format(plugin_name, str(e)))
+
+    def find_command(self, pluginName, commandId):
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), pluginName)
         if os.path.isdir(location) and commandId + ".py" in os.listdir(location):
             info = imp.find_module(commandId, [location])
@@ -85,7 +143,7 @@ class PluginManager(object):
             self.logger.warning('Command id -' + commandId + ' - not found')
             return None
 
-    def processTask(self, task):
+    def process_task(self, task):
 
         ##
         scope = Scope().getInstance()
@@ -105,19 +163,7 @@ class PluginManager(object):
         except Exception as e:
             self.logger.error('[PluginManager] Exception occurred while processing task. Error Message: {}'.format(str(e)))
 
-    def reloadPlugins(self):
-        try:
-            self.logger.info('[PluginManager]  Reloading plugins... ')
-            kill_sgnl = PluginKillSignal()
-            for p_queue in self.pluginQueueDict:
-                p_queue.put(kill_sgnl)
-            self.plugins = []
-            self.loadPlugins()
-            self.logger.info('[PluginManager] Plugin reloaded successfully.')
-        except Exception as e:
-            self.logger.error('[PluginManager] Exception occurred when reloading plugins ' + str(e))
-
-    def findPolicyModule(self, plugin_name):
+    def find_policy_module(self, plugin_name):
         location = os.path.join(self.configManager.get("PLUGIN", "pluginFolderPath"), plugin_name)
         if os.path.isdir(location) and "policy.py" in os.listdir(location):
             info = imp.find_module("policy", [location])
@@ -126,13 +172,7 @@ class PluginManager(object):
             self.logger.warning('[PluginManager] policy.py not found Plugin Name : ' + str(plugin_name))
             return None
 
-    def is_profile_overridable(self, profiles, plugin_name):
-        for profile in profiles:
-            if profile.plugin.name == plugin_name and profile.overridable.lower() == 'true':
-                return True
-        return False
-
-    def processPolicy(self, policy):
+    def process_policy(self, policy):
 
         self.logger.info('[PluginManager] Processing policies...')
         username = policy.username
@@ -143,7 +183,7 @@ class PluginManager(object):
             self.logger.info('[PluginManager] Working on Ahenk profiles...')
             for agent_profile in ahenk_profiles:
 
-                if agent_profile.overridable.lower() != 'true' and self.is_profile_overridable(policy.user_profiles, agent_profile.plugin.name) is True:
+                if agent_profile.overridable.lower() != 'true':
                     temp_list = []
                     self.logger.debug('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
                     for usr_profile in user_profiles:
@@ -183,7 +223,7 @@ class PluginManager(object):
         except Exception as e:
             self.logger.error('[PluginManager] Exception occurred while processing profile. Error Message: {}'.format(str(e)))
 
-    def checkPluginExists(self, plugin_name, version=None):
+    def check_plugin_exists(self, plugin_name, version=None):
 
         criteria = ' name=\'' + plugin_name + '\''
         if version is not None:
@@ -211,6 +251,7 @@ class PluginManager(object):
             self.logger.error('[PluginManager] Unknown mode type: {}'.format(mode_type))
 
         if mode is not None:
+            self.logger.info('[PluginManager] {} mode is running'.format(mode_type))
             for plugin_name in self.pluginQueueDict:
                 try:
                     self.pluginQueueDict[plugin_name].put(mode, 1)
@@ -228,10 +269,20 @@ class PluginManager(object):
             self.logger.warning('[PluginManager] safe.py not found Plugin Name : ' + str(plugin_name))
             return None
 
-    def reloadSinglePlugin(self, pluginName):
-        # Not implemented yet
+    def install_listener(self):
+        listener = PluginInstallListener()
+        thread = Process(target=listener.listen, args=(System.Ahenk.plugins_path(),))
+        thread.start()
+        return thread
 
-        pass
+    def is_plugin_loaded(self, plugin_name):
+        try:
+            if self.pluginQueueDict[plugin_name] is not None:
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
 
     def checkCommandExist(self, pluginName, commandId):
         # Not implemented yet

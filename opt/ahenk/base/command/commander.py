@@ -5,7 +5,6 @@ import os
 import queue as Queue
 import threading
 
-from base.Scope import Scope
 from base.command.fifo import Fifo
 from base.model.enum.ContentType import ContentType
 from base.model.enum.MessageCode import MessageCode
@@ -19,8 +18,13 @@ class Commander(object):
         pass
 
     def set_event(self, *args):
+
+        if args is None or len(args) < 1:
+            print('ERR')
+
         params = args[0]
         data = {}
+
 
         if System.Ahenk.is_running() is True:
 
@@ -42,8 +46,20 @@ class Commander(object):
                 data['event'] = params[1]
                 data['username'] = params[2]
 
-            elif params[0] == 'stop':
+            elif len(params) == 2 and params[1] == 'stop':
                 data['event'] = 'stop'
+
+            elif len(params) == 4 and params[1] == 'load' and params[2] == '-p':
+                data['event'] = 'load'
+                data['plugins'] = params[3]
+
+            elif len(params) == 4 and params[1] == 'reload' and params[2] == '-p':
+                data['event'] = 'reload'
+                data['plugins'] = params[3]
+
+            elif len(params) == 4 and params[1] == 'remove' and params[2] == '-p':
+                data['event'] = 'remove'
+                data['plugins'] = params[3]
 
             elif len(params) > 5 and params[1] == 'send':
                 data['event'] = params[1]

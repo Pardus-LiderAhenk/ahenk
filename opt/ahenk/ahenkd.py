@@ -3,14 +3,17 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
+import json
 import os
 import queue
 import signal
 import sys
 import threading
 import time
-import json
+from multiprocessing import Process
+
 from base.Scope import Scope
+from base.agreement.agreement import Agreement
 from base.command.commander import Commander
 from base.config.ConfigManager import ConfigManager
 from base.database.AhenkDbService import AhenkDbService
@@ -19,17 +22,14 @@ from base.event.EventManager import EventManager
 from base.execution.ExecutionManager import ExecutionManager
 from base.logger.AhenkLogger import Logger
 from base.messaging.MessageResponseQueue import MessageResponseQueue
-from base.messaging.Messenger import Messenger
 from base.messaging.Messaging import Messaging
+from base.messaging.Messenger import Messenger
 from base.plugin.plugin_manager_factory import PluginManagerFactory
-from base.plugin.Plugin import Plugin
 from base.registration.Registration import Registration
 from base.scheduler.scheduler_factory import SchedulerFactory
 from base.system.system import System
 from base.task.TaskManager import TaskManager
-from base.agreement.agreement import Agreement
 from base.util.util import Util
-from multiprocessing import Process
 
 ahenkdaemon = None
 
@@ -81,8 +81,9 @@ class AhenkDeamon(BaseDaemon):
 
     def init_plugin_manager(self):
         pluginManager = PluginManagerFactory.get_instance()
-        pluginManager.loadPlugins()
         Scope.getInstance().setPluginManager(pluginManager)
+        # order changed, problem?
+        pluginManager.load_plugins()
         return pluginManager
 
     def init_task_manager(self):
@@ -135,11 +136,6 @@ class AhenkDeamon(BaseDaemon):
         scope = Scope().getInstance()
         plugin_manager = scope.getPluginManager()
         plugin_manager.process_mode('shutdown')
-
-    def init_mode(self):
-        scope = Scope().getInstance()
-        plugin_manager = scope.getPluginManager()
-        plugin_manager.process_mode('init')
 
     def registration_failed(self):
         self.logger.error('[AhenkDeamon] Registration failed. All registration attemps were failed. Ahenk is stopping...')
@@ -205,9 +201,6 @@ class AhenkDeamon(BaseDaemon):
 
         self.check_registration()
         self.logger.info('[AhenkDeamon] Ahenk was registered')
-
-        self.init_mode()
-        self.logger.info('[AhenkDeamon] Plugins were initialized')
 
         self.messenger = self.init_messenger()
         self.logger.info('[AhenkDeamon] Messager was set')
@@ -312,6 +305,9 @@ class AhenkDeamon(BaseDaemon):
 
                 if agreement_choice is True:
                     db_service.delete('session', 'username=\'{}\''.format(username))
+
+                    self.logger.info('[AhenkDeamon] Display is {0}, desktop env is {1} for {2}'.format(display, desktop, username))
+
                     db_service.update('session', scope.getDbService().get_cols('session'), [username, display, desktop, Util.timestamp()])
                     get_policy_message = message_manager.policy_request_msg(username)
 
@@ -334,6 +330,38 @@ class AhenkDeamon(BaseDaemon):
                 self.logger.info('[AhenkDeamon] Sending message over ahenkd command. Response Message: {}'.format(str(json_data['message'])))
                 message = str(json.dumps(json_data['message']))
                 messenger.send_direct_message(message)
+
+            elif 'load' == str(json_data['event']):
+                plugin_name = str(json_data['plugins'])
+
+                if plugin_name == 'all':
+                    self.logger.info('[AhenkDeamon] All plugins are loading to ahenk'.format(plugin_name))
+                    plugin_manager.load_plugins()
+                else:
+                    for p_name in plugin_name.split(','):
+                        self.logger.info('[AhenkDeamon] {} plugin is loading to ahenk'.format(p_name))
+                        plugin_manager.load_single_plugin(p_name)
+
+            elif 'reload' == str(json_data['event']):
+                plugin_name = str(json_data['plugins'])
+                self.logger.info('[AhenkDeamon] {} plugin/s is/are reloading to ahenk'.format(plugin_name))
+
+                if plugin_name == 'all':
+                    plugin_manager.reload_plugins()
+                else:
+                    for p_name in plugin_name.split(','):
+                        plugin_manager.reload_single_plugin(p_name)
+
+            elif 'remove' == str(json_data['event']):
+                plugin_name = str(json_data['plugins'])
+
+                if plugin_name == 'all':
+                    self.logger.info('[AhenkDeamon] All plugins are removing from ahenk'.format(plugin_name))
+                    plugin_manager.remove_plugins()
+                else:
+                    for p_name in plugin_name.split(','):
+                        self.logger.info('[AhenkDeamon] {} plugin is removing from ahenk'.format(p_name))
+                        plugin_manager.remove_single_plugin(p_name)
 
             elif 'stop' == str(json_data['event']):
                 self.shutdown_mode()
@@ -394,7 +422,7 @@ if __name__ == '__main__':
     except(KeyboardInterrupt, SystemExit):
         if System.Ahenk.is_running() is True:
             print('Ahenk stopping...')
-            result = Commander().set_event(['stop'])
+            result = Commander().set_event([None, 'stop'])
             if result is True:
                 if System.Ahenk.is_running() is True:
                     os.kill(int(System.Ahenk.get_pid_number()), signal.SIGALRM)
