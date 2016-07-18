@@ -70,7 +70,7 @@ class Plugin(threading.Thread):
 
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
-                    command = Scope.getInstance().getPluginManager().findCommand(self.getName(), item_obj.get_command_cls_id().lower())
+                    command = Scope.getInstance().getPluginManager().find_command(self.getName(), item_obj.get_command_cls_id().lower())
                     self.context.put('task_id', item_obj.get_command_cls_id().lower())
 
                     task_data = item_obj.get_parameter_map()
@@ -112,7 +112,7 @@ class Plugin(threading.Thread):
 
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
-                    policy_module = Scope.getInstance().getPluginManager().findPolicyModule(item_obj.get_plugin().get_name())
+                    policy_module = Scope.getInstance().getPluginManager().find_policy_module(item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
 
                     execution_id = self.get_execution_id(item_obj.get_id())

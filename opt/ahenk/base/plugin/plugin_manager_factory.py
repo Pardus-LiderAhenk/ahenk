@@ -4,8 +4,9 @@
 
 from base.plugin.plugin_manager import PluginManager
 
-class PluginManagerFactory(object):
 
+class PluginManagerFactory(object):
     def get_instance():
         return PluginManager()
+
     get_instance = staticmethod(get_instance)

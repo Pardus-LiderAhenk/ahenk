@@ -23,7 +23,7 @@ class TaskManager(object):
             self.saveTask(task)
             if task.get_cron_str() is None or task.get_cron_str() == '':
                 self.logger.debug('[TaskManager] Adding task ... ')
-                self.pluginManager.processTask(task)
+                self.pluginManager.process_task(task)
             else:
                 self.scheduler.save_and_add_job(task)
 
@@ -32,7 +32,7 @@ class TaskManager(object):
 
     def addPolicy(self, policy):
         try:
-            self.pluginManager.processPolicy(policy)
+            self.pluginManager.process_policy(policy)
         except Exception as e:
             self.logger.error("[TaskManager] Exception occurred when adding policy. Error Message: {}".format(str(e)))
 

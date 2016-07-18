@@ -30,7 +30,7 @@ class ScheduleTaskJob(object):
     def process_task(self):
         try:
             self.logger.debug('[ScheduleTaskJob] Running scheduled task now...')
-            self.plugin_manager.processTask(self.task)
+            self.plugin_manager.process_task(self.task)
             self.logger.debug('[ScheduleTaskJob] Scheduled Task was executed.')
             if self.is_single_shot():
                 Scope.getInstance().get_scheduler().remove_job(self.task.get_id())
