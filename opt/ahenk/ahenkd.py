@@ -335,32 +335,33 @@ class AhenkDeamon(BaseDaemon):
                 plugin_name = str(json_data['plugins'])
 
                 if plugin_name == 'all':
-                    self.logger.info('[AhenkDeamon] All plugins are loading to ahenk'.format(plugin_name))
+                    self.logger.debug('[AhenkDeamon] All plugins are loading to ahenk')
                     plugin_manager.load_plugins()
                 else:
                     for p_name in plugin_name.split(','):
-                        self.logger.info('[AhenkDeamon] {} plugin is loading to ahenk'.format(p_name))
+                        self.logger.debug('[AhenkDeamon] {} plugin is loading to ahenk'.format(p_name))
                         plugin_manager.load_single_plugin(p_name)
 
             elif 'reload' == str(json_data['event']):
                 plugin_name = str(json_data['plugins'])
-                self.logger.info('[AhenkDeamon] {} plugin/s is/are reloading to ahenk'.format(plugin_name))
 
                 if plugin_name == 'all':
+                    self.logger.debug('[AhenkDeamon] All plugins are reloading to ahenk')
                     plugin_manager.reload_plugins()
                 else:
                     for p_name in plugin_name.split(','):
+                        self.logger.debug('[AhenkDeamon] {} plugin is reloading to ahenk'.format(p_name))
                         plugin_manager.reload_single_plugin(p_name)
 
             elif 'remove' == str(json_data['event']):
                 plugin_name = str(json_data['plugins'])
 
                 if plugin_name == 'all':
-                    self.logger.info('[AhenkDeamon] All plugins are removing from ahenk'.format(plugin_name))
+                    self.logger.debug('[AhenkDeamon] All plugins are removing from ahenk')
                     plugin_manager.remove_plugins()
                 else:
                     for p_name in plugin_name.split(','):
-                        self.logger.info('[AhenkDeamon] {} plugin is removing from ahenk'.format(p_name))
+                        self.logger.debug('[AhenkDeamon] {} plugin is removing from ahenk'.format(p_name))
                         plugin_manager.remove_single_plugin(p_name)
 
             elif 'stop' == str(json_data['event']):
