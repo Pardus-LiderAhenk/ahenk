@@ -34,7 +34,7 @@ class PluginManager(object):
         self.plugins = []
         self.pluginQueueDict = dict()
 
-        self.listener = self.install_listener()
+        # self.listener = self.install_listener()
         self.delayed_profiles = {}
         self.delayed_tasks = {}
 
@@ -86,9 +86,8 @@ class PluginManager(object):
     def reload_plugins(self):
         try:
             self.logger.info('[PluginManager] Reloading plugins...')
-            kill_signal = PluginKillSignal()
             for p_queue in self.pluginQueueDict:
-                p_queue.put(kill_signal)
+                self.pluginQueueDict[p_queue].put(PluginKillSignal())
             self.plugins = []
             self.load_plugins()
             self.logger.info('[PluginManager] Plugin reloaded successfully.')
@@ -109,13 +108,13 @@ class PluginManager(object):
         try:
             self.logger.debug('[PluginManager] Removing all plugins...')
             for p_queue in self.pluginQueueDict:
-                p_queue.put(PluginKillSignal())
+                self.pluginQueueDict[p_queue].put(PluginKillSignal())
                 # todo check is running
             self.plugins = []
             self.pluginQueueDict = dict()
             self.logger.debug('[PluginManager] All plugins were removed successfully.')
         except Exception as e:
-            self.logger.debug('[PluginManager] A problem occurred while removing plugins. Error Message :{0}.'.format(str(e)))
+            self.logger.error('[PluginManager] A problem occurred while removing plugins. Error Message :{0}.'.format(str(e)))
 
     def remove_single_plugin(self, plugin_name):
         try:
@@ -269,11 +268,13 @@ class PluginManager(object):
             self.logger.warning('[PluginManager] safe.py not found Plugin Name : ' + str(plugin_name))
             return None
 
+    """
     def install_listener(self):
         listener = PluginInstallListener()
         thread = Process(target=listener.listen, args=(System.Ahenk.plugins_path(),))
         thread.start()
         return thread
+    """
 
     def is_plugin_loaded(self, plugin_name):
         try:
