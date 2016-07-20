@@ -273,12 +273,6 @@ class Util:
         return False
 
     @staticmethod
-    def install_package(package_name, package_version):
-        command = "sudo apt-get --yes --force-yes install {0}={1}".format(package_name, package_version)
-        result_code, p_out, p_err = Util.execute(command)
-        return result_code, p_out, p_err
-
-    @staticmethod
     def remove_package(package_name, package_version):
         command = "sudo apt-get --yes --force-yes purge {0}={1}".format(package_name, package_version)
         result_code, p_out, p_err = Util.execute(command)
