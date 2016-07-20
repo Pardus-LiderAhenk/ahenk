@@ -255,3 +255,10 @@ class Util:
             if attr_name in j:
                 return True
         return False
+
+    @staticmethod
+    def install_package(package_name, package_version):
+        command = "sudo apt-get --yes --force-yes install {0}={1}".format(package_name, package_version)
+        result_code, p_out, p_err = Util.execute(command)
+        return result_code, p_out, p_err
+

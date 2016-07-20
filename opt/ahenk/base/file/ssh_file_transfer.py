@@ -40,7 +40,6 @@ class Ssh(object):
             try:
                 sftp.chdir(self.target_path)  # Test if remote_path exists
             except IOError:
-                print(self.target_path)
                 sftp.mkdir(self.target_path)  # Create remote_path
                 sftp.chdir(self.target_path)
 

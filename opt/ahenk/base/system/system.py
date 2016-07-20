@@ -42,6 +42,13 @@ class System:
             return config.get('BASE', 'dbPath')
 
         @staticmethod
+        def uid():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('CONNECTION', 'uid')
+
+        @staticmethod
         def plugins_path():
             config = configparser.ConfigParser()
             config._interpolation = configparser.ExtendedInterpolation()
@@ -89,7 +96,7 @@ class System:
         def received_dir_path():
             path = '/tmp/.ahenk/'
             if Util.is_exist(path) is False:
-                #TODO write permission add
+                # TODO write permission add
                 Util.create_directory(path)
             return path
 
@@ -330,7 +337,8 @@ class System:
                 for iface in psutil.net_io_counters(pernic=True):
                     f = os.popen('ifconfig {} | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1'.format(iface))
                     ip = str(f.read()).replace('\n', '')
-                    if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$', ip) and str(ip) != 'localhost' and str(ip) != '127.0.0.1':
+                    if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$',
+                                ip) and str(ip) != 'localhost' and str(ip) != '127.0.0.1':
                         arr.append(ip)
                 return arr
 
@@ -355,7 +363,8 @@ class System:
                     try:
                         addr_list = psutil.net_if_addrs()
                         mac = addr_list[str(iface)][2][1]
-                        if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(mac) != '00:00:00:00:00:00':
+                        if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(
+                                mac) != '00:00:00:00:00:00':
                             arr.append(mac.lower())
                     except Exception as e:
                         pass
@@ -371,7 +380,8 @@ class System:
             arr = []
             for iface in psutil.net_io_counters(pernic=True):
                 ip = psutil.net_if_addrs()[str(iface)][0][1]
-                if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$', ip) and str(ip) != 'localhost' and str(ip) != '127.0.0.1':
+                if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$', ip) and str(
+                        ip) != 'localhost' and str(ip) != '127.0.0.1':
                     arr.append(ip)
             return arr
 
