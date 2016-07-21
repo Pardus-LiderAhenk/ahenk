@@ -47,14 +47,14 @@ class AhenkDbService(object):
             self.connection = sqlite3.connect(self.db_path, check_same_thread=False)
             self.cursor = self.connection.cursor()
         except Exception as e:
-            self.logger.error('Database connection error ' + str(e))
+            self.logger.error('[AhenkDbService] Database connection error ' + str(e))
 
     def check_and_create_table(self, table_name, cols):
         if self.cursor:
             cols = ', '.join([str(x) for x in cols])
             self.cursor.execute('create table if not exists ' + table_name + ' (' + cols + ')')
         else:
-            self.logger.warning('Could not create table cursor is None! Table Name : ' + str(table_name))
+            self.logger.warning('[AhenkDbService] Could not create table cursor is None! Table Name : ' + str(table_name))
 
     def drop_table(self, table_name):
         sql = 'DROP TABLE ' + table_name
@@ -78,10 +78,10 @@ class AhenkDbService(object):
                 self.connection.commit()
                 return self.cursor.lastrowid
             else:
-                self.logger.warning('Could not update table cursor is None! Table Name : ' + str(table_name))
+                self.logger.warning('[AhenkDbService] Could not update table cursor is None! Table Name : ' + str(table_name))
                 return None
         except Exception as e:
-            self.logger.error('Updating table error ! Table Name : ' + str(table_name) + ' ' + str(e))
+            self.logger.error('[AhenkDbService] Updating table error ! Table Name : ' + str(table_name) + ' ' + str(e))
 
     def delete(self, table_name, criteria):
         if self.cursor:
@@ -114,7 +114,7 @@ class AhenkDbService(object):
             except:
                 raise
         else:
-            self.logger.warning('Could not select table cursor is None! Table Name : ' + str(table_name))
+            self.logger.warning('[AhenkDbService] Could not select table cursor is None! Table Name : ' + str(table_name))
 
     def select_one_result(self, table_name, col, criteria=''):
         if self.cursor:
@@ -132,11 +132,11 @@ class AhenkDbService(object):
             except:
                 raise
         else:
-            self.logger.warning('Could not select table cursor is None! Table Name : ' + str(table_name))
+            self.logger.warning('[AhenkDbService] Could not select table cursor is None! Table Name : ' + str(table_name))
 
     def close(self):
         try:
             self.cursor.close()
             self.connection.close()
         except Exception as e:
-            self.logger.error('Closing database connection error:' + str(e))
+            self.logger.error('[AhenkDbService] Closing database connection error:' + str(e))
