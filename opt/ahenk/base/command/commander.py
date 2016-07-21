@@ -25,7 +25,6 @@ class Commander(object):
         params = args[0]
         data = {}
 
-
         if System.Ahenk.is_running() is True:
 
             if len(params) > 1 and params[1] == 'clean':
@@ -191,8 +190,14 @@ class Commander(object):
             config.read(System.Ahenk.config_path())
             db_path = config.get('BASE', 'dbPath')
 
+            if Util.is_exist('/tmp/liderahenk.fifo'):
+                Util.delete_file('/tmp/liderahenk.fifo')
+
             if os.path.exists(db_path):
                 os.remove(db_path)
+
+            #TODO remove pid file
+
 
             config.set('CONNECTION', 'uid', '')
             config.set('CONNECTION', 'password', '')
