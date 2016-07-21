@@ -6,6 +6,7 @@ from base.util.util import Util
 from base.system.system import System
 from base.Scope import Scope
 import paramiko
+import logging
 
 
 class Ssh(object):
@@ -14,6 +15,7 @@ class Ssh(object):
         scope = Scope().getInstance()
         self.logger = scope.getLogger()
         self.configuration_manager = scope.getConfigurationManager()
+        logging.getLogger("paramiko").setLevel(logging.INFO)
 
         try:
             self.target_hostname = parameter_map['host']
