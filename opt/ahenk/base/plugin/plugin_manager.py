@@ -4,11 +4,9 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import imp
 import os
-from multiprocessing import Process
 
 from base.Scope import Scope
 from base.model.PluginBean import PluginBean
-from base.model.PluginKillSignal import PluginKillSignal
 from base.model.modes.init_mode import InitMode
 from base.model.modes.login_mode import LoginMode
 from base.model.modes.logout_mode import LogoutMode
@@ -16,8 +14,6 @@ from base.model.modes.safe_mode import SafeMode
 from base.model.modes.shutdown_mode import ShutdownMode
 from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
-from base.plugin.plugin_install_listener import PluginInstallListener
-from base.system.system import System
 
 
 # TODO create base abstract class
@@ -31,6 +27,7 @@ class PluginManager(object):
         self.db_service = self.scope.getDbService()
         self.message_manager = self.scope.getMessageManager()
         self.logger = self.scope.getLogger()
+
         self.plugins = []
         self.pluginQueueDict = dict()
 
@@ -87,7 +84,7 @@ class PluginManager(object):
         try:
             self.logger.info('[PluginManager] Reloading plugins...')
             for p_queue in self.pluginQueueDict:
-                self.pluginQueueDict[p_queue].put(PluginKillSignal())
+                self.pluginQueueDict[p_queue].put(ShutdownMode(), 1)
             self.plugins = []
             self.load_plugins()
             self.logger.info('[PluginManager] Plugin reloaded successfully.')
@@ -108,8 +105,7 @@ class PluginManager(object):
         try:
             self.logger.debug('[PluginManager] Removing all plugins...')
             for p_queue in self.pluginQueueDict:
-                self.pluginQueueDict[p_queue].put(PluginKillSignal())
-                # todo check is running
+                self.pluginQueueDict[p_queue].put(ShutdownMode(), 1)
             self.plugins = []
             self.pluginQueueDict = dict()
             self.logger.debug('[PluginManager] All plugins were removed successfully.')
@@ -121,7 +117,7 @@ class PluginManager(object):
             self.logger.debug('[PluginManager] Trying to remove {} plugin...'.format(plugin_name))
             if self.is_plugin_loaded(plugin_name):
                 self.logger.debug('[PluginManager] {} plugin is killing...'.format(plugin_name))
-                self.pluginQueueDict[plugin_name].put(PluginKillSignal(), 1)
+                self.pluginQueueDict[plugin_name].put(ShutdownMode(), 1)
                 del self.pluginQueueDict[plugin_name]
 
                 for plugin in self.plugins:
@@ -184,10 +180,11 @@ class PluginManager(object):
 
                 if agent_profile.overridable.lower() != 'true':
                     temp_list = []
-                    self.logger.debug('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
                     for usr_profile in user_profiles:
                         if usr_profile.plugin.name != agent_profile.plugin.name:
                             temp_list.append(usr_profile)
+                        else:
+                            self.logger.debug('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
                     user_profiles = temp_list
                 else:
                     self.logger.debug('[PluginManager] Agent profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
@@ -265,7 +262,7 @@ class PluginManager(object):
             info = imp.find_module(mode, [location])
             return imp.load_module(mode, *info)
         else:
-            self.logger.warning('[PluginManager] safe.py not found Plugin Name : ' + str(plugin_name))
+            self.logger.warning('[PluginManager] {0} not found in {1} plugin'.format((mode + '.py'), plugin_name))
             return None
 
     """
