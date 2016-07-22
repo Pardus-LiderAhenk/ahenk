@@ -36,6 +36,7 @@ class ExecutionManager(object):
         self.db_service = scope.getDbService()
         self.message_manager = scope.getMessageManager()
         self.plugin_manager = scope.getPluginManager()
+        self.policy_executed = {}
 
         self.event_manager.register_event(MessageType.EXECUTE_SCRIPT.value, self.execute_script)
         # send file ahenk to lider
@@ -106,10 +107,25 @@ class ExecutionManager(object):
         except Exception as e:
             self.logger.error('[ExecutionManager] A problem occurred while installing new Ahenk plugin. Error Message:{}'.format(str(e)))
 
-    def execute_policy(self, arg):
+    def is_policy_executed(self, username):
+        if username in self.policy_executed:
+            return self.policy_executed[username]
+        return False
 
+    def remove_user_executed_policy_dict(self, username):
+        if username in self.policy_executed:
+            self.policy_executed[username] = False
+
+    def execute_default_policy(self, username):
+        print('username' + username)
+        self.logger.debug('[ExecutionManager] Executing active policies for {} user...'.format(username))
+        p=self.get_active_policies(username)
+        self.task_manager.addPolicy(p)
+
+    def execute_policy(self, arg):
         self.logger.debug('[ExecutionManager] Updating policies...')
         policy = self.json_to_PolicyBean(json.loads(arg))
+        self.policy_executed[policy.get_username()] = True
         machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
         ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
         user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + policy.get_username() + '\'')
@@ -185,7 +201,7 @@ class ExecutionManager(object):
             if len(user_profiles) > 0:
                 for profile in user_profiles:
                     plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
-                    plugin = PluginBean(plu[0], plu[1], plu[2], plu[3], plu[4], plu[5], plu[6], plu[7], plu[8], plu[9], plu[10])
+                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3], description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7], policy_plugin=plu[8], user_oriented=plu[9], version=plu[10], task_plugin=plu[11], x_based=plu[12])
 
                     arr_profiles.append(ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6], profile[7], profile[8], plugin, policy.get_username()))
                 policy.set_user_profiles(arr_profiles)
@@ -198,7 +214,7 @@ class ExecutionManager(object):
             if len(ahenk_profiles) > 0:
                 for profile in ahenk_profiles:
                     plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
-                    plugin = PluginBean(plu[0], plu[1], plu[2], plu[3], plu[4], plu[5], plu[6], plu[7], plu[8], plu[9], plu[10])
+                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3], description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7], policy_plugin=plu[8], user_oriented=plu[9], version=plu[10], task_plugin=plu[11], x_based=plu[12])
 
                     arr_profiles.append(ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6], profile[7], profile[8], plugin, policy.get_username()))
                 policy.set_ahenk_profiles(arr_profiles)
