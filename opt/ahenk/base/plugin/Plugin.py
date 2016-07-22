@@ -1,15 +1,17 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
-import threading
 import json
+import threading
+
 from base.Scope import Scope
-from base.model.Response import Response
 from base.file.file_transfer_manager import FileTransferManager
-from base.model.enum.MessageType import MessageType
-from base.model.enum.MessageCode import MessageCode
+from base.model.Response import Response
 from base.model.enum.ContentType import ContentType
+from base.model.enum.MessageCode import MessageCode
+from base.model.enum.MessageType import MessageType
 from base.system.system import System
 
 
@@ -53,7 +55,6 @@ class Plugin(threading.Thread):
         self.response_queue = scope.getResponseQueue()
         self.messaging = scope.getMessageManager()
         self.db_service = scope.getDbService()
-        # self.messager = None
 
         self.keep_run = True
         self.context = Context()
@@ -151,9 +152,6 @@ class Plugin(threading.Thread):
                             Scope.getInstance().getMessenger().send_direct_message(self.messaging.policy_status_msg(response))
                     else:
                         self.logger.error('[Plugin] There is no Response. Plugin must create response after run a policy!')
-                elif obj_name == "KILL_SIGNAL":
-                    self.keep_run = False
-                    self.logger.debug('[Plugin] Killing queue ! Plugin Name: {}'.format(str(self.name)))
                 elif 'MODE' in obj_name:
                     module = Scope.getInstance().getPluginManager().find_module(obj_name, self.name)
                     if module is not None:
