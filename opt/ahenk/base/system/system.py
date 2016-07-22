@@ -42,6 +42,27 @@ class System:
             return config.get('BASE', 'dbPath')
 
         @staticmethod
+        def agreement_timeout():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('SESSION', 'agreement_timeout')
+
+        @staticmethod
+        def registration_timeout():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('SESSION', 'registration_timeout')
+
+        @staticmethod
+        def get_policy_timeout():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('SESSION', 'get_policy_timeout')
+
+        @staticmethod
         def plugins_path():
             config = configparser.ConfigParser()
             config._interpolation = configparser.ExtendedInterpolation()
@@ -89,7 +110,7 @@ class System:
         def received_dir_path():
             path = '/tmp/.ahenk/'
             if Util.is_exist(path) is False:
-                #TODO write permission add
+                # TODO write permission add
                 Util.create_directory(path)
             return path
 
