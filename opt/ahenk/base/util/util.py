@@ -201,10 +201,26 @@ class Util:
             raise
 
     @staticmethod
-    def install_with_apt_get(package_name):
+    def install_with_apt_get(package_name, package_version=None):
         try:
-            process = subprocess.Popen('apt-get install --yes --force-yes ' + package_name, shell=True)
-            process.wait()
+            if package_version is not None:
+                process = subprocess.Popen('apt-get install --yes --force-yes {0}={1}'.format(package_name, package_version), shell=True)
+                process.wait()
+            else:
+                process = subprocess.Popen('apt-get install --yes --force-yes {0}'.format(package_name), shell=True)
+                process.wait()
+        except:
+            raise
+
+    @staticmethod
+    def uninstall_package(package_name, package_version=None):
+        try:
+            if package_version is not None:
+                process = subprocess.Popen('apt-get purge --yes --force-yes {0}={1}'.format(package_name, package_version), shell=True)
+                process.wait()
+            else:
+                process = subprocess.Popen('apt-get purge --yes --force-yes {0}'.format(package_name), shell=True)
+                process.wait()
         except:
             raise
 
@@ -255,3 +271,9 @@ class Util:
             if attr_name in j:
                 return True
         return False
+
+    @staticmethod
+    def remove_package(package_name, package_version):
+        command = "sudo apt-get --yes --force-yes purge {0}={1}".format(package_name, package_version)
+        result_code, p_out, p_err = Util.execute(command)
+        return result_code, p_out, p_err
