@@ -29,6 +29,8 @@ from base.registration.Registration import Registration
 from base.scheduler.scheduler_factory import SchedulerFactory
 from base.system.system import System
 from base.task.TaskManager import TaskManager
+from base.timer.setup_timer import SetupTimer
+from base.timer.timer import Timer
 from base.util.util import Util
 
 ahenkdaemon = None
@@ -118,13 +120,17 @@ class AhenkDeamon(BaseDaemon):
     def check_registration(self):
         max_attemp_number = int(System.Hardware.Network.interface_size()) * 3
         logger = Scope.getInstance().getLogger()
+        registration = Scope.getInstance().getRegistration()
 
         try:
-            while Scope.getInstance().getRegistration().is_registered() is False:
+            while registration.is_registered() is False:
+                # while Scope.getInstance().getRegistration().is_registered() is False:
                 max_attemp_number -= 1
                 logger.debug('[AhenkDeamon] Ahenk is not registered. Attempting for registration')
                 # TODO 'Could not reach Registration response from Lider. Be sure Lider is running and it is connected to XMPP server!'
-                Scope.getInstance().getRegistration().registration_request()
+
+                registration.registration_request()
+                # Scope.getInstance().getRegistration().registration_request()
                 if max_attemp_number < 0:
                     logger.warning('[AhenkDeamon] Number of Attempting for registration is over')
                     self.registration_failed()
@@ -161,6 +167,17 @@ class AhenkDeamon(BaseDaemon):
         # TODO destroy plugin manager here
         self.init_plugin_manager()
 
+    def init_signal_listener(self):
+        try:
+            signal.signal(signal.SIGALRM, self.run_command_from_fifo)
+            self.logger.info('[AhenkDeamon] Signal handler is set up')
+        except Exception as e:
+            self.logger.error('[AhenkDeamon] Signal handler could not set up. Error Message: {} '.format(str(e)))
+
+    def init_pid_file(self):
+        with open(System.Ahenk.pid_path(), 'w+') as f:
+            f.write(str(os.getpid()))
+
     def run(self):
         print('Ahenk running...')
 
@@ -174,6 +191,9 @@ class AhenkDeamon(BaseDaemon):
 
         # Logger must be second
         self.logger = self.init_logger()
+
+        self.init_pid_file()
+        self.logger.info('[AhenkDeamon] Pid file was created')
 
         self.init_event_manager()
         self.logger.info('[AhenkDeamon] Event Manager was set')
@@ -203,7 +223,10 @@ class AhenkDeamon(BaseDaemon):
         self.logger.info('[AhenkDeamon] Ahenk was registered')
 
         self.messenger = self.init_messenger()
-        self.logger.info('[AhenkDeamon] Messager was set')
+        self.logger.info('[AhenkDeamon] Messenger was set')
+
+        self.init_signal_listener()
+        self.logger.info('[AhenkDeamon] Signals listeners was set')
 
         Agreement().agreement_contract_update()
 
@@ -214,15 +237,6 @@ class AhenkDeamon(BaseDaemon):
         #    registration.ldap_registration_request() #TODO work on message
 
         self.logger.info('[AhenkDeamon] LDAP registration of Ahenk is completed')
-
-        with open(System.Ahenk.pid_path(), 'w+') as config_file:
-            config_file.write(str(os.getpid()))
-
-        try:
-            signal.signal(signal.SIGALRM, self.run_command_from_fifo)
-            self.logger.info('[AhenkDeamon] Signal handler is set up')
-        except Exception as e:
-            self.logger.error('[AhenkDeamon] Signal handler could not set up. Error Message: {} '.format(str(e)))
 
         self.messenger.send_direct_message('test')
 
@@ -253,6 +267,7 @@ class AhenkDeamon(BaseDaemon):
             messenger = scope.getMessenger()
             conf_manager = scope.getConfigurationManager()
             db_service = scope.getDbService()
+            execute_manager = scope.getExecutionManager()
 
             self.logger.debug('[AhenkDeamon] Signal handled')
             self.logger.debug('[AhenkDeamon] Signal is :{}'.format(str(json_data['event'])))
@@ -304,7 +319,7 @@ class AhenkDeamon(BaseDaemon):
                     agreement_choice = True
 
                 if agreement_choice is True:
-                    db_service.delete('session', 'username=\'{}\''.format(username))
+                    db_service.delete('session', 'username=\'{0}\''.format(username))
 
                     self.logger.info('[AhenkDeamon] Display is {0}, desktop env is {1} for {2}'.format(display, desktop, username))
 
@@ -314,11 +329,19 @@ class AhenkDeamon(BaseDaemon):
                     plugin_manager.process_mode('safe', username)
                     plugin_manager.process_mode('login', username)
 
+                    kward = {}
+                    kward['timeout_args'] = username
+                    kward['checker_args'] = username
+                    SetupTimer.start(Timer(timeout=System.Ahenk.get_policy_timeout(), timeout_function=execute_manager.execute_default_policy, checker_func=execute_manager.is_policy_executed, kwargs=kward))
+
+                    self.logger.info('[AhenkDeamon] Requesting updated policies from Lider. If Ahenk could not reach updated policies in {0} sec, booked policies will be executed'.format(System.Ahenk.get_policy_timeout()))
                     messenger.send_direct_message(get_policy_message)
 
             elif 'logout' == str(json_data['event']):
                 username = json_data['username']
                 db_service.delete('session', 'username=\'{}\''.format(username))
+                execute_manager.remove_user_executed_policy_dict(username)
+                # TODO delete all user records while initializing
                 self.logger.info('[AhenkDeamon] logout event is handled for user: {}'.format(username))
                 logout_message = message_manager.logout_msg(username)
                 messenger.send_direct_message(logout_message)
@@ -372,11 +395,9 @@ class AhenkDeamon(BaseDaemon):
                 while self.running_plugin() is False:
                     self.logger.debug('[AhenkDeamon] Waiting for progress of plugins...')
                     time.sleep(0.5)
-
                 ahenkdaemon.stop()
             else:
                 self.logger.error('[AhenkDeamon] Unknown command error. Command:' + json_data['event'])
-
             self.logger.debug('[AhenkDeamon] Processing of handled event is completed')
             return True
         else:
