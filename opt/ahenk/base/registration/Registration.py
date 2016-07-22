@@ -10,6 +10,8 @@ from uuid import getnode as get_mac
 from base.Scope import Scope
 from base.messaging.AnonymousMessenger import AnonymousMessager
 from base.system.system import System
+from base.timer.setup_timer import SetupTimer
+from base.timer.timer import Timer
 
 
 class Registration:
@@ -31,6 +33,7 @@ class Registration:
 
     def registration_request(self):
         self.logger.debug('[Registration] Requesting registration')
+        SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout, checker_func=self.is_registered, kwargs=None))
         anon_messager = AnonymousMessager(self.message_manager.registration_msg())
         anon_messager.connect_to_server()
 
@@ -138,3 +141,10 @@ class Registration:
 
     def generate_password(self):
         return uuid.uuid4()
+
+    def registration_timeout(self):
+        self.logger.error('[Registration] Could not reach registration response from Lider. Be sure XMPP server is reachable and it supports anonymous message, Lider is running properly '
+                          'and it is connected to XMPP server! Check your Ahenk configuration file (/etc/ahenk/ahenk.conf)')
+        self.logger.error('[Registration] Ahenk is shutting down...')
+        print('Ahenk is shutting down...')
+        System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
