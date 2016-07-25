@@ -124,13 +124,9 @@ class AhenkDeamon(BaseDaemon):
 
         try:
             while registration.is_registered() is False:
-                # while Scope.getInstance().getRegistration().is_registered() is False:
                 max_attemp_number -= 1
                 logger.debug('[AhenkDeamon] Ahenk is not registered. Attempting for registration')
-                # TODO 'Could not reach Registration response from Lider. Be sure Lider is running and it is connected to XMPP server!'
-
                 registration.registration_request()
-                # Scope.getInstance().getRegistration().registration_request()
                 if max_attemp_number < 0:
                     logger.warning('[AhenkDeamon] Number of Attempting for registration is over')
                     self.registration_failed()
