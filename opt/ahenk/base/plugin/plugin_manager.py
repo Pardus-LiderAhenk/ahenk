@@ -4,7 +4,8 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import imp
 import os
-import threading
+from multiprocessing import Process
+
 from base.Scope import Scope
 from base.model.PluginBean import PluginBean
 from base.model.modes.init_mode import InitMode
@@ -14,6 +15,8 @@ from base.model.modes.safe_mode import SafeMode
 from base.model.modes.shutdown_mode import ShutdownMode
 from base.plugin.Plugin import Plugin
 from base.plugin.PluginQueue import PluginQueue
+from base.plugin.plugin_install_listener import PluginInstallListener
+from base.system.system import System
 
 
 # TODO create base abstract class
@@ -31,7 +34,7 @@ class PluginManager(object):
         self.plugins = []
         self.pluginQueueDict = dict()
 
-        # self.listener = self.install_listener()
+        self.listener = self.install_listener()
         self.delayed_profiles = {}
         self.delayed_tasks = {}
 
@@ -177,18 +180,18 @@ class PluginManager(object):
         if ahenk_profiles is not None:
             self.logger.info('[PluginManager] Working on Ahenk profiles...')
             for agent_profile in ahenk_profiles:
+                same_plugin_profile = None
+                for usr_profile in user_profiles:
+                    if usr_profile.plugin.name == agent_profile.plugin.name:
+                        same_plugin_profile = usr_profile
 
-                if agent_profile.overridable.lower() != 'true':
-                    temp_list = []
-                    for usr_profile in user_profiles:
-                        if usr_profile.plugin.name != agent_profile.plugin.name:
-                            temp_list.append(usr_profile)
-                        else:
-                            self.logger.debug('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
-                    user_profiles = temp_list
-                else:
-                    self.logger.debug('[PluginManager] Agent profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
-                    continue
+                if same_plugin_profile is not None:
+                    if agent_profile.overridable.lower() == 'true':
+                        self.logger.debug('[PluginManager] Agent profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
+                        continue
+                    else:
+                        self.logger.warning('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
+                        user_profiles.remove(same_plugin_profile)
 
                 agent_profile.set_username(None)
                 self.process_profile(agent_profile)
@@ -261,13 +264,11 @@ class PluginManager(object):
             self.logger.warning('[PluginManager] {0} not found in {1} plugin'.format((mode + '.py'), plugin_name))
             return None
 
-    """
     def install_listener(self):
         listener = PluginInstallListener()
         thread = Process(target=listener.listen, args=(System.Ahenk.plugins_path(),))
         thread.start()
         return thread
-    """
 
     def is_plugin_loaded(self, plugin_name):
         try:
