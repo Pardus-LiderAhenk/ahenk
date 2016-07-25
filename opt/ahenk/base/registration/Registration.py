@@ -12,7 +12,7 @@ from base.messaging.AnonymousMessenger import AnonymousMessager
 from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
-
+from base.system.system import System
 
 class Registration:
     def __init__(self):
@@ -34,8 +34,8 @@ class Registration:
     def registration_request(self):
         self.logger.debug('[Registration] Requesting registration')
         SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout, checker_func=self.is_registered, kwargs=None))
-        anon_messager = AnonymousMessager(self.message_manager.registration_msg())
-        anon_messager.connect_to_server()
+        anon_messenger = AnonymousMessager(self.message_manager.registration_msg())
+        anon_messenger.connect_to_server()
 
     def ldap_registration_request(self):
         self.logger.debug('[Registration] Requesting LDAP registration')
@@ -72,10 +72,13 @@ class Registration:
             self.logger.debug('[Registration] Registration configuration file is updated')
 
     def is_registered(self):
-        registered = self.db_service.select_one_result('registration', 'registered', 'registered = 1')
-        if registered == 1:
-            return True
-        else:
+
+        try:
+            if str(System.Ahenk.uid()):
+                return True
+            else:
+                return False
+        except:
             return False
 
     def is_ldap_registered(self):
