@@ -1,8 +1,9 @@
 import time
+import threading
 
-
-class Timer:
+class Timer(threading.Thread):
     def __init__(self, timeout, timeout_function, checker_func=None, checker_success_function=None, **kwargs):
+        threading.Thread.__init__(self)
         self.timeout = int(timeout)
         self.timeout_function = timeout_function
         self.timeout_function_args = None
