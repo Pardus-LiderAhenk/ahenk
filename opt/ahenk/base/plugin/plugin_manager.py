@@ -4,7 +4,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import imp
 import os
-
+import threading
 from base.Scope import Scope
 from base.model.PluginBean import PluginBean
 from base.model.modes.init_mode import InitMode
@@ -201,10 +201,6 @@ class PluginManager(object):
 
     def process_profile(self, profile):
 
-        ##
-        scope = Scope().getInstance()
-        self.messenger = scope.getMessenger()
-        ##
         try:
             plugin = profile.get_plugin()
             plugin_name = plugin.get_name()
@@ -215,7 +211,7 @@ class PluginManager(object):
                 self.logger.warning('[PluginManager] {} plugin not found. Profile was delayed. Ahenk will request plugin from Lider if distribution available'.format(plugin_name))
                 self.delayed_profiles[plugin_name] = profile
                 msg = self.message_manager.missing_plugin_message(PluginBean(name=plugin_name, version=plugin_ver))
-                self.messenger.send_direct_message(msg)
+                self.scope.getMessenger().send_direct_message(msg)
         except Exception as e:
             self.logger.error('[PluginManager] Exception occurred while processing profile. Error Message: {}'.format(str(e)))
 

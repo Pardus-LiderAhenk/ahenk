@@ -332,6 +332,7 @@ class AhenkDeamon(BaseDaemon):
                     kward = {}
                     kward['timeout_args'] = username
                     kward['checker_args'] = username
+
                     SetupTimer.start(Timer(timeout=System.Ahenk.get_policy_timeout(), timeout_function=execute_manager.execute_default_policy, checker_func=execute_manager.is_policy_executed, kwargs=kward))
 
                     self.logger.info('[AhenkDeamon] Requesting updated policies from Lider. If Ahenk could not reach updated policies in {0} sec, booked policies will be executed'.format(System.Ahenk.get_policy_timeout()))

@@ -171,7 +171,7 @@ class Plugin(threading.Thread):
 
                 self.context.empty_data()
             except Exception as e:
-                self.logger.error("[Plugin] Plugin running exception about {0}. Exception Message: {1} ".format(obj_name, str(e)))
+                self.logger.error("[Plugin] Plugin running exception. Exception Message: {0} ".format(str(e)))
 
     def get_execution_id(self, profile_id):
         try:

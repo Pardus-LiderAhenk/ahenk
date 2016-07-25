@@ -117,10 +117,8 @@ class ExecutionManager(object):
             self.policy_executed[username] = False
 
     def execute_default_policy(self, username):
-        print('username' + username)
         self.logger.debug('[ExecutionManager] Executing active policies for {} user...'.format(username))
-        p=self.get_active_policies(username)
-        self.task_manager.addPolicy(p)
+        self.task_manager.addPolicy(self.get_active_policies(username))
 
     def execute_policy(self, arg):
         self.logger.debug('[ExecutionManager] Updating policies...')
