@@ -84,6 +84,15 @@ class System:
             return config.get('PLUGIN', 'mainModuleName')
 
         @staticmethod
+        def dn():
+            system = System()
+            try:
+                dn = system.db_service.select_one_result('registration', 'dn', " registered='1'")
+                return dn
+            except:
+                return None
+
+        @staticmethod
         def get_pid_number():
             pid_number = None
             try:
@@ -455,3 +464,5 @@ class System:
             @staticmethod
             def model():
                 return cpuinfo.get_cpu_info()['model']
+
+
