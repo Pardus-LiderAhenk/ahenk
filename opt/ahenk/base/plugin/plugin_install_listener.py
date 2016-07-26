@@ -14,25 +14,23 @@ class FileEventHandler(FileSystemEventHandler):
         self.path = plugin_path
 
     def process(self, event):
-        if event.event_type == 'created':
-            result = Commander().set_event([None, 'load', '-p', event.src_path.replace(self.path, '')])
-            if result is True:
-                if System.Ahenk.is_running() is True:
+
+        if event.src_path != self.path[:-1]:
+            if event.event_type in ('created', 'modified', 'moved'):
+                plu_path = event.src_path
+                if event.event_type == 'moved':
+                    plu_path = event.dest_path
+                result = Commander().set_event([None, 'load', '-p', plu_path.replace(self.path, '')])
+                if result is True and System.Ahenk.is_running() is True:
                     os.kill(int(System.Ahenk.get_pid_number()), signal.SIGALRM)
-        elif event.event_type == 'deleted':
-            # TODO
-            print('plugin removed')
+            elif event.event_type == 'deleted':
+                result = Commander().set_event([None, 'remove', '-p', event.src_path.replace(self.path, '')])
+                if result is True and System.Ahenk.is_running() is True:
+                    os.kill(int(System.Ahenk.get_pid_number()), signal.SIGALRM)
 
-    def on_created(self, event):
+    def on_any_event(self, event):
         if event.is_directory:
             self.process(event)
-
-    def on_deleted(self, event):
-        if event.is_directory:
-            self.process(event)
-
-    # def on_modified(self, event):
-    #     print("MODIFIED-" + str(event.src_path))
 
 
 class PluginInstallListener:
