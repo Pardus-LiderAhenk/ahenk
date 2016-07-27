@@ -72,7 +72,7 @@ class Plugin(threading.Thread):
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
                     command = Scope.getInstance().getPluginManager().find_command(self.getName(), item_obj.get_command_cls_id().lower())
-                    self.context.put('task_id', item_obj.get_command_cls_id().lower())
+                    self.context.put('task_id', item_obj.get_id())
 
                     task_data = item_obj.get_parameter_map()
                     self.logger.debug('[Plugin] Handling task')
