@@ -46,7 +46,7 @@ class Registration:
         j = json.loads(reg_reply)
         self.logger.debug('[Registration]' + j['message'])
         status = str(j['status']).lower()
-        dn = str(j['agentDn']).lower()
+        dn = str(j['agentDn'])
 
         self.logger.debug('[Registration] Registration status: ' + str(status))
 
