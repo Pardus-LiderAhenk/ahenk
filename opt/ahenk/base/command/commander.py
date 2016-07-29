@@ -4,6 +4,7 @@ import json
 import os
 import queue as Queue
 import threading
+import ast
 
 from base.command.fifo import Fifo
 from base.model.enum.ContentType import ContentType
@@ -71,7 +72,7 @@ class Commander(object):
                     response['type'] = MessageType.TASK_STATUS.value
                     response['taskId'] = params[3]
                     if params[4] == '-m':
-                        response['contentType'] = ContentType.TEXT_PLAIN.value
+                        response['contentType'] = ContentType.APPLICATION_JSON.value
                         response['responseData'] = params[5]
                     elif params[4] == '-f':
                         if os.path.exists(str(params[5])):
@@ -101,7 +102,7 @@ class Commander(object):
                         response['commandExecutionId'] = params[5]
 
                         if params[6] == '-m':
-                            response['contentType'] = ContentType.TEXT_PLAIN.value
+                            response['contentType'] = ContentType.APPLICATION_JSON.value
                             response['responseData'] = params[7]
                         elif params[6] == '-f':
                             if os.path.exists(str(params[7])):
@@ -125,13 +126,12 @@ class Commander(object):
                     else:
                         print('Wrong or missing parameter. Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')
                         return None
-                print('RESPONSE=' + str(response).replace("'", '"'))
-                data['message'] = json.loads(str(response).replace("'", '"'))
+
+                data['message'] = ast.literal_eval(str(response))
 
             else:
                 print('Wrong or missing parameter. Usage : %s start|stop|restart|status|clean|send')
                 return None
-
         else:
 
             if params[1] == 'clean':
@@ -196,7 +196,7 @@ class Commander(object):
             if os.path.exists(db_path):
                 os.remove(db_path)
 
-            #TODO remove pid file
+            # TODO remove pid file
 
 
             config.set('CONNECTION', 'uid', '')

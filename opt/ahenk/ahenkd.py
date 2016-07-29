@@ -124,13 +124,9 @@ class AhenkDeamon(BaseDaemon):
 
         try:
             while registration.is_registered() is False:
-                # while Scope.getInstance().getRegistration().is_registered() is False:
                 max_attemp_number -= 1
                 logger.debug('[AhenkDeamon] Ahenk is not registered. Attempting for registration')
-                # TODO 'Could not reach Registration response from Lider. Be sure Lider is running and it is connected to XMPP server!'
-
                 registration.registration_request()
-                # Scope.getInstance().getRegistration().registration_request()
                 if max_attemp_number < 0:
                     logger.warning('[AhenkDeamon] Number of Attempting for registration is over')
                     self.registration_failed()
@@ -258,16 +254,21 @@ class AhenkDeamon(BaseDaemon):
 
     def run_command_from_fifo(self, num, stack):
 
-        json_data = json.loads(Commander().get_event())
+        scope = Scope().getInstance()
+        plugin_manager = scope.getPluginManager()
+        message_manager = scope.getMessageManager()
+        messenger = scope.getMessenger()
+        conf_manager = scope.getConfigurationManager()
+        db_service = scope.getDbService()
+        execute_manager = scope.getExecutionManager()
+
+        try:
+            json_data = json.loads(Commander().get_event())
+        except Exception as e:
+            self.logger.error('[AhenkDeamon] A problem occurred while loading json. Check json format! Error Message: {0}'.format(str(e)))
+            return
 
         if json_data is not None:
-            scope = Scope().getInstance()
-            plugin_manager = scope.getPluginManager()
-            message_manager = scope.getMessageManager()
-            messenger = scope.getMessenger()
-            conf_manager = scope.getConfigurationManager()
-            db_service = scope.getDbService()
-            execute_manager = scope.getExecutionManager()
 
             self.logger.debug('[AhenkDeamon] Signal handled')
             self.logger.debug('[AhenkDeamon] Signal is :{}'.format(str(json_data['event'])))
@@ -351,8 +352,8 @@ class AhenkDeamon(BaseDaemon):
                 plugin_manager.process_mode('safe', username)
 
             elif 'send' == str(json_data['event']):
-                self.logger.info('[AhenkDeamon] Sending message over ahenkd command. Response Message: {}'.format(str(json_data['message'])))
-                message = str(json.dumps(json_data['message']))
+                self.logger.info('[AhenkDeamon] Sending message over ahenkd command. Response Message: {}'.format(json.dumps(json_data['message'])))
+                message = json.dumps(json_data['message'])
                 messenger.send_direct_message(message)
 
             elif 'load' == str(json_data['event']):
