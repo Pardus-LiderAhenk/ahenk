@@ -240,9 +240,9 @@ class Util:
             return False
 
     @staticmethod
-    def get_md5_file(fname):
+    def get_md5_file(file_path):
         hash_md5 = hashlib.md5()
-        with open(fname, 'rb') as f:
+        with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(4096), b""):
                 hash_md5.update(chunk)
         return str(hash_md5.hexdigest())
