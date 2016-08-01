@@ -65,11 +65,14 @@ class ExecutionManager(object):
             title = 'Kullanıcı Sözleşmesi'
 
             if agreement_content is not None and agreement_content != '':
-                old_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
+                old_content = self.db_service.select_one_result('contract', 'content',
+                                                                'id =(select MAX(id) from contract)')
                 if old_content is None or Util.get_md5_text(old_content) != Util.get_md5_text(agreement_content):
-                    self.db_service.update('contract', self.db_service.get_cols('contract'), [agreement_content, title, json_data['timestamp']])
+                    self.db_service.update('contract', self.db_service.get_cols('contract'),
+                                           [agreement_content, title, json_data['timestamp']])
         except Exception as e:
-            self.logger.error('[ExecutionManager] A problem occurred while updating agreement. Error Message : {}'.format(str(e)))
+            self.logger.error(
+                '[ExecutionManager] A problem occurred while updating agreement. Error Message : {}'.format(str(e)))
 
     def install_plugin(self, arg):
         plugin = json.loads(arg)
@@ -85,7 +88,8 @@ class ExecutionManager(object):
                 transfer_manager.transporter.disconnect()
                 downloaded_file = Util.read_file(System.Ahenk.received_dir_path() + file_name)
             except Exception as e:
-                self.logger.error('[ExecutionManager] Plugin package could not fetch. Error Message: {}.'.format(str(e)))
+                self.logger.error(
+                    '[ExecutionManager] Plugin package could not fetch. Error Message: {}.'.format(str(e)))
                 self.logger.error('[ExecutionManager] Plugin Installation is cancelling')
                 return
 
@@ -105,7 +109,9 @@ class ExecutionManager(object):
             self.plugin_manager.load_single_plugin(plugin_name)
 
         except Exception as e:
-            self.logger.error('[ExecutionManager] A problem occurred while installing new Ahenk plugin. Error Message:{}'.format(str(e)))
+            self.logger.error(
+                '[ExecutionManager] A problem occurred while installing new Ahenk plugin. Error Message:{}'.format(
+                    str(e)))
 
     def is_policy_executed(self, username):
         if username in self.policy_executed:
@@ -126,10 +132,13 @@ class ExecutionManager(object):
         self.policy_executed[policy.get_username()] = True
         machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
         ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
-        user_policy_version = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + policy.get_username() + '\'')
+        user_policy_version = self.db_service.select_one_result('policy', 'version',
+                                                                'type = \'U\' and name = \'' + policy.get_username() + '\'')
 
-        profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'plugin']
-        plugin_columns = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
+        profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active',
+                           'deleted', 'profile_data', 'plugin']
+        plugin_columns = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name',
+                          'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
 
         if policy.get_ahenk_policy_version() != ahenk_policy_ver:
             ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
@@ -138,16 +147,25 @@ class ExecutionManager(object):
                 self.db_service.delete('plugin', 'id=' + str(ahenk_policy_id))
                 self.db_service.update('policy', ['version'], [str(policy.get_ahenk_policy_version())], 'type=\'A\'')
             else:
-                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id'], ['A', str(policy.get_ahenk_policy_version()), machine_uid, policy.get_agent_execution_id()])
+                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id'],
+                                       ['A', str(policy.get_ahenk_policy_version()), machine_uid,
+                                        policy.get_agent_execution_id()])
                 ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
 
             for profile in policy.get_ahenk_profiles():
                 plugin = profile.get_plugin()
 
-                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()), str(plugin.get_description()), str(plugin.get_machine_oriented()), str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()), str(plugin.get_user_oriented()), str(plugin.get_version()), str(plugin.get_task_plugin()), str(plugin.get_x_based())]
+                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()),
+                               str(plugin.get_description()), str(plugin.get_machine_oriented()),
+                               str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()),
+                               str(plugin.get_user_oriented()), str(plugin.get_version()),
+                               str(plugin.get_task_plugin()), str(plugin.get_x_based())]
                 plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
 
-                profile_args = [str(ahenk_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()), str(profile.get_label()), str(profile.get_description()), str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()), str(profile.get_profile_data()), plugin_id]
+                profile_args = [str(ahenk_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()),
+                                str(profile.get_label()), str(profile.get_description()),
+                                str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()),
+                                str(profile.get_profile_data()), plugin_id]
                 self.db_service.update('profile', profile_columns, profile_args)
 
         else:
@@ -155,23 +173,35 @@ class ExecutionManager(object):
             self.db_service.update('policy', ['execution_id'], [policy.get_agent_execution_id()], 'type = \'A\'')
 
         if policy.get_user_policy_version() != user_policy_version:
-            user_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'U\' and name=\'' + policy.get_username() + '\'')
+            user_policy_id = self.db_service.select_one_result('policy', 'id',
+                                                               'type = \'U\' and name=\'' + policy.get_username() + '\'')
             if user_policy_id is not None:
                 # TODO remove profiles' plugins
                 self.db_service.delete('profile', 'id=' + str(user_policy_id))
                 self.db_service.delete('plugin', 'id=' + str(user_policy_id))
-                self.db_service.update('policy', ['version'], [str(policy.get_user_policy_version())], 'type=\'U\' and name=\'' + policy.get_username() + '\'')
+                self.db_service.update('policy', ['version'], [str(policy.get_user_policy_version())],
+                                       'type=\'U\' and name=\'' + policy.get_username() + '\'')
             else:
-                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id'], ['U', str(policy.get_user_policy_version()), policy.get_username(), policy.get_user_execution_id()])
-                user_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'U\' and name=\'' + policy.get_username() + '\'')
+                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id'],
+                                       ['U', str(policy.get_user_policy_version()), policy.get_username(),
+                                        policy.get_user_execution_id()])
+                user_policy_id = self.db_service.select_one_result('policy', 'id',
+                                                                   'type = \'U\' and name=\'' + policy.get_username() + '\'')
 
             for profile in policy.get_user_profiles():
                 plugin = profile.get_plugin()
 
-                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()), str(plugin.get_description()), str(plugin.get_machine_oriented()), str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()), str(plugin.get_user_oriented()), str(plugin.get_version()), str(plugin.get_task_plugin()), str(plugin.get_x_based())]
+                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()),
+                               str(plugin.get_description()), str(plugin.get_machine_oriented()),
+                               str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()),
+                               str(plugin.get_user_oriented()), str(plugin.get_version()),
+                               str(plugin.get_task_plugin()), str(plugin.get_x_based())]
                 plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
 
-                profile_args = [str(user_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()), str(profile.get_label()), str(profile.get_description()), str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()), str(profile.get_profile_data()), plugin_id]
+                profile_args = [str(user_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()),
+                                str(profile.get_label()), str(profile.get_description()),
+                                str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()),
+                                str(profile.get_profile_data()), plugin_id]
                 self.db_service.update('profile', profile_columns, profile_args)
 
         else:
@@ -183,11 +213,14 @@ class ExecutionManager(object):
 
     def get_active_policies(self, username):
 
-        user_policy = self.db_service.select('policy', ['id', 'version', 'name'], ' type=\'U\' and name=\'' + username + '\'')
+        user_policy = self.db_service.select('policy', ['id', 'version', 'name'],
+                                             ' type=\'U\' and name=\'' + username + '\'')
         ahenk_policy = self.db_service.select('policy', ['id', 'version'], ' type=\'A\' ')
 
-        plugin_columns = ['id', 'active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
-        profile_columns = ['id', 'create_date', 'label', 'description', 'overridable', 'active', 'deleted', 'profile_data', 'modify_date', 'plugin']
+        plugin_columns = ['id', 'active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date',
+                          'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
+        profile_columns = ['id', 'create_date', 'label', 'description', 'overridable', 'active', 'deleted',
+                           'profile_data', 'modify_date', 'plugin']
 
         policy = PolicyBean(username=username)
 
@@ -199,22 +232,33 @@ class ExecutionManager(object):
             if len(user_profiles) > 0:
                 for profile in user_profiles:
                     plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
-                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3], description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7], policy_plugin=plu[8], user_oriented=plu[9], version=plu[10], task_plugin=plu[11], x_based=plu[12])
+                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3],
+                                        description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7],
+                                        policy_plugin=plu[8], user_oriented=plu[9], version=plu[10],
+                                        task_plugin=plu[11], x_based=plu[12])
 
-                    arr_profiles.append(ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6], profile[7], profile[8], plugin, policy.get_username()))
+                    arr_profiles.append(
+                        ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6],
+                                    profile[7], profile[8], plugin, policy.get_username()))
                 policy.set_user_profiles(arr_profiles)
 
         if len(ahenk_policy) > 0:
             ahenk_policy_version = ahenk_policy[0][0]
             policy.set_ahenk_policy_version(ahenk_policy_version)
-            ahenk_profiles = self.db_service.select('profile', profile_columns, ' id=' + str(ahenk_policy_version) + ' ')
+            ahenk_profiles = self.db_service.select('profile', profile_columns,
+                                                    ' id=' + str(ahenk_policy_version) + ' ')
             arr_profiles = []
             if len(ahenk_profiles) > 0:
                 for profile in ahenk_profiles:
                     plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
-                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3], description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7], policy_plugin=plu[8], user_oriented=plu[9], version=plu[10], task_plugin=plu[11], x_based=plu[12])
+                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3],
+                                        description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7],
+                                        policy_plugin=plu[8], user_oriented=plu[9], version=plu[10],
+                                        task_plugin=plu[11], x_based=plu[12])
 
-                    arr_profiles.append(ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6], profile[7], profile[8], plugin, policy.get_username()))
+                    arr_profiles.append(
+                        ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6],
+                                    profile[7], profile[8], plugin, policy.get_username()))
                 policy.set_ahenk_profiles(arr_profiles)
 
         return policy
@@ -241,8 +285,15 @@ class ExecutionManager(object):
 
     def json_to_task_bean(self, json_data, file_server_conf=None):
         plu = json_data['plugin']
-        plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
-        return TaskBean(_id=json_data['id'], create_date=json_data['createDate'], modify_date=json_data['modifyDate'], command_cls_id=json_data['commandClsId'], parameter_map=json_data['parameterMap'], deleted=json_data['deleted'], plugin=plugin, cron_str=json_data['cronExpression'], file_server=str(file_server_conf))
+        plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'],
+                            description=plu['description'], machine_oriented=plu['machineOriented'],
+                            modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'],
+                            user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'],
+                            x_based=plu['xBased'])
+        return TaskBean(_id=json_data['id'], create_date=json_data['createDate'], modify_date=json_data['modifyDate'],
+                        command_cls_id=json_data['commandClsId'], parameter_map=json_data['parameterMap'],
+                        deleted=json_data['deleted'], plugin=plugin, cron_str=json_data['cronExpression'],
+                        file_server=str(file_server_conf))
 
     def move_file(self, arg):
         default_file_path = System.Ahenk.received_dir_path()
@@ -254,14 +305,63 @@ class ExecutionManager(object):
         shutil.move(default_file_path + file_name, target_file_path + file_name)
 
     def execute_script(self, arg):
-        j = json.loads(arg)
-        # msg_id =str(j['id']).lower()
-        file_path = str(j['filePath']).lower()
-        time_stamp = str(j['timestamp']).lower()
-        self.logger.debug('[ExecutionManager] Making executable file (%s) for execution' % file_path)
-        st = os.stat(file_path)
-        os.chmod(file_path, st.st_mode | stat.S_IEXEC)
-        subprocess.call("/bin/sh " + file_path, shell=True)
+        try:
+            self.logger.debug('[ExecutionManager] Executing script...')
+            messenger = Scope().getInstance().getMessenger()
+
+            json_data = json.loads(arg)
+            result_code, p_out, p_err = Util.execute(str(json_data['command']))
+
+            self.logger.debug('[ExecutionManager] Executed script')
+
+            data = {}
+            data['type'] = 'SCRIPT_RESULT'
+            data['timestamp'] = str(Util.timestamp())
+
+            if result_code == 0:
+                self.logger.debug('[ExecutionManager] Command execution was finished successfully')
+                try:
+                    temp_name = str(Util.generate_uuid())
+                    temp_full_path = System.Ahenk.received_dir_path() + temp_name
+                    self.logger.debug('[ExecutionManager] Writing result to file')
+                    Util.write_file(temp_full_path, str(p_out))
+                    md5 = Util.get_md5_file(temp_full_path)
+                    Util.rename_file(temp_full_path, System.Ahenk.received_dir_path() + md5)
+
+                    file_manager = FileTransferManager(json_data['fileServerConf']['protocol'],
+                                                       json_data['fileServerConf']['parameterMap'])
+                    file_manager.transporter.connect()
+                    self.logger.debug('[ExecutionManager] File transfer connection was created')
+                    success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5, md5)
+                    self.logger.debug('[ExecutionManager] File was transferred')
+                    file_manager.transporter.disconnect()
+                    self.logger.debug('[ExecutionManager] File transfer connection was closed')
+
+                    if success is False:
+                        self.logger.error('[ExecutionManager] A problem occurred while file transferring')
+                        data['resultCode'] = '-1'
+                        data[
+                            'errorMessage'] = 'Command executed successfully but a problem occurred while sending result file'
+
+                    else:
+                        data['md5'] = md5
+
+                except Exception as e:
+                    self.logger.error(
+                        '[ExecutionManager] A problem occurred while file transferring. Error Message :{0}'.format(
+                            str(e)))
+                    raise
+            else:
+                self.logger.error(
+                    '[ExecutionManager] Command execution was failed. Error Message :{0}'.format(str(result_code)))
+                data['resultCode'] = str(result_code)
+                data['errorMessage'] = str(p_err)
+
+            messenger.send_direct_message(json.dumps(data))
+        except Exception as e:
+            self.logger.error(
+                '[ExecutionManager] A problem occurred while running execute script action. Error Message :{}'.format(
+                    str(e)))
 
     def retrieve_file(self, arg):
         self.logger.debug('[ExecutionManager] Retrieving file ...')
@@ -273,9 +373,12 @@ class ExecutionManager(object):
             file_name = transfer_manager.transporter.get_file()
             transfer_manager.transporter.disconnect()
             downloaded_file = Util.read_file(System.Ahenk.received_dir_path() + file_name)
-            self.logger.debug('[ExecutionManager] Retrieving file is completed successfully. Full path of file is {}'.format(downloaded_file))
+            self.logger.debug(
+                '[ExecutionManager] Retrieving file is completed successfully. Full path of file is {}'.format(
+                    downloaded_file))
         except Exception as e:
-            self.logger.debug('[ExecutionManager] A problem occurred while retrieving file. Error Message: {}'.format(str(e)))
+            self.logger.debug(
+                '[ExecutionManager] A problem occurred while retrieving file. Error Message: {}'.format(str(e)))
 
     def request_file(self, arg):
         # TODO  change to new transfer way
@@ -305,23 +408,44 @@ class ExecutionManager(object):
         if ahenk_prof_json_arr is not None:
             for prof in ahenk_prof_json_arr:
                 plu = json.loads(json.dumps(prof['plugin']))
-                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
-                ahenk_prof_arr.append(ProfileBean(prof['id'], prof['createDate'], prof['label'], prof['description'], prof['overridable'], prof['active'], prof['deleted'], json.dumps(prof['profileData']), prof['modifyDate'], plugin, username))
+                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'],
+                                    deleted=plu['deleted'], description=plu['description'],
+                                    machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'],
+                                    name=plu['name'], policy_plugin=plu['policyPlugin'],
+                                    user_oriented=plu['userOriented'], version=plu['version'],
+                                    task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
+                ahenk_prof_arr.append(
+                    ProfileBean(prof['id'], prof['createDate'], prof['label'], prof['description'], prof['overridable'],
+                                prof['active'], prof['deleted'], json.dumps(prof['profileData']), prof['modifyDate'],
+                                plugin, username))
 
         if user_prof_json_arr is not None:
             for prof in user_prof_json_arr:
                 plu = json.loads(json.dumps(prof['plugin']))
-                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'], deleted=plu['deleted'], description=plu['description'], machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'], name=plu['name'], policy_plugin=plu['policyPlugin'], user_oriented=plu['userOriented'], version=plu['version'], task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
-                user_prof_arr.append(ProfileBean(prof['id'], prof['createDate'], prof['label'], prof['description'], prof['overridable'], prof['active'], prof['deleted'], json.dumps(prof['profileData']), prof['modifyDate'], plugin, username))
+                plugin = PluginBean(p_id=plu['id'], active=plu['active'], create_date=plu['createDate'],
+                                    deleted=plu['deleted'], description=plu['description'],
+                                    machine_oriented=plu['machineOriented'], modify_date=plu['modifyDate'],
+                                    name=plu['name'], policy_plugin=plu['policyPlugin'],
+                                    user_oriented=plu['userOriented'], version=plu['version'],
+                                    task_plugin=plu['taskPlugin'], x_based=plu['xBased'])
+                user_prof_arr.append(
+                    ProfileBean(prof['id'], prof['createDate'], prof['label'], prof['description'], prof['overridable'],
+                                prof['active'], prof['deleted'], json.dumps(prof['profileData']), prof['modifyDate'],
+                                plugin, username))
 
-        return PolicyBean(ahenk_policy_version=json_data['agentPolicyVersion'], user_policy_version=json_data['userPolicyVersion'], ahenk_profiles=ahenk_prof_arr, user_profiles=user_prof_arr, timestamp=json_data['timestamp'], username=json_data['username'], agent_execution_id=json_data['agentCommandExecutionId'], user_execution_id=json_data['userCommandExecutionId'])
+        return PolicyBean(ahenk_policy_version=json_data['agentPolicyVersion'],
+                          user_policy_version=json_data['userPolicyVersion'], ahenk_profiles=ahenk_prof_arr,
+                          user_profiles=user_prof_arr, timestamp=json_data['timestamp'], username=json_data['username'],
+                          agent_execution_id=json_data['agentCommandExecutionId'],
+                          user_execution_id=json_data['userCommandExecutionId'])
 
     def install_deb(self, full_path):
         try:
             process = subprocess.Popen('gdebi -n ' + full_path, shell=True)
             process.wait()
         except Exception as e:
-            self.logger.error('[ExecutionManager] Deb package couldn\'t install properly. Error Message: {}'.format(str(e)))
+            self.logger.error(
+                '[ExecutionManager] Deb package couldn\'t install properly. Error Message: {}'.format(str(e)))
 
     def remove_file(self, full_path):
         try:
