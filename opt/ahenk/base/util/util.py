@@ -263,7 +263,7 @@ class Util:
 
     @staticmethod
     def set_permission(path, permission_code):
-        Util.execute('chmod {} {}'.format(permission_code, path))
+        Util.execute('chmod -R {0} {1}'.format(permission_code, path))
 
     @staticmethod
     def has_attr_json(arg, attr_name):
