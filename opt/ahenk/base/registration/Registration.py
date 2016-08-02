@@ -99,6 +99,10 @@ class Registration:
 
     def get_registration_params(self):
 
+        parts = []
+        for part in System.Hardware.Disk.partitions():
+            parts.append(part[0])
+
         params = {
             'ipAddresses': str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', ''),
             'macAddresses': str(System.Hardware.Network.mac_addresses()).replace('[', '').replace(']', ''),
@@ -116,7 +120,7 @@ class Registration:
             'hardware.disk.total': System.Hardware.Disk.total(),
             'hardware.disk.used': System.Hardware.Disk.used(),
             'hardware.disk.free': System.Hardware.Disk.free(),
-            'hardware.disk.partitions': System.Hardware.Disk.partitions(),
+            'hardware.disk.partitions': str(parts),
             'hardware.memory.total': System.Hardware.Memory.total(),
             'hardware.network.ipAddresses': System.Hardware.Network.ip_addresses(),
             'sessions.userNames': System.Sessions.user_name(),
