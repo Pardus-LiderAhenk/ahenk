@@ -4,7 +4,6 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import imp
 import os
-from multiprocessing import Process
 
 from base.Scope import Scope
 from base.model.PluginBean import PluginBean
@@ -34,7 +33,8 @@ class PluginManager(object):
         self.plugins = []
         self.pluginQueueDict = dict()
 
-        self.listener = self.install_listener()
+        # self.listener = \
+        self.install_listener()
         self.delayed_profiles = {}
         self.delayed_tasks = {}
 
@@ -265,10 +265,9 @@ class PluginManager(object):
             return None
 
     def install_listener(self):
-        listener = PluginInstallListener()
-        thread = Process(target=listener.listen, args=(System.Ahenk.plugins_path(),))
-        thread.start()
-        return thread
+        listener = PluginInstallListener(System.Ahenk.plugins_path())
+        listener.setDaemon(True)
+        listener.start()
 
     def is_plugin_loaded(self, plugin_name):
         try:
