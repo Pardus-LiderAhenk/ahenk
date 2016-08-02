@@ -127,7 +127,11 @@ class Commander(object):
                         print('Wrong or missing parameter. Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')
                         return None
 
-                data['message'] = ast.literal_eval(str(response))
+                resp = str(response).replace("\"{", "{")
+                resp = resp.replace("}\"", "}")
+                resp = resp.replace("'", "\"")
+                data['message'] = json.loads(resp)
+                # data['message'] = ast.literal_eval(str(response))
 
             else:
                 print('Wrong or missing parameter. Usage : %s start|stop|restart|status|clean|send')
