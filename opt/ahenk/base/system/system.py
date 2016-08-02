@@ -22,6 +22,31 @@ class System:
         self.db_service = scope.getDbService()
         self.logger = scope.getLogger()
 
+    class BIOS(object):
+        @staticmethod
+        def vendor():
+            try:
+                result_code, p_out, p_err = Util.execute('dmidecode --string bios-vendor')
+                return int(result_code), str(p_out), str(p_err)
+            except:
+                raise
+
+        @staticmethod
+        def release_date():
+            try:
+                result_code, p_out, p_err = Util.execute('dmidecode --string bios-release-date')
+                return int(result_code), str(p_out), str(p_err)
+            except:
+                raise
+
+        @staticmethod
+        def version():
+            try:
+                result_code, p_out, p_err = Util.execute('dmidecode --string bios-version')
+                return int(result_code), str(p_out), str(p_err)
+            except:
+                raise
+
     class Ahenk(object):
 
         @staticmethod
@@ -300,6 +325,48 @@ class System:
 
     class Hardware(object):
 
+        class BaseBoard(object):
+
+            @staticmethod
+            def manufacturer():
+                try:
+                    result_code, p_out, p_err = Util.execute('dmidecode --string baseboard-manufacturer')
+                    return int(result_code), str(p_out), str(p_err)
+                except:
+                    raise
+
+            @staticmethod
+            def product_name():
+                try:
+                    result_code, p_out, p_err = Util.execute('dmidecode --string baseboard-product-name')
+                    return int(result_code), str(p_out), str(p_err)
+                except:
+                    raise
+
+            @staticmethod
+            def version():
+                try:
+                    result_code, p_out, p_err = Util.execute('dmidecode --string baseboard-version')
+                    return int(result_code), str(p_out), str(p_err)
+                except:
+                    raise
+
+            @staticmethod
+            def serial_number():
+                try:
+                    result_code, p_out, p_err = Util.execute('dmidecode --string baseboard-serial-number')
+                    return int(result_code), str(p_out), str(p_err)
+                except:
+                    raise
+
+            @staticmethod
+            def asset_tag():
+                try:
+                    result_code, p_out, p_err = Util.execute('dmidecode --string baseboard-asset-tag')
+                    return int(result_code), str(p_out), str(p_err)
+                except:
+                    raise
+
         class Memory(object):
 
             @staticmethod
@@ -464,5 +531,3 @@ class System:
             @staticmethod
             def model():
                 return cpuinfo.get_cpu_info()['model']
-
-
