@@ -14,6 +14,7 @@ from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.system.system import System
 
+
 class Registration:
     def __init__(self):
         scope = Scope().getInstance()
@@ -33,7 +34,8 @@ class Registration:
 
     def registration_request(self):
         self.logger.debug('[Registration] Requesting registration')
-        SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout, checker_func=self.is_registered, kwargs=None))
+        SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,
+                               checker_func=self.is_registered, kwargs=None))
         anon_messenger = AnonymousMessager(self.message_manager.registration_msg())
         anon_messenger.connect_to_server()
 
@@ -64,8 +66,10 @@ class Registration:
         self.db_service.update('registration', ['dn', 'registered'], [dn, 1], ' registered = 0')
 
         if self.conf_manager.has_section('CONNECTION'):
-            self.conf_manager.set('CONNECTION', 'uid', self.db_service.select_one_result('registration', 'jid', ' registered=1'))
-            self.conf_manager.set('CONNECTION', 'password', self.db_service.select_one_result('registration', 'password', ' registered=1'))
+            self.conf_manager.set('CONNECTION', 'uid',
+                                  self.db_service.select_one_result('registration', 'jid', ' registered=1'))
+            self.conf_manager.set('CONNECTION', 'password',
+                                  self.db_service.select_one_result('registration', 'password', ' registered=1'))
             # TODO  get file path?
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
@@ -91,7 +95,8 @@ class Registration:
     def register(self, uuid_depend_mac=False):
 
         cols = ['jid', 'password', 'registered', 'params', 'timestamp']
-        vals = [str(self.generate_uuid(uuid_depend_mac)), str(self.generate_password()), 0, str(self.get_registration_params()), str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))]
+        vals = [str(self.generate_uuid(uuid_depend_mac)), str(self.generate_password()), 0,
+                str(self.get_registration_params()), str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))]
 
         self.db_service.delete('registration', ' 1==1 ')
         self.db_service.update('registration', cols, vals)
@@ -124,6 +129,19 @@ class Registration:
             'hardware.memory.total': System.Hardware.Memory.total(),
             'hardware.network.ipAddresses': System.Hardware.Network.ip_addresses(),
             'sessions.userNames': System.Sessions.user_name(),
+            'bios.releaseDate': System.BIOS.release_date()[1].replace('\n', '') if System.BIOS.release_date()[0] == 0 else 'n/a',
+            'bios.version': System.BIOS.version()[1].replace('\n', '') if System.BIOS.version()[0] == 0 else 'n/a',
+            'bios.vendor': System.BIOS.vendor()[1].replace('\n', '') if System.BIOS.vendor()[0] == 0 else 'n/a',
+            'hardware.baseboard.manufacturer': System.Hardware.BaseBoard.manufacturer()[1].replace('\n', '') if
+            System.Hardware.BaseBoard.manufacturer()[0] == 0 else 'n/a',
+            'hardware.baseboard.version': System.Hardware.BaseBoard.version()[1].replace('\n', '') if
+            System.Hardware.BaseBoard.version()[0] == 0 else 'n/a',
+            'hardware.baseboard.assetTag': System.Hardware.BaseBoard.asset_tag()[1].replace('\n', '') if
+            System.Hardware.BaseBoard.asset_tag()[0] == 0 else 'n/a',
+            'hardware.baseboard.productName': System.Hardware.BaseBoard.product_name()[1].replace('\n', '') if
+            System.Hardware.BaseBoard.product_name()[0] == 0 else 'n/a',
+            'hardware.baseboard.serialNumber': System.Hardware.BaseBoard.serial_number()[1].replace('\n', '') if
+            System.Hardware.BaseBoard.serial_number()[0] == 0 else 'n/a',
         }
 
         return json.dumps(params)
@@ -144,14 +162,16 @@ class Registration:
             return uuid.uuid4()  # make a random UUID
         else:
             self.logger.debug('[Registration] uuid creating according to mac address')
-            return uuid.uuid3(uuid.NAMESPACE_DNS, str(get_mac()))  # make a UUID using an MD5 hash of a namespace UUID and a mac address
+            return uuid.uuid3(uuid.NAMESPACE_DNS,
+                              str(get_mac()))  # make a UUID using an MD5 hash of a namespace UUID and a mac address
 
     def generate_password(self):
         return uuid.uuid4()
 
     def registration_timeout(self):
-        self.logger.error('[Registration] Could not reach registration response from Lider. Be sure XMPP server is reachable and it supports anonymous message, Lider is running properly '
-                          'and it is connected to XMPP server! Check your Ahenk configuration file (/etc/ahenk/ahenk.conf)')
+        self.logger.error(
+            '[Registration] Could not reach registration response from Lider. Be sure XMPP server is reachable and it supports anonymous message, Lider is running properly '
+            'and it is connected to XMPP server! Check your Ahenk configuration file (/etc/ahenk/ahenk.conf)')
         self.logger.error('[Registration] Ahenk is shutting down...')
         print('Ahenk is shutting down...')
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
