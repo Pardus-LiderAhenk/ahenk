@@ -262,10 +262,12 @@ class AhenkDeamon(BaseDaemon):
         db_service = scope.getDbService()
         execute_manager = scope.getExecutionManager()
 
+        event=''
         try:
-            json_data = json.loads(Commander().get_event())
+            event=Commander().get_event()
+            json_data = json.loads(event)
         except Exception as e:
-            self.logger.error('[AhenkDeamon] A problem occurred while loading json. Check json format! Error Message: {0}'.format(str(e)))
+            self.logger.error('[AhenkDeamon] A problem occurred while loading json. Check json format! Error Message: {0}.Event={1} '.format(str(e),str(event)))
             return
 
         if json_data is not None:

@@ -79,7 +79,8 @@ class Commander(object):
                             response['contentType'] = self.get_relevant_type(str(params[5]))
                             response['responseData'] = Util.read_file(str(params[5]), 'rb')
                     else:
-                        print('Wrong or missing parameter. Usage: send -t <task_id> -m|-f <message_content>|<file_path>')
+                        print(
+                            'Wrong or missing parameter. Usage: send -t <task_id> -m|-f <message_content>|<file_path>')
                         return None
 
                     if len(params) > 6:
@@ -90,7 +91,8 @@ class Commander(object):
                         elif params[6] == '-s':
                             response['responseCode'] = MessageCode.TASK_PROCESSED.value
                         else:
-                            print('Wrong or missing parameter.(-e|-s|-w parameters are optional) Usage: send -t <task_id> -m|-f <message_content>|<file_path> -e|-s|-w')
+                            print(
+                                'Wrong or missing parameter.(-e|-s|-w parameters are optional) Usage: send -t <task_id> -m|-f <message_content>|<file_path> -e|-s|-w')
                             return None
 
                 elif len(params) > 7 and params[2] == '-p':
@@ -109,7 +111,8 @@ class Commander(object):
                                 response['contentType'] = self.get_relevant_type(str(params[7]))
                                 response['responseData'] = Util.read_file(str(params[7]), 'rb')
                         else:
-                            print('Wrong or missing parameter. Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path>')
+                            print(
+                                'Wrong or missing parameter. Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path>')
                             return None
 
                         if len(params) > 8:
@@ -120,11 +123,13 @@ class Commander(object):
                             elif params[8] == '-s':
                                 response['responseCode'] = MessageCode.POLICY_PROCESSED.value
                             else:
-                                print('Wrong or missing parameter.(-e|-s|-w parameters are optional) Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')
+                                print(
+                                    'Wrong or missing parameter.(-e|-s|-w parameters are optional) Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')
                                 return None
 
                     else:
-                        print('Wrong or missing parameter. Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')
+                        print(
+                            'Wrong or missing parameter. Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')
                         return None
 
                 resp = str(response).replace("\"{", "{")
