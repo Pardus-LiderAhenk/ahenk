@@ -86,7 +86,7 @@ class ExecutionManager(object):
                 transfer_manager.transporter.connect()
                 file_name = transfer_manager.transporter.get_file()
                 transfer_manager.transporter.disconnect()
-                downloaded_file = Util.read_file(System.Ahenk.received_dir_path() + file_name)
+                downloaded_file = System.Ahenk.received_dir_path() + file_name
             except Exception as e:
                 self.logger.error(
                     '[ExecutionManager] Plugin package could not fetch. Error Message: {}.'.format(str(e)))
