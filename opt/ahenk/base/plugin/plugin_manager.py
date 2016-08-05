@@ -63,7 +63,7 @@ class PluginManager(object):
         else:
             if self.is_plugin_loaded(plugin_name):
                 self.logger.debug('[PluginManager] {0} plugin was already loaded. Reloading {0} plugin'.format(plugin_name))
-                self.reload_single_plugin(plugin_name)
+                # self.reload_single_plugin(plugin_name)
             else:
                 self.pluginQueueDict[plugin_name] = PluginQueue()
                 plugin = Plugin(plugin_name, self.pluginQueueDict[plugin_name])
@@ -78,9 +78,11 @@ class PluginManager(object):
 
         if len(self.delayed_profiles) > 0:
             self.pluginQueueDict[plugin_name].put(self.delayed_profiles[plugin_name], 1)
+            del self.delayed_profiles[plugin_name]
             self.logger.debug('[PluginManager] Delayed profile was found for this plugin. It will be run.')
         if len(self.delayed_tasks) > 0:
             self.pluginQueueDict[plugin_name].put(self.delayed_tasks[plugin_name], 1)
+            del self.delayed_tasks[plugin_name]
             self.logger.debug('[PluginManager] Delayed task was found for this plugin. It will be run.')
 
     def reload_plugins(self):
