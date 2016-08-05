@@ -94,7 +94,7 @@ class ExecutionManager(object):
                 return
 
             try:
-                self.install_deb(downloaded_file)
+                Util.install_with_gdebi(downloaded_file)
                 self.logger.debug('[ExecutionManager] Plugin installed.')
             except Exception as e:
                 self.logger.error('[ExecutionManager] Could not install plugin. Error Message: {}'.format(str(e)))
@@ -438,14 +438,6 @@ class ExecutionManager(object):
                           user_profiles=user_prof_arr, timestamp=json_data['timestamp'], username=json_data['username'],
                           agent_execution_id=json_data['agentCommandExecutionId'],
                           user_execution_id=json_data['userCommandExecutionId'])
-
-    def install_deb(self, full_path):
-        try:
-            process = subprocess.Popen('gdebi -n ' + full_path, shell=True)
-            process.wait()
-        except Exception as e:
-            self.logger.error(
-                '[ExecutionManager] Deb package couldn\'t install properly. Error Message: {}'.format(str(e)))
 
     def remove_file(self, full_path):
         try:
