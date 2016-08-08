@@ -183,17 +183,19 @@ class PluginManager(object):
             self.logger.info('[PluginManager] Working on Ahenk profiles...')
             for agent_profile in ahenk_profiles:
                 same_plugin_profile = None
-                for usr_profile in user_profiles:
-                    if usr_profile.plugin.name == agent_profile.plugin.name:
-                        same_plugin_profile = usr_profile
 
-                if same_plugin_profile is not None:
-                    if agent_profile.overridable.lower() == 'true':
-                        self.logger.debug('[PluginManager] Agent profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
-                        continue
-                    else:
-                        self.logger.warning('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
-                        user_profiles.remove(same_plugin_profile)
+                if user_profiles is not None:
+                    for usr_profile in user_profiles:
+                        if usr_profile.plugin.name == agent_profile.plugin.name:
+                            same_plugin_profile = usr_profile
+
+                    if same_plugin_profile is not None:
+                        if agent_profile.overridable.lower() == 'true':
+                            self.logger.debug('[PluginManager] Agent profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
+                            continue
+                        else:
+                            self.logger.warning('[PluginManager] User profile of {0} plugin will not executed because of profile override rules.'.format(agent_profile.plugin.name))
+                            user_profiles.remove(same_plugin_profile)
 
                 agent_profile.set_username(None)
                 self.process_profile(agent_profile)
