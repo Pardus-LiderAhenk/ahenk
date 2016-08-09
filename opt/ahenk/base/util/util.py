@@ -123,7 +123,8 @@ class Util:
         try:
             if as_user is not None:
                 command = 'su - {0} -c "{1}"'.format(as_user, command)
-            process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=shell)
+            process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, shell=shell)
 
             if result is True:
                 result_code = process.wait()
@@ -202,27 +203,23 @@ class Util:
 
     @staticmethod
     def install_with_apt_get(package_name, package_version=None):
-        try:
-            if package_version is not None:
-                process = subprocess.Popen('apt-get install --yes --force-yes {0}={1}'.format(package_name, package_version), shell=True)
-                process.wait()
-            else:
-                process = subprocess.Popen('apt-get install --yes --force-yes {0}'.format(package_name), shell=True)
-                process.wait()
-        except:
-            raise
+
+        if package_version is not None:
+            command = 'apt-get install --yes --force-yes {0}={1}'.format(package_name, package_version)
+        else:
+            command = 'apt-get install --yes --force-yes {0}'.format(package_name)
+
+        return Util.execute(command)
 
     @staticmethod
     def uninstall_package(package_name, package_version=None):
-        try:
-            if package_version is not None:
-                process = subprocess.Popen('apt-get purge --yes --force-yes {0}={1}'.format(package_name, package_version), shell=True)
-                process.wait()
-            else:
-                process = subprocess.Popen('apt-get purge --yes --force-yes {0}'.format(package_name), shell=True)
-                process.wait()
-        except:
-            raise
+
+        if package_version is not None:
+            command = 'apt-get purge --yes --force-yes {0}={1}'.format(package_name, package_version)
+        else:
+            command = 'apt-get purge --yes --force-yes {0}'.format(package_name)
+
+        return Util.execute(command)
 
     @staticmethod
     def is_installed(package_name):
