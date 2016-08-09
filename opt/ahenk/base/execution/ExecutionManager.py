@@ -2,22 +2,17 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
-import hashlib
 import json
-import os
-import shutil
-import stat
-import subprocess
 
 from base.Scope import Scope
-from base.util.util import Util
+from base.file.file_transfer_manager import FileTransferManager
 from base.model.PluginBean import PluginBean
 from base.model.PolicyBean import PolicyBean
 from base.model.ProfileBean import ProfileBean
 from base.model.TaskBean import TaskBean
 from base.model.enum.MessageType import MessageType
-from base.file.file_transfer_manager import FileTransferManager
 from base.system.system import System
+from base.util.util import Util
 
 
 class ExecutionManager(object):
@@ -39,11 +34,6 @@ class ExecutionManager(object):
         self.policy_executed = {}
 
         self.event_manager.register_event(MessageType.EXECUTE_SCRIPT.value, self.execute_script)
-        # send file ahenk to lider
-        self.event_manager.register_event(MessageType.REQUEST_FILE.value, self.request_file)
-        # send file lider to ahenk
-        self.event_manager.register_event(MessageType.RETRIVE_FILE.value, self.retrieve_file)
-        self.event_manager.register_event(MessageType.MOVE_FILE.value, self.move_file)
         self.event_manager.register_event(MessageType.EXECUTE_TASK.value, self.execute_task)
         self.event_manager.register_event(MessageType.EXECUTE_POLICY.value, self.execute_policy)
         self.event_manager.register_event(MessageType.INSTALL_PLUGIN.value, self.install_plugin)
@@ -101,7 +91,7 @@ class ExecutionManager(object):
                 return
 
             try:
-                self.remove_file(downloaded_file)
+                Util.delete_file(downloaded_file)
                 self.logger.debug('[ExecutionManager] Temp files were removed.')
             except Exception as e:
                 self.logger.error('[ExecutionManager] Could not remove temp file. Error Message: {}'.format(str(e)))
@@ -263,14 +253,6 @@ class ExecutionManager(object):
 
         return policy
 
-    # from db
-    def get_installed_plugins(self):
-        plugins = self.db_service.select('plugin', ['name', 'version'])
-        p_list = []
-        for p in plugins:
-            p_list.append(str(p[0]) + '-' + str(p[1]))
-        return p_list
-
     def execute_task(self, arg):
 
         json_task = json.loads(arg)['task']
@@ -294,15 +276,6 @@ class ExecutionManager(object):
                         command_cls_id=json_data['commandClsId'], parameter_map=json_data['parameterMap'],
                         deleted=json_data['deleted'], plugin=plugin, cron_str=json_data['cronExpression'],
                         file_server=str(file_server_conf))
-
-    def move_file(self, arg):
-        default_file_path = System.Ahenk.received_dir_path()
-        j = json.loads(arg)
-        # msg_id =str(j['id']).lower()
-        target_file_path = str(j['filePath']).lower()
-        file_name = str(j['filename']).lower()
-        self.logger.debug('[ExecutionManager] ' + file_name + ' will be moved to ' + target_file_path)
-        shutil.move(default_file_path + file_name, target_file_path + file_name)
 
     def execute_script(self, arg):
         try:
@@ -363,40 +336,6 @@ class ExecutionManager(object):
                 '[ExecutionManager] A problem occurred while running execute script action. Error Message :{}'.format(
                     str(e)))
 
-    def retrieve_file(self, arg):
-        self.logger.debug('[ExecutionManager] Retrieving file ...')
-        try:
-            json_data = json.loads(arg)
-            self.logger.debug('[ExecutionManager] Retrieving file protocol is {}'.format(str(json_data['protocol'])))
-            transfer_manager = FileTransferManager(json_data['protocol'], json_data['parameterMap'])
-            transfer_manager.transporter.connect()
-            file_name = transfer_manager.transporter.get_file()
-            transfer_manager.transporter.disconnect()
-            downloaded_file = Util.read_file(System.Ahenk.received_dir_path() + file_name)
-            self.logger.debug(
-                '[ExecutionManager] Retrieving file is completed successfully. Full path of file is {}'.format(
-                    downloaded_file))
-        except Exception as e:
-            self.logger.debug(
-                '[ExecutionManager] A problem occurred while retrieving file. Error Message: {}'.format(str(e)))
-
-    def request_file(self, arg):
-        # TODO  change to new transfer way
-        j = json.loads(arg)
-        # msg_id =str(j['id']).lower()
-        file_path = str(j['filePath']).lower()
-        time_stamp = str(j['timestamp']).lower()
-        self.logger.debug('[ExecutionManager] Requested file is ' + file_path)
-        self.messenger.send_file(file_path)
-
-    def get_md5_file(self, fname):
-        self.logger.debug('[ExecutionManager] md5 hashing')
-        hash_md5 = hashlib.md5()
-        with open(fname, 'rb') as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_md5.update(chunk)
-        return str(hash_md5.hexdigest())
-
     def json_to_PolicyBean(self, json_data):
 
         username = json_data['username']
@@ -438,10 +377,3 @@ class ExecutionManager(object):
                           user_profiles=user_prof_arr, timestamp=json_data['timestamp'], username=json_data['username'],
                           agent_execution_id=json_data['agentCommandExecutionId'],
                           user_execution_id=json_data['userCommandExecutionId'])
-
-    def remove_file(self, full_path):
-        try:
-            subprocess.Popen('rm ' + full_path, shell=True)
-            self.logger.debug('[ExecutionManager] Removed file is {}'.format(full_path))
-        except Exception as e:
-            self.logger.debug('[ExecutionManager] File couldn\'t removed. Error Message: {}'.format(str(e)))
