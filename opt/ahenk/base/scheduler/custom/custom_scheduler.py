@@ -11,7 +11,6 @@ import time
 
 
 class CustomScheduler(BaseScheduler):
-
     def __init__(self):
         self.events = []
         self.keep_run = True
@@ -35,8 +34,10 @@ class CustomScheduler(BaseScheduler):
             self.logger.debug('[CustomScheduler] Adding scheduled task to events...')
             self.events.append(ScheduleTaskJob(task))
         except Exception as e:
-            self.logger.error('[CustomScheduler] A problem occurred while saving and adding job. Error Message: {}'.format(str(e)))
+            self.logger.error(
+                '[CustomScheduler] A problem occurred while saving and adding job. Error Message: {0}'.format(str(e)))
 
+    #unused
     def remove_job(self, task_id):
         for event in self.events:
             if event.task.get_id() == task_id:
@@ -45,7 +46,8 @@ class CustomScheduler(BaseScheduler):
                 self.events.remove(event)
                 self.logger.debug('[CustomScheduler] Task was removed from events')
 
-    def remove_job_via_task_id(self,task_id):
+    # unused
+    def remove_job_via_task_id(self, task_id):
         for event in self.events:
             if event.task.get_id() == task_id:
                 self.scheduledb.delete(event.task)
@@ -59,14 +61,14 @@ class CustomScheduler(BaseScheduler):
 
     def run(self):
         t = datetime(*datetime.now().timetuple()[:5])
+
         while 1 and self.keep_run:
-            for e in self.events:
-                e.check(t)
+            if self.events is not None and len(self.events) > 0:
+
+                for e in self.events:
+                    e.check(t)
 
             t += timedelta(minutes=1)
-            while datetime.now() < t:
-                time.sleep((t - datetime.now()).seconds)
-
-
-
-
+            if datetime.now() < t:
+                sl = (t - datetime.now()).seconds
+                time.sleep(sl)
