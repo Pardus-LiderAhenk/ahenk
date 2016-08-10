@@ -26,6 +26,9 @@ class Messenger(ClientXMPP):
 
         ClientXMPP.__init__(self, self.my_jid, self.my_pass)
 
+        self.auto_authorize = True
+        self.auto_subscribe = True
+
         self.hostname = self.configuration_manager.get('CONNECTION', 'host')
         self.resource_name = self.configuration_manager.get('CONNECTION', 'receiverresource')
         self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/' + self.resource_name
