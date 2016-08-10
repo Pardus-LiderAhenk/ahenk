@@ -12,7 +12,6 @@ from base.messaging.AnonymousMessenger import AnonymousMessager
 from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
-from base.system.system import System
 
 
 class Registration:
