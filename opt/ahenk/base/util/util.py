@@ -19,6 +19,10 @@ class Util:
         super().__init__()
 
     @staticmethod
+    def close_session(username):
+        Util.execute('pkill -9 -u {0}'.format(username))
+
+    @staticmethod
     def create_file(full_path):
         try:
             if os.path.exists(full_path):
