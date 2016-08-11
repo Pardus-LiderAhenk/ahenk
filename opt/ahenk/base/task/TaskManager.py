@@ -25,7 +25,6 @@ class TaskManager(object):
                 self.logger.debug('[TaskManager] Adding task ... ')
                 self.pluginManager.process_task(task)
             else:
-                print(str(task.get_cron_str()))
                 self.scheduler.save_and_add_job(task)
 
         except Exception as e:
