@@ -469,6 +469,14 @@ class System:
                 return arr
 
         @staticmethod
+        def machine_type():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('MACHINE', 'type')
+
+
+        @staticmethod
         def interfaces_details():
             return psutil.net_if_addrs()
 
@@ -531,3 +539,4 @@ class System:
             @staticmethod
             def model():
                 return cpuinfo.get_cpu_info()['model']
+
