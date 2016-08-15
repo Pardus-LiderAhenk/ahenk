@@ -1,1 +1,5 @@
+#!/bin/sh
+# prerm script for ahenk
+#
+
 find /opt/ahenk | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf

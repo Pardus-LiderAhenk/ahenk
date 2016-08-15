@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ###
-# This script generates Ahenk package (ahenk.deb)
+# This script generates Ahenk package (ahenk.deb). 
+# Make sure you have debhelper & build-essential packages installed!
 #
 # Generated file can be found under /tmp/ahenk
 ###
@@ -15,7 +16,7 @@ echo "Project path: $PRJ_ROOT_PATH"
 # Generate Ahenk packages
 echo "Generating Ahenk packages..."
 cd "$PRJ_ROOT_PATH"
-dpkg-buildpackage -b
+dpkg-buildpackage -b -uc
 echo "Generated Ahenk packages"
 
 EXPORT_PATH=/tmp/ahenk
