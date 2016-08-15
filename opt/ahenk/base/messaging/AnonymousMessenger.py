@@ -6,12 +6,12 @@ import json
 import sys
 
 from sleekxmpp import ClientXMPP
-
-sys.path.append('../..')
 from base.Scope import Scope
 
+sys.path.append('../..')
 
-class AnonymousMessager(ClientXMPP):
+
+class AnonymousMessenger(ClientXMPP):
     def __init__(self, message):
         # global scope of ahenk
         scope = Scope().getInstance()
@@ -28,7 +28,12 @@ class AnonymousMessager(ClientXMPP):
         ClientXMPP.__init__(self, self.service, None)
 
         self.message = message
-        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/' + self.configuration_manager.get('CONNECTION', 'receiverresource')
+        self.receiver_resource = self.configuration_manager.get('CONNECTION', 'receiverresource')
+        self.receiver = self.configuration_manager.get('CONNECTION',
+                                                       'receiverjid') + '@' + self.configuration_manager.get(
+            'CONNECTION', 'servicename')
+        if self.receiver_resource:
+            self.receiver += '/' + self.receiver_resource
 
         self.logger.debug('[AnonymousMessenger] XMPP Receiver parameters were set')
 
@@ -72,7 +77,7 @@ class AnonymousMessager(ClientXMPP):
             return False
 
     def recv_direct_message(self, msg):
-        if msg['type'] in ('normal'):
+        if msg['type'] in ['normal']:
             self.logger.debug('[AnonymousMessenger] ---------->Received message: {}'.format(str(msg['body'])))
             self.logger.debug('[AnonymousMessenger] Disconnecting...')
             self.disconnect()

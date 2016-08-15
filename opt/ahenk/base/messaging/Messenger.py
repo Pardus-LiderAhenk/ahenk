@@ -21,7 +21,9 @@ class Messenger(ClientXMPP):
         self.event_manger = scope.getEventManager()
         self.execution_manager = scope.getExecutionManager()
 
-        self.my_jid = str(self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename'))
+        self.my_jid = str(
+            self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION',
+                                                                                                       'servicename'))
         self.my_pass = str(self.configuration_manager.get('CONNECTION', 'password'))
 
         ClientXMPP.__init__(self, self.my_jid, self.my_pass)
@@ -30,8 +32,15 @@ class Messenger(ClientXMPP):
         self.auto_subscribe = True
 
         self.hostname = self.configuration_manager.get('CONNECTION', 'host')
-        self.resource_name = self.configuration_manager.get('CONNECTION', 'receiverresource')
-        self.receiver = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename') + '/' + self.resource_name
+        self.receiver_resource = self.configuration_manager.get('CONNECTION', 'receiverresource')
+
+        self.receiver = self.configuration_manager.get('CONNECTION',
+                                                       'receiverjid') + '@' + self.configuration_manager.get(
+            'CONNECTION', 'servicename')
+
+        if self.receiver_resource:
+            self.receiver += '/' + self.receiver_resource
+
         self.logger.debug('[Messenger] XMPP Messager parameters were set')
 
         self.register_extensions()
@@ -79,10 +88,11 @@ class Messenger(ClientXMPP):
             self.logger.debug('[Messenger] <<--------Sending message: {}'.format(msg))
             self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
         except Exception as e:
-            self.logger.error('[Messenger] A problem occurred while sending direct message. Error Message: {}'.format(str(e)))
+            self.logger.error(
+                '[Messenger] A problem occurred while sending direct message. Error Message: {}'.format(str(e)))
 
     def recv_direct_message(self, msg):
-        if msg['type'] in ('normal'):
+        if msg['type'] in ['normal']:
             self.logger.debug('[Messenger] ---------->Received message: {}'.format(str(msg['body'])))
             try:
                 j = json.loads(str(msg['body']))
@@ -90,4 +100,5 @@ class Messenger(ClientXMPP):
                 self.event_manger.fireEvent(message_type, str(msg['body']))
                 self.logger.debug('[Messenger] Fired event is: {}'.format(message_type))
             except Exception as e:
-                self.logger.error('[Messenger] A problem occurred while keeping message. Error Message: {}'.format(str(e)))
+                self.logger.error(
+                    '[Messenger] A problem occurred while keeping message. Error Message: {}'.format(str(e)))
