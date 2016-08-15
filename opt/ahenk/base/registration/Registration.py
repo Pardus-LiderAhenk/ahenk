@@ -8,7 +8,7 @@ import uuid
 from uuid import getnode as get_mac
 
 from base.Scope import Scope
-from base.messaging.AnonymousMessenger import AnonymousMessager
+from base.messaging.AnonymousMessenger import AnonymousMessenger
 from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
@@ -35,7 +35,7 @@ class Registration:
         self.logger.debug('[Registration] Requesting registration')
         SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,
                                checker_func=self.is_registered, kwargs=None))
-        anon_messenger = AnonymousMessager(self.message_manager.registration_msg())
+        anon_messenger = AnonymousMessenger(self.message_manager.registration_msg())
         anon_messenger.connect_to_server()
 
     def ldap_registration_request(self):
