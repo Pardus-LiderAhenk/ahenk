@@ -24,9 +24,13 @@ class Agreement:
             self.logger.debug('[Agreement] There is no any contract in database.')
             contract_id = '-1'
 
-        if self.db_service.select_one_result('agreement', 'id', " contract_id='{0}' and username='{1}' and choice='Y' ".format(contract_id, username)) is not None:
+        if self.db_service.select_one_result('agreement', 'id',
+                                             " contract_id='{0}' and username='{1}' and choice='Y' "
+                                                     .format(contract_id, username)) is not None:
             return True
-        elif self.db_service.select_one_result('agreement', 'id', " contract_id='{0}' and username='{1}' and choice='N' ".format(contract_id, username)) is not None:
+        elif self.db_service.select_one_result('agreement', 'id',
+                                               " contract_id='{0}' and username='{1}' and choice='N' ".format(
+                                                   contract_id, username)) is not None:
             return False
         else:
             return None
@@ -42,8 +46,8 @@ class Agreement:
             content = 'Ahenk kurulu bu bilgisayarda ilk defa oturum açıyorsunuz. ' \
                       'Devam ederseniz Lider-Ahenk in bilgisayar üzeride yapacağı ' \
                       'tüm işlemlere onay vermiş sayılacaksınız. Kabul ediyor musunuz?' \
-                      ' \n({} saniye içinde olumlu cevaplandırmadığınız takdirde oturumunuz ' \
-                      'sonlandırılacaktır.)'.format(10)
+                      ' \n(Tanımlanmış zaman aralığında olumlu cevaplandırmadığınız takdirde oturumunuz ' \
+                      'sonlandırılacaktır.)'
             title = 'Ahenk Kurulu Bilgisayar Kullanım Anlaşması'
             contract_id = '-1'
         else:
@@ -54,21 +58,31 @@ class Agreement:
             agreement_path = System.Ahenk.received_dir_path() + Util.generate_uuid()
             Util.write_file(agreement_path, content)
             Util.set_permission(agreement_path, 777)
-            command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"$(cat {3})\" \"{4}\"\''.format(display, username, self.ask_path, agreement_path, title)
+            command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"$(cat {3})\" \"{4}\"\''.format(display, username,
+                                                                                                     self.ask_path,
+                                                                                                     agreement_path,
+                                                                                                     title)
             result_code, p_out, p_err = Util.execute(command)
             pout = str(p_out).replace('\n', '')
             if pout != 'Error':
                 if pout == 'Y':
                     self.logger.debug('[Agreement] Agreement was accepted by {}.'.format(username))
-                    self.db_service.update('agreement', self.db_service.get_cols('agreement'), [contract_id, username, Util.timestamp(), 'Y'])
+                    self.db_service.update('agreement', self.db_service.get_cols('agreement'),
+                                           [contract_id, username, Util.timestamp(), 'Y'])
                 elif pout == 'N':
-                    self.db_service.update('agreement', self.db_service.get_cols('agreement'), [contract_id, username, Util.timestamp(), 'N'])
-                    self.logger.debug('[Agreement] Agreement was ignored by {}. Session will be closed'.format(username))
+                    self.db_service.update('agreement', self.db_service.get_cols('agreement'),
+                                           [contract_id, username, Util.timestamp(), 'N'])
+                    self.logger.debug(
+                        '[Agreement] Agreement was ignored by {}. Session will be closed'.format(username))
                 else:
-                    self.logger.error('[Agreement] A problem occurred while executing ask.py. Error Message: {}'.format(str(pout)))
+                    self.logger.error(
+                        '[Agreement] A problem occurred while executing ask.py. Error Message: {}'.format(str(pout)))
                 Util.delete_file(agreement_path)
             else:
-                self.logger.error('[Agreement] A problem occurred while executing ask.py (Probably argument fault). Error Message: {}'.format(str(pout)))
+                self.logger.error(
+                    '[Agreement] A problem occurred while executing ask.py (Probably argument fault). Error Message: {}'.format(
+                        str(pout)))
 
         except Exception as e:
-            self.logger.error('[Agreement] A Problem occurred while displaying agreement. Error Message: {}'.format(str(e)))
+            self.logger.error(
+                '[Agreement] A Problem occurred while displaying agreement. Error Message: {}'.format(str(e)))
