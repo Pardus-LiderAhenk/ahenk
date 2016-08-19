@@ -2,5 +2,6 @@
 # postrm script for ahenk
 #
 
-cp /etc/pam.d/common-session /etc/pam.d/common-session.before_remove_ahenk
-cp /etc/pam.d/common-session.orig /etc/pam.d/common-session
+if [ -f /etc/pam.d/common-session.orig ]; then
+   mv -f /etc/pam.d/common-session.orig /etc/pam.d/common-session
+fi

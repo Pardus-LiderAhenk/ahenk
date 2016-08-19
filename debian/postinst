@@ -17,9 +17,17 @@ while true; do
 		then
 			if [ -f /etc/pam.d/common-session ]
 			then
-				cp /etc/pam.d/common-session /etc/pam.d/common-session.orig
-				sed -i '/pam_script.so/d' /etc/pam.d/common-session
-				echo "session required		pam_script.so"  >> /etc/pam.d/common-session
+				cp -f /etc/pam.d/common-session /etc/pam.d/common-session.orig
+				grep -q 'pam_script.so' /etc/pam.d/common-session
+				if [ $? -eq 0 ]
+				then
+					echo "pam_scripst.so zaten mevcut."
+				else
+					echo "pam_script.so bulunamadı! /etc/pam.d/common-session dosyasına ekleniyor..."
+					# Use optional, we don't want access denied if there is a problem:
+					echo "session optional		pam_script.so"  >> /etc/pam.d/common-session
+					echo "pam_script.so eklendi."
+				fi
 			fi
 		fi
 	break;;
