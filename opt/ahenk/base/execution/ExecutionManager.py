@@ -9,8 +9,11 @@ from base.file.file_transfer_manager import FileTransferManager
 from base.model.PluginBean import PluginBean
 from base.model.PolicyBean import PolicyBean
 from base.model.ProfileBean import ProfileBean
+from base.model.Response import Response
 from base.model.TaskBean import TaskBean
+from base.model.enum.MessageCode import MessageCode
 from base.model.enum.MessageType import MessageType
+from base.model.enum.ContentType import ContentType
 from base.system.system import System
 from base.util.util import Util
 
@@ -81,6 +84,7 @@ class ExecutionManager(object):
                 self.logger.error(
                     '[ExecutionManager] Plugin package could not fetch. Error Message: {}.'.format(str(e)))
                 self.logger.error('[ExecutionManager] Plugin Installation is cancelling')
+                self.plugin_installation_failure(plugin_name, plugin_version)
                 return
 
             try:
@@ -88,6 +92,7 @@ class ExecutionManager(object):
                 self.logger.debug('[ExecutionManager] Plugin installed.')
             except Exception as e:
                 self.logger.error('[ExecutionManager] Could not install plugin. Error Message: {}'.format(str(e)))
+                self.plugin_installation_failure(plugin_name, plugin_version)
                 return
 
             try:
@@ -102,6 +107,57 @@ class ExecutionManager(object):
             self.logger.error(
                 '[ExecutionManager] A problem occurred while installing new Ahenk plugin. Error Message:{}'.format(
                     str(e)))
+
+    def plugin_installation_failure(self, plugin_name, plugin_version):
+
+        self.logger.warning('[ExecutionManager] {0} plugin installation failure '.format(plugin_name))
+
+        if plugin_name in self.plugin_manager.delayed_profiles.keys():
+            profile = self.plugin_manager.delayed_profiles[plugin_name]
+            self.logger.warning('[ExecutionManager] An error message sending with related profile properties...')
+            related_policy = self.db_service.select('policy', ['version', 'execution_id'],
+                                                    'id={0}'.format(profile.get_id()))
+            data = dict()
+            data['message'] = "Profil işletilirken eklenti bulunamadı "
+            "ve eksik olan eklenti kurulmaya çalışırken hata ile karşılaşıldı. "
+            "İlgili eklenti Ahenk'e yüklendiğinde, başarısız olan bu profil "
+            "(Başka bir politika tarafından ezilmedikçe) "
+            "çalıştırılacaktır"
+            " Sorunu çözmek için Lider yapılandırma dosyasındaki eklenti dağıtım "
+            "bilgilerinin doğruluğundan ve belirtilen dizinde geçerli eklenti paketinin "
+            "bulunduğundan emin olun."
+            response = Response(type=MessageType.POLICY_STATUS.value, id=profile.get_id(),
+                                code=MessageCode.POLICY_ERROR.value,
+                                message="Profil işletilirken eklenti bulunamadı "
+                                        "ve eksik olan eklenti kurulurken hata oluştu",
+                                execution_id=related_policy[0][1], policy_version=related_policy[0][0],
+                                data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            messenger = Scope.getInstance().getMessenger()
+            messenger.send_direct_message(self.message_manager.policy_status_msg(response))
+            self.logger.warning(
+                '[ExecutionManager] Error message was sent about {0} plugin installation failure while trying to run a profile')
+
+        if plugin_name in self.plugin_manager.delayed_tasks.keys():
+            task = self.plugin_manager.delayed_tasks[plugin_name]
+            self.logger.warning('[ExecutionManager] An error message sending with related task properties...')
+
+            data = dict()
+            data['message'] = "Görev işletilirken eklenti bulunamadı "
+            "ve eksik olan eklenti kurulmaya çalışırken hata ile karşılaşıldı. "
+            "İlgili eklenti Ahenk'e yüklendiğinde, başarısız olan bu görev "
+            "çalıştırılacaktır"
+            " Sorunu çözmek için Lider yapılandırma dosyasındaki eklenti dağıtım "
+            "bilgilerinin doğruluğundan ve belirtilen dizinde geçerli eklenti paketinin "
+            "bulunduğundan emin olun."
+            response = Response(type=MessageType.TASK_STATUS.value, id=task.get_id(),
+                                code=MessageCode.TASK_ERROR.value,
+                                message="Görev işletilirken eklenti bulunamadı "
+                                        "ve eksik olan eklenti kurulmaya çalışırken oluştu.",
+                                data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
+            messenger = Scope.getInstance().getMessenger()
+            messenger.send_direct_message(self.message_manager.task_status_msg(response))
+            self.logger.warning(
+                '[ExecutionManager] Error message was sent about {0} plugin installation failure while trying to run a task')
 
     def is_policy_executed(self, username):
         if username in self.policy_executed:

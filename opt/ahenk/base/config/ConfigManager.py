@@ -16,26 +16,26 @@ class ConfigManager(object):
         is configuration files folder path
     """
 
-    def __init__(self, configurationFilePath=None, configurationFolderPath=None):
-        self.configurationFilePath = configurationFilePath
-        self.configurationFolderPath = configurationFolderPath
+    def __init__(self, configuration_file_path=None, configuration_folder_path=None):
+        self.configurationFilePath = configuration_file_path
+        self.configurationFolderPath = configuration_folder_path
 
     def read(self):
-        configFiles = []
+        config_files = []
 
         # Check if given ahenk configuration file exists
         # If file exists add it to configFiles array.
         # TODO must write config file validater !!
         if self.configurationFilePath:
             if os.path.exists(self.configurationFilePath):
-                configFiles.append(self.configurationFilePath)
+                config_files.append(self.configurationFilePath)
 
         if self.configurationFolderPath and os.path.exists(self.configurationFolderPath):
             files = [f for f in listdir(self.configurationFolderPath) if isfile(join(self.configurationFolderPath, f))]
             for f in files:
-                configFiles.append(join(self.configurationFolderPath, f))
+                config_files.append(join(self.configurationFolderPath, f))
 
         parser = SafeConfigParser()
-        configValues = parser.read(configFiles)
+        configValues = parser.read(config_files)
 
         return parser
