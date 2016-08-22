@@ -101,7 +101,7 @@ class ExecutionManager(object):
             except Exception as e:
                 self.logger.error('[ExecutionManager] Could not remove temp file. Error Message: {}'.format(str(e)))
 
-            self.plugin_manager.load_single_plugin(plugin_name)
+            # self.plugin_manager.load_single_plugin(plugin_name)
 
         except Exception as e:
             self.logger.error(
