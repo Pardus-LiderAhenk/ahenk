@@ -81,11 +81,11 @@ class PluginManager(object):
                 mode = InitMode()
                 self.pluginQueueDict[plugin_name].put(mode, 1)
 
-        if len(self.delayed_profiles) > 0:
+        if plugin_name in self.delayed_profiles:
             self.pluginQueueDict[plugin_name].put(self.delayed_profiles[plugin_name], 1)
             del self.delayed_profiles[plugin_name]
             self.logger.debug('[PluginManager] Delayed profile was found for this plugin. It will be run.')
-        if len(self.delayed_tasks) > 0:
+        if plugin_name in self.delayed_tasks:
             self.pluginQueueDict[plugin_name].put(self.delayed_tasks[plugin_name], 1)
             del self.delayed_tasks[plugin_name]
             self.logger.debug('[PluginManager] Delayed task was found for this plugin. It will be run.')
