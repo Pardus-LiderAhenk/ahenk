@@ -64,7 +64,7 @@ class ExecutionManager(object):
                     self.db_service.update('contract', self.db_service.get_cols('contract'),
                                            [agreement_content, title, json_data['timestamp']])
         except Exception as e:
-            self.logger.error(
+            self.logger.warning(
                 '[ExecutionManager] A problem occurred while updating agreement. Error Message : {}'.format(str(e)))
 
     def install_plugin(self, arg):
