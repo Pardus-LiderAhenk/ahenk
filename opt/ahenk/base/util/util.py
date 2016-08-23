@@ -278,3 +278,37 @@ class Util:
         command = "sudo apt-get --yes --force-yes purge {0}={1}".format(package_name, package_version)
         result_code, p_out, p_err = Util.execute(command)
         return result_code, p_out, p_err
+
+    @staticmethod
+    def send_notify(title, body, display, user, icon=None, timeout=5000):
+
+        inner_command = 'notify-send "{0}" "{1}" -t {2}'.format(title, body, timeout)
+        if icon:
+            inner_command += ' -i {0}'.format(icon)
+
+        if user != 'root':
+            Util.execute('export DISPLAY={0}; su - {1} -c \'{2}\''.format(display, user,inner_command))
+
+    @staticmethod
+    def ask_permission(display, username, message, title):
+        ask_path = '/opt/ahenk/base/agreement/confirm.py'
+        try:
+
+            if username is not None:
+                command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"{3}\" \"{4}\"\''.format(display, username,
+                                                                                                  ask_path,
+                                                                                                  message,
+                                                                                                  title)
+                result_code, p_out, p_err = Util.execute(command)
+
+                if p_out.strip() == 'Y':
+                    return True
+                elif p_out.strip() == 'N':
+                    return False
+                else:
+                    return None
+
+            else:
+                return None
+        except Exception:
+            return None
