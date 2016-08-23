@@ -13,6 +13,7 @@ from base.model.enum.ContentType import ContentType
 from base.model.enum.MessageCode import MessageCode
 from base.model.enum.MessageType import MessageType
 from base.system.system import System
+from base.util.util import Util
 
 
 class Context(object):
@@ -67,53 +68,79 @@ class Plugin(threading.Thread):
                     item_obj = self.InQueue.get(block=True)
                     obj_name = item_obj.obj_name
                 except Exception as e:
-                    self.logger.error('[Plugin] A problem occurred while executing process. Error Message: {}'.format(str(e)))
+                    self.logger.error(
+                        '[Plugin] A problem occurred while executing process. Error Message: {}'.format(str(e)))
 
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
-                    command = Scope.getInstance().getPluginManager().find_command(self.getName(), item_obj.get_command_cls_id().lower())
+                    command = Scope.getInstance().getPluginManager().find_command(self.getName(),
+                                                                                  item_obj.get_command_cls_id().lower())
                     self.context.put('task_id', item_obj.get_id())
 
                     task_data = item_obj.get_parameter_map()
+
+                    self.logger.debug('[Plugin] Sending notify to user about task process')
+
+                    if System.Sessions.user_name() is not None and len(System.Sessions.user_name()) > 0:
+                        for user in System.Sessions.user_name():
+                            Util.send_notify("Lider Ahenk",
+                                             "{0} eklentisi şu anda bir görev çalıştırıyor.".format(self.getName()),
+                                             System.Sessions.display(user),
+                                             user)
+
                     self.logger.debug('[Plugin] Handling task')
                     command.handle_task(task_data, self.context)
 
                     if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
-                        response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'))
+                        response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(),
+                                            code=self.context.get('responseCode'),
+                                            message=self.context.get('responseMessage'),
+                                            data=self.context.get('responseData'),
+                                            content_type=self.context.get('contentType'))
 
                         if response.get_data() and response.get_content_type() != ContentType.APPLICATION_JSON.value:
                             success = False
                             try:
-                                file_manager = FileTransferManager(json.loads(item_obj.get_file_server())['protocol'], json.loads(item_obj.get_file_server())['parameterMap'])
+                                file_manager = FileTransferManager(json.loads(item_obj.get_file_server())['protocol'],
+                                                                   json.loads(item_obj.get_file_server())[
+                                                                       'parameterMap'])
                                 file_manager.transporter.connect()
                                 md5 = str(json.loads(response.get_data())['md5'])
-                                success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5, md5)
+                                success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5,
+                                                                             md5)
                                 file_manager.transporter.disconnect()
                             except Exception as e:
-                                self.logger.error('[Plugin] A problem occurred while file transferring. Error Message :{}'.format(str(e)))
+                                self.logger.error(
+                                    '[Plugin] A problem occurred while file transferring. Error Message :{}'.format(
+                                        str(e)))
 
                             self.logger.debug('[Plugin] Sending response')
 
                             message = self.messaging.task_status_msg(response)
                             if success is False:
-                                response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(), code=MessageCode.TASK_ERROR.value, message='[Ahenk Core] Task processed successfully but file transfer not completed. Check defined server conf')
+                                response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(),
+                                                    code=MessageCode.TASK_ERROR.value,
+                                                    message='[Ahenk Core] Task processed successfully but file transfer not completed. Check defined server conf')
                                 message = self.messaging.task_status_msg(response)
 
                             Scope.getInstance().getMessenger().send_direct_message(message)
 
                         else:
                             self.logger.debug('[Plugin] Sending task response')
-                            Scope.getInstance().getMessenger().send_direct_message(self.messaging.task_status_msg(response))
+                            Scope.getInstance().getMessenger().send_direct_message(
+                                self.messaging.task_status_msg(response))
 
                     else:
-                        self.logger.error('[Plugin] There is no Response. Plugin must create response after run a task!')
+                        self.logger.error(
+                            '[Plugin] There is no Response. Plugin must create response after run a task!')
 
                 elif obj_name == "PROFILE":
 
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
-                    policy_module = Scope.getInstance().getPluginManager().find_policy_module(item_obj.get_plugin().get_name())
+                    policy_module = Scope.getInstance().getPluginManager().find_policy_module(
+                        item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
 
                     execution_id = self.get_execution_id(item_obj.get_id())
@@ -122,46 +149,69 @@ class Plugin(threading.Thread):
                     self.context.put('policy_version', policy_ver)
                     self.context.put('execution_id', execution_id)
 
+                    self.logger.debug('[Plugin] Sending notify to user about profile process')
+
+                    Util.send_notify("Lider Ahenk",
+                                     "{0} eklentisi şu anda bir profil çalıştırıyor.".format(self.getName()),
+                                     System.Sessions.display(item_obj.get_username()),
+                                     item_obj.get_username())
                     self.logger.debug('[Plugin] Handling profile')
                     policy_module.handle_policy(profile_data, self.context)
 
                     if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
-                        response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=self.context.get('responseCode'), message=self.context.get('responseMessage'), data=self.context.get('responseData'), content_type=self.context.get('contentType'), execution_id=execution_id, policy_version=policy_ver)
+                        response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(),
+                                            code=self.context.get('responseCode'),
+                                            message=self.context.get('responseMessage'),
+                                            data=self.context.get('responseData'),
+                                            content_type=self.context.get('contentType'), execution_id=execution_id,
+                                            policy_version=policy_ver)
 
                         if response.get_data() and response.get_content_type() != ContentType.APPLICATION_JSON.value:
                             success = False
                             try:
-                                file_manager = FileTransferManager(json.loads(item_obj.get_file_server())['protocol'], json.loads(item_obj.get_file_server())['parameterMap'])
+                                file_manager = FileTransferManager(json.loads(item_obj.get_file_server())['protocol'],
+                                                                   json.loads(item_obj.get_file_server())[
+                                                                       'parameterMap'])
                                 file_manager.transporter.connect()
                                 md5 = str(json.loads(response.get_data())['md5'])
-                                success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5, md5)
+                                success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5,
+                                                                             md5)
                                 file_manager.transporter.disconnect()
                             except Exception as e:
-                                self.logger.error('[Plugin] A problem occurred while file transferring. Error Message :{}'.format(str(e)))
+                                self.logger.error(
+                                    '[Plugin] A problem occurred while file transferring. Error Message :{}'.format(
+                                        str(e)))
 
                             self.logger.debug('[Plugin] Sending response')
 
                             message = self.messaging.task_status_msg(response)
                             if success is False:
-                                response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(), code=MessageCode.POLICY_ERROR.value, message='[Ahenk Core] Policy processed successfully but file transfer not completed. Check defined server conf')
+                                response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(),
+                                                    code=MessageCode.POLICY_ERROR.value,
+                                                    message='[Ahenk Core] Policy processed successfully but file transfer not completed. Check defined server conf')
                                 message = self.messaging.task_status_msg(response)
                             Scope.getInstance().getMessenger().send_direct_message(message)
                         else:
                             self.logger.debug('[Plugin] Sending profile response')
-                            Scope.getInstance().getMessenger().send_direct_message(self.messaging.policy_status_msg(response))
+                            Scope.getInstance().getMessenger().send_direct_message(
+                                self.messaging.policy_status_msg(response))
                     else:
-                        self.logger.error('[Plugin] There is no Response. Plugin must create response after run a policy!')
+                        self.logger.error(
+                            '[Plugin] There is no Response. Plugin must create response after run a policy!')
                 elif 'MODE' in obj_name:
                     module = Scope.getInstance().getPluginManager().find_module(obj_name, self.name)
                     if module is not None:
                         if item_obj.obj_name in ('LOGIN_MODE', 'LOGOUT_MODE', 'SAFE_MODE'):
                             self.context.put('username', item_obj.username)
                         try:
-                            self.logger.debug('[Plugin] {0} is running on {1} plugin'.format(str(item_obj.obj_name), str(self.name)))
+                            self.logger.debug(
+                                '[Plugin] {0} is running on {1} plugin'.format(str(item_obj.obj_name), str(self.name)))
                             module.handle_mode(self.context)
                         except Exception as e:
-                            self.logger.error('[Plugin] A problem occurred while running {0} on {1} plugin. Error Message: {2}'.format(str(obj_name), str(self.name), str(e)))
+                            self.logger.error(
+                                '[Plugin] A problem occurred while running {0} on {1} plugin. Error Message: {2}'.format(
+                                    str(obj_name), str(self.name), str(e)))
 
                     if item_obj.obj_name is 'SHUTDOWN_MODE':
                         self.logger.debug('[Plugin] {0} plugin is stopping...'.format(str(self.name)))
@@ -177,14 +227,16 @@ class Plugin(threading.Thread):
         try:
             return self.db_service.select_one_result('policy', 'execution_id', ' id={}'.format(profile_id))
         except Exception as e:
-            self.logger.error("[Plugin] A problem occurred while getting execution id. Exception Message: {} ".format(str(e)))
+            self.logger.error(
+                "[Plugin] A problem occurred while getting execution id. Exception Message: {} ".format(str(e)))
             return None
 
     def get_policy_version(self, profile_id):
         try:
             return self.db_service.select_one_result('policy', 'version', ' id={}'.format(profile_id))
         except Exception as e:
-            self.logger.error("[Plugin] A problem occurred while getting policy version . Exception Message: {} ".format(str(e)))
+            self.logger.error(
+                "[Plugin] A problem occurred while getting policy version . Exception Message: {} ".format(str(e)))
             return None
 
     def getName(self):
