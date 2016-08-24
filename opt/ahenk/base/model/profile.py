@@ -3,7 +3,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import json
 
-from base.model.Plugin import Plugin
+from base.model.plugin import Plugin
 
 
 class Profile(object):

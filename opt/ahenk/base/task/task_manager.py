@@ -3,8 +3,8 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 from base.Scope import Scope
-from base.model.MessageFactory import MessageFactory
-from base.model.enum.MessageType import MessageType
+from base.model.message_factory import MessageFactory
+from base.model.enum.message_type import MessageType
 
 
 class TaskManager(object):

@@ -3,7 +3,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import json
 
-from base.model.PluginBean import PluginBean
+from base.model.plugin_bean import PluginBean
 
 
 class ProfileBean(object):
