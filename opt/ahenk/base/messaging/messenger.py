@@ -7,7 +7,7 @@ import sys
 
 from sleekxmpp import ClientXMPP
 
-from base.Scope import Scope
+from base.scope import Scope
 
 sys.path.append('../..')
 
@@ -34,7 +34,7 @@ class Messenger(ClientXMPP):
         self.hostname = self.configuration_manager.get('CONNECTION', 'host')
         self.receiver_resource = self.configuration_manager.get('CONNECTION', 'receiverresource')
 
-        if self.configuration_manager.get('CONNECTION', 'use_tls').split().lower() == 'true':
+        if self.configuration_manager.get('CONNECTION', 'use_tls').strip().lower() == 'true':
             self.use_tls = True
         else:
             self.use_tls = False
@@ -59,7 +59,7 @@ class Messenger(ClientXMPP):
             self.logger.debug('[Messenger]Extension were registered: xep_0030,xep_0199')
             return True
         except Exception as e:
-            self.logger.error('[Messenger]Extension registration is failed! Error Message: {}'.format(str(e)))
+            self.logger.error('[Messenger]Extension registration is failed! Error Message: {0}'.format(str(e)))
             return False
 
     def add_listeners(self):
@@ -78,7 +78,7 @@ class Messenger(ClientXMPP):
             self.logger.debug('[Messenger] Connection were established successfully')
             return True
         except Exception as e:
-            self.logger.error('[Messenger] Connection to server is failed! Error Message: {}'.format(str(e)))
+            self.logger.error('[Messenger] Connection to server is failed! Error Message: {0}'.format(str(e)))
             return False
 
     def session_end(self):
@@ -91,20 +91,20 @@ class Messenger(ClientXMPP):
 
     def send_direct_message(self, msg):
         try:
-            self.logger.debug('[Messenger] <<--------Sending message: {}'.format(msg))
+            self.logger.debug('[Messenger] <<--------Sending message: {0}'.format(msg))
             self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
         except Exception as e:
             self.logger.error(
-                '[Messenger] A problem occurred while sending direct message. Error Message: {}'.format(str(e)))
+                '[Messenger] A problem occurred while sending direct message. Error Message: {0}'.format(str(e)))
 
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
-            self.logger.debug('[Messenger] ---------->Received message: {}'.format(str(msg['body'])))
+            self.logger.debug('[Messenger] ---------->Received message: {0}'.format(str(msg['body'])))
             try:
                 j = json.loads(str(msg['body']))
                 message_type = j['type']
                 self.event_manger.fireEvent(message_type, str(msg['body']))
-                self.logger.debug('[Messenger] Fired event is: {}'.format(message_type))
+                self.logger.debug('[Messenger] Fired event is: {0}'.format(message_type))
             except Exception as e:
                 self.logger.error(
-                    '[Messenger] A problem occurred while keeping message. Error Message: {}'.format(str(e)))
+                    '[Messenger] A problem occurred while keeping message. Error Message: {0}'.format(str(e)))

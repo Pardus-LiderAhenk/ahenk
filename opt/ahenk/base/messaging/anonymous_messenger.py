@@ -6,7 +6,7 @@ import json
 import sys
 
 from sleekxmpp import ClientXMPP
-from base.Scope import Scope
+from base.scope import Scope
 
 sys.path.append('../..')
 
@@ -35,6 +35,11 @@ class AnonymousMessenger(ClientXMPP):
         if self.receiver_resource:
             self.receiver += '/' + self.receiver_resource
 
+        if self.configuration_manager.get('CONNECTION', 'use_tls').strip().lower() == 'true':
+            self.use_tls = True
+        else:
+            self.use_tls = False
+
         self.logger.debug('[AnonymousMessenger] XMPP Receiver parameters were set')
 
         self.add_listeners()
@@ -61,24 +66,24 @@ class AnonymousMessenger(ClientXMPP):
             self.logger.debug('[AnonymousMessenger] Extension were registered: xep_0030,xep_0199')
             return True
         except Exception as e:
-            self.logger.error('[AnonymousMessenger] Extension registration is failed! Error Message: {}'.format(str(e)))
+            self.logger.error('[AnonymousMessenger] Extension registration is failed! Error Message: {0}'.format(str(e)))
             return False
 
     def connect_to_server(self):
         try:
             self.logger.debug('[AnonymousMessenger] Connecting to server...')
             self['feature_mechanisms'].unencrypted_plain = True
-            self.connect((self.host, self.port), use_tls=False)
+            self.connect((self.host, self.port), use_tls=self.use_tls)
             self.process(block=True)
             self.logger.debug('[AnonymousMessenger] Connection were established successfully')
             return True
         except Exception as e:
-            self.logger.error('[AnonymousMessenger] Connection to server is failed! Error Message: {}'.format(str(e)))
+            self.logger.error('[AnonymousMessenger] Connection to server is failed! Error Message: {0}'.format(str(e)))
             return False
 
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
-            self.logger.debug('[AnonymousMessenger] ---------->Received message: {}'.format(str(msg['body'])))
+            self.logger.debug('[AnonymousMessenger] ---------->Received message: {0}'.format(str(msg['body'])))
             self.logger.debug('[AnonymousMessenger] Disconnecting...')
             self.disconnect()
             j = json.loads(str(msg['body']))
@@ -86,5 +91,5 @@ class AnonymousMessenger(ClientXMPP):
             self.event_manager.fireEvent(message_type, str(msg['body']))
 
     def send_direct_message(self, msg):
-        self.logger.debug('[AnonymousMessenger] <<--------Sending message: {}'.format(msg))
+        self.logger.debug('[AnonymousMessenger] <<--------Sending message: {0}'.format(msg))
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
