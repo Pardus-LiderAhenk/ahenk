@@ -5,7 +5,7 @@ import datetime
 import json
 
 from base.system.system import System
-from base.Scope import Scope
+from base.scope import Scope
 from base.util.util import Util
 
 
@@ -19,7 +19,7 @@ class Messaging(object):
         self.event_manger = scope.getEventManager()
 
     def missing_plugin_message(self, plugin):
-        data = {}
+        data = dict()
         data['type'] = 'MISSING_PLUGIN'
         data['pluginName'] = plugin.get_name()
         data['pluginVersion'] = plugin.get_version()
@@ -29,7 +29,7 @@ class Messaging(object):
         return str(json_data)
 
     def task_status_msg(self, response):
-        data = {}
+        data = dict()
         data['type'] = response.get_type()
         data['taskId'] = response.get_id()
         data['responseCode'] = response.get_code()
@@ -46,7 +46,7 @@ class Messaging(object):
         return str(json_data)
 
     def policy_status_msg(self, response):
-        data = {}
+        data = dict()
         data['type'] = response.get_type()
         data['policyVersion'] = response.get_policy_version()
         data['commandExecutionId'] = response.get_execution_id()
@@ -66,7 +66,7 @@ class Messaging(object):
         return str(json_data)
 
     def login_msg(self, username):
-        data = {}
+        data = dict()
         data['type'] = 'LOGIN'
         data['username'] = username
         data['ipAddresses'] = str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', '')
@@ -76,7 +76,7 @@ class Messaging(object):
         return json_data
 
     def logout_msg(self, username):
-        data = {}
+        data = dict()
         data['type'] = 'LOGOUT'
         data['username'] = str(username)
         data['timestamp'] = Util.timestamp()
@@ -85,7 +85,7 @@ class Messaging(object):
         return json_data
 
     def policy_request_msg(self, username):
-        data = {}
+        data = dict()
         data['type'] = 'GET_POLICIES'
 
         user_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + username + '\'')
@@ -101,7 +101,7 @@ class Messaging(object):
         return json_data
 
     def registration_msg(self):
-        data = {}
+        data = dict()
         data['type'] = 'REGISTER'
         data['from'] = self.db_service.select_one_result('registration', 'jid', ' 1=1')
         data['password'] = self.db_service.select_one_result('registration', 'password', ' 1=1')
@@ -119,7 +119,7 @@ class Messaging(object):
         return json_data
 
     def ldap_registration_msg(self):
-        data = {}
+        data = dict()
         data['type'] = 'REGISTER_LDAP'
         data['from'] = str(self.conf_manager.get('REGISTRATION', 'from'))
         data['password'] = str(self.conf_manager.get('REGISTRATION', 'password'))
@@ -132,7 +132,7 @@ class Messaging(object):
         return json_data
 
     def unregister_msg(self):
-        data = {}
+        data = dict()
         data['type'] = 'UNREGISTER'
         data['from'] = str(self.conf_manager.get('REGISTRATION', 'from'))
         data['password'] = str(self.conf_manager.get('REGISTRATION', 'password'))
@@ -146,7 +146,7 @@ class Messaging(object):
         return json_data
 
     def agreement_request_msg(self):
-        data = {}
+        data = dict()
         data['type'] = 'REQUEST_AGREEMENT'
 
         """
@@ -163,7 +163,7 @@ class Messaging(object):
         return json_data
 
     def agreement_answer_msg(self, username, answer):
-        data = {}
+        data = dict()
         data['type'] = 'AGREEMENT_STATUS'
         data['username'] = username
         data['accepted'] = answer

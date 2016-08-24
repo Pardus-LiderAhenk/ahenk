@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
-from base.Scope import Scope
+from base.scope import Scope
 from base.file.ssh_file_transfer import Ssh
 from base.file.http_file_transfer import Http
 
@@ -22,9 +22,11 @@ class FileTransferManager(object):
             elif str(protocol).lower() == 'http':
                 transporter = Http(parameter_map)
             else:
-                raise Exception('Unsupported file transfer protocol: {}'.format(str(protocol)))
+                raise Exception('Unsupported file transfer protocol: {0}'.format(str(protocol)))
             return transporter
 
         except Exception as e:
-            self.logger.error('[FileTransferManager] A problem occurred while getting instance of related protocol. Error Message: {}'.format(str(e)))
+            self.logger.error(
+                '[FileTransferManager] A problem occurred while getting instance of related protocol. Error Message: {0}'.format(
+                    str(e)))
             return None

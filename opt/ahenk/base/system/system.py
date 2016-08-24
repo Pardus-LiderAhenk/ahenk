@@ -13,7 +13,7 @@ import fcntl
 import struct
 from uuid import getnode as get_mac
 from base.util.util import Util
-from base.Scope import Scope
+from base.scope import Scope
 
 
 class System:
@@ -148,6 +148,10 @@ class System:
             return '/var/run/ahenk.pid'
 
         @staticmethod
+        def fifo_file():
+            return '/tmp/liderahenk.fifo'
+
+        @staticmethod
         def received_dir_path():
             path = '/tmp/.ahenk/'
             if Util.is_exist(path) is False:
@@ -279,7 +283,7 @@ class System:
         @staticmethod
         def user_home_path(username):
             # TODO temp
-            return '/home/{}/'.format(str(username))
+            return '/home/{0}/'.format(str(username))
 
     class Os(object):
 
@@ -432,7 +436,7 @@ class System:
             def ip_addresses():
                 arr = []
                 for iface in psutil.net_io_counters(pernic=True):
-                    f = os.popen('ifconfig {} | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1'.format(iface))
+                    f = os.popen('ifconfig {0} | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1'.format(iface))
                     ip = str(f.read()).replace('\n', '')
                     if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$',
                                 ip) and str(ip) != 'localhost' and str(ip) != '127.0.0.1':

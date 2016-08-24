@@ -3,9 +3,9 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
-from base.Scope import Scope
-from base.model.enum.ContentType import ContentType
-from base.model.enum.MessageCode import MessageCode
+from base.scope import Scope
+from base.model.enum.content_type import ContentType
+from base.model.enum.message_code import MessageCode
 from base.system.system import System
 from base.util.util import Util
 
@@ -30,7 +30,8 @@ class AbstractPlugin(Util, System):
         try:
             return Scope.getInstance().getLogger()
         except Exception as e:
-            self.scope.getLogger().error('[AbstractPlugin] A problem occurred while getting logger. Error Message: {}'.format(str(e)))
+            self.scope.getLogger().error(
+                '[AbstractPlugin] A problem occurred while getting logger. Error Message: {0}'.format(str(e)))
             return None
 
 
@@ -38,7 +39,9 @@ def configuration_manager(self):
     try:
         return self.scope.getConfigurationManager()
     except Exception as e:
-        self.logger().error('[AbstractPlugin] A problem occurred while getting configuration manager. Error Message: {}'.format(str(e)))
+        self.logger().error(
+            '[AbstractPlugin] A problem occurred while getting configuration manager. Error Message: {0}'.format(
+                str(e)))
         return None
 
 

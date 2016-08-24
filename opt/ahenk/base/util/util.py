@@ -228,7 +228,7 @@ class Util:
     @staticmethod
     def is_installed(package_name):
 
-        result_code, p_out, p_err = Util.execute('dpkg -s {}'.format(package_name))
+        result_code, p_out, p_err = Util.execute('dpkg -s {0}'.format(package_name))
         try:
             lines = str(p_out).split('\n')
             for line in lines:

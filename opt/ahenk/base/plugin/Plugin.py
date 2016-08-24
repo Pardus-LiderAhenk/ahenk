@@ -6,19 +6,19 @@
 import json
 import threading
 
-from base.Scope import Scope
+from base.scope import Scope
 from base.file.file_transfer_manager import FileTransferManager
-from base.model.Response import Response
-from base.model.enum.ContentType import ContentType
-from base.model.enum.MessageCode import MessageCode
-from base.model.enum.MessageType import MessageType
+from base.model.response import Response
+from base.model.enum.content_type import ContentType
+from base.model.enum.message_code import MessageCode
+from base.model.enum.message_type import MessageType
 from base.system.system import System
 from base.util.util import Util
 
 
 class Context(object):
     def __init__(self):
-        self.data = {}
+        self.data = dict()
         self.scope = Scope().getInstance()
 
     def put(self, var_name, data):
@@ -31,7 +31,7 @@ class Context(object):
         return self.data['username']
 
     def empty_data(self):
-        self.data = {}
+        self.data = dict()
 
     def create_response(self, code, message=None, data=None, content_type=None):
         self.data['responseCode'] = code
@@ -69,7 +69,7 @@ class Plugin(threading.Thread):
                     obj_name = item_obj.obj_name
                 except Exception as e:
                     self.logger.error(
-                        '[Plugin] A problem occurred while executing process. Error Message: {}'.format(str(e)))
+                        '[Plugin] A problem occurred while executing process. Error Message: {0}'.format(str(e)))
 
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
@@ -112,7 +112,7 @@ class Plugin(threading.Thread):
                                 file_manager.transporter.disconnect()
                             except Exception as e:
                                 self.logger.error(
-                                    '[Plugin] A problem occurred while file transferring. Error Message :{}'.format(
+                                    '[Plugin] A problem occurred while file transferring. Error Message :{0}'.format(
                                         str(e)))
 
                             self.logger.debug('[Plugin] Sending response')
@@ -180,7 +180,7 @@ class Plugin(threading.Thread):
                                 file_manager.transporter.disconnect()
                             except Exception as e:
                                 self.logger.error(
-                                    '[Plugin] A problem occurred while file transferring. Error Message :{}'.format(
+                                    '[Plugin] A problem occurred while file transferring. Error Message :{0}'.format(
                                         str(e)))
 
                             self.logger.debug('[Plugin] Sending response')
@@ -217,7 +217,7 @@ class Plugin(threading.Thread):
                         self.logger.debug('[Plugin] {0} plugin is stopping...'.format(str(self.name)))
                         self.keep_run = False
                 else:
-                    self.logger.warning("[Plugin] Not supported object type: {}".format(str(obj_name)))
+                    self.logger.warning("[Plugin] Not supported object type: {0}".format(str(obj_name)))
 
                 self.context.empty_data()
             except Exception as e:
@@ -225,18 +225,18 @@ class Plugin(threading.Thread):
 
     def get_execution_id(self, profile_id):
         try:
-            return self.db_service.select_one_result('policy', 'execution_id', ' id={}'.format(profile_id))
+            return self.db_service.select_one_result('policy', 'execution_id', ' id={0}'.format(profile_id))
         except Exception as e:
             self.logger.error(
-                "[Plugin] A problem occurred while getting execution id. Exception Message: {} ".format(str(e)))
+                "[Plugin] A problem occurred while getting execution id. Exception Message: {0} ".format(str(e)))
             return None
 
     def get_policy_version(self, profile_id):
         try:
-            return self.db_service.select_one_result('policy', 'version', ' id={}'.format(profile_id))
+            return self.db_service.select_one_result('policy', 'version', ' id={0}'.format(profile_id))
         except Exception as e:
             self.logger.error(
-                "[Plugin] A problem occurred while getting policy version . Exception Message: {} ".format(str(e)))
+                "[Plugin] A problem occurred while getting policy version . Exception Message: {0} ".format(str(e)))
             return None
 
     def getName(self):

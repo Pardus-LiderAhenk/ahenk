@@ -4,7 +4,7 @@
 import logging
 import logging.config
 
-from base.Scope import Scope
+from base.scope import Scope
 
 
 class Logger(object):

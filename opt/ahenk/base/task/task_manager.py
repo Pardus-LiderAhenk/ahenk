@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
-from base.Scope import Scope
+from base.scope import Scope
 from base.model.message_factory import MessageFactory
 from base.model.enum.message_type import MessageType
 

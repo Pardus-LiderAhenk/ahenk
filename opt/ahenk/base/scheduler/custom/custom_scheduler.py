@@ -3,7 +3,7 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 from base.scheduler.base_scheduler import BaseScheduler
-from base.Scope import Scope
+from base.scope import Scope
 from base.scheduler.custom.scheduledb import ScheduleTaskDB
 from base.scheduler.custom.schedule_job import ScheduleTaskJob
 from datetime import datetime, timedelta

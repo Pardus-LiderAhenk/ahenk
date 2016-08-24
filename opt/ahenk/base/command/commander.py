@@ -1,15 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
+
+
 import configparser
 import datetime
 import json
 import os
 import queue as Queue
 import threading
-import ast
 
 from base.command.fifo import Fifo
-from base.model.enum.ContentType import ContentType
-from base.model.enum.MessageCode import MessageCode
-from base.model.enum.MessageType import MessageType
+from base.model.enum.content_type import ContentType
+from base.model.enum.message_code import MessageCode
+from base.model.enum.message_type import MessageType
 from base.system.system import System
 from base.util.util import Util
 
@@ -24,7 +28,7 @@ class Commander(object):
             print('ERR')
 
         params = args[0]
-        data = {}
+        data = dict()
 
         if System.Ahenk.is_running() is True:
 
@@ -63,7 +67,7 @@ class Commander(object):
 
             elif len(params) > 5 and params[1] == 'send':
                 data['event'] = params[1]
-                response = {}
+                response = dict()
                 response['timestamp'] = str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))
                 response['responseMessage'] = 'This content was sent via ahenk terminal command'
 
@@ -199,14 +203,14 @@ class Commander(object):
             config.read(System.Ahenk.config_path())
             db_path = config.get('BASE', 'dbPath')
 
-            if Util.is_exist('/tmp/liderahenk.fifo'):
-                Util.delete_file('/tmp/liderahenk.fifo')
+            if Util.is_exist(System.Ahenk.fifo_file()):
+                Util.delete_file(System.Ahenk.fifo_file())
 
-            if os.path.exists(db_path):
-                os.remove(db_path)
+            if Util.is_exist(db_path):
+                Util.delete_file(db_path)
 
-            # TODO remove pid file
-
+            if Util.is_exist(System.Ahenk.pid_path()):
+                Util.delete_file(System.Ahenk.pid_path())
 
             config.set('CONNECTION', 'uid', '')
             config.set('CONNECTION', 'password', '')
@@ -216,7 +220,7 @@ class Commander(object):
             file.close()
             print('Ahenk cleaned.')
         except Exception as e:
-            print('Error while running clean command. Error Message {}'.format(str(e)))
+            print('Error while running clean command. Error Message {0}'.format(str(e)))
 
     def status(self):
         ahenk_state = False

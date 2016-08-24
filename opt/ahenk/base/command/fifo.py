@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
+
 import threading
 
 
@@ -13,7 +17,7 @@ class Fifo(object):
             file = open(self.path, 'a+')
             file.write(content)
         except Exception as e:
-            print('Error:{}'.format(str(e)))
+            print('Error:{0}'.format(str(e)))
         finally:
             file.close()
             self.lock.release()
@@ -29,7 +33,7 @@ class Fifo(object):
                 w_file.writelines(lines[1:])
                 w_file.close()
         except Exception as e:
-            print('Error:{}'.format(str(e)))
+            print('Error:{0}'.format(str(e)))
         finally:
             self.lock.release()
         queue.put(result)

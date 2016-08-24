@@ -4,7 +4,7 @@
 
 import threading
 
-from base.task.TaskJob import TaskJob
+from base.task.task_job import TaskJob
 
 
 class TaskInQueue(threading.Thread):

@@ -3,7 +3,7 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 from base.scheduler.custom.all_match import AllMatch
-from base.Scope import Scope
+from base.scope import Scope
 
 
 class ScheduleTaskJob(object):
@@ -74,10 +74,10 @@ class ScheduleTaskJob(object):
             return cron_sj
         except Exception as e:
             self.logger.error(
-                '[ScheduleTaskJob] A problem occurred while parsing cron expression. Error Message: {}'.format(str(e)))
+                '[ScheduleTaskJob] A problem occurred while parsing cron expression. Error Message: {0}'.format(str(e)))
 
     def conv_to_set(self, obj):
-        self.logger.debug('[ScheduleTaskJob] Converting {} to set'.format(str(obj)))
+        self.logger.debug('[ScheduleTaskJob] Converting {0} to set'.format(str(obj)))
 
         if str(obj).isdigit():
             return set([int(obj)])

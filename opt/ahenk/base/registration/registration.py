@@ -7,7 +7,7 @@ import json
 import uuid
 from uuid import getnode as get_mac
 
-from base.Scope import Scope
+from base.scope import Scope
 from base.messaging.anonymous_messenger import AnonymousMessenger
 from base.system.system import System
 from base.timer.setup_timer import SetupTimer

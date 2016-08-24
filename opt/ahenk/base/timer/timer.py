@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
+
 import time
 import threading
 

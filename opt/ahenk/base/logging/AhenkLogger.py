@@ -4,10 +4,10 @@
 import logging
 import logging.config
 
-from base.Scope import Scope
+from base.scope import Scope
 
 
-class AhenkLogger(object):
+class AAAAAAAhenkLogger(object):
     """docstring for Logger"""
 
     def __init__(self):

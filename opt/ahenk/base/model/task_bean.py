@@ -73,7 +73,7 @@ class TaskBean(object):
         self.file_server = file_server
 
     def to_json(self):
-        plugin_data = {}
+        plugin_data = dict()
         plugin_data['id'] = self.plugin.get_id()
         plugin_data['name'] = self.plugin.get_name()
         plugin_data['version'] = self.plugin.get_version()
@@ -88,7 +88,7 @@ class TaskBean(object):
         plugin_data['createDate'] = self.plugin.get_create_date()
         plugin_data['modifyDate'] = self.plugin.get_modify_date()
 
-        task_data = {}
+        task_data = dict()
         task_data['id'] = self._id
         task_data['plugin'] = plugin_data
         task_data['commandClsId'] = self.command_cls_id

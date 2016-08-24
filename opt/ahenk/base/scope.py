@@ -10,7 +10,7 @@ class Scope(object):
 
     def __init__(self):
         super(Scope, self).__init__()
-        self.customMap = {}
+        self.customMap = dict()
         self.configurationManager = None
         self.messageManager = None
         self.logger = None

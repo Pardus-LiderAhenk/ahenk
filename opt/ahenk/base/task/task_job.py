@@ -3,7 +3,7 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 import threading
 
-from base.Scope import Scope
+from base.scope import Scope
 
 
 class TaskJob(threading.Thread):

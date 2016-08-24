@@ -1,4 +1,8 @@
-from base.Scope import Scope
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
+
+from base.scope import Scope
 from base.util.util import Util
 from base.system.system import System
 
@@ -18,7 +22,7 @@ class Agreement:
         self.logger.debug('[Agreement] Requested updated agreement contract from lider.')
 
     def check_agreement(self, username):
-        self.logger.debug('[Agreement] Checking agreement for user {}.'.format(username))
+        self.logger.debug('[Agreement] Checking agreement for user {0}.'.format(username))
         contract_id = self.get_current_contract_id()
         if contract_id is None:
             self.logger.debug('[Agreement] There is no any contract in database.')
@@ -66,23 +70,23 @@ class Agreement:
             pout = str(p_out).replace('\n', '')
             if pout != 'Error':
                 if pout == 'Y':
-                    self.logger.debug('[Agreement] Agreement was accepted by {}.'.format(username))
+                    self.logger.debug('[Agreement] Agreement was accepted by {0}.'.format(username))
                     self.db_service.update('agreement', self.db_service.get_cols('agreement'),
                                            [contract_id, username, Util.timestamp(), 'Y'])
                 elif pout == 'N':
                     self.db_service.update('agreement', self.db_service.get_cols('agreement'),
                                            [contract_id, username, Util.timestamp(), 'N'])
                     self.logger.debug(
-                        '[Agreement] Agreement was ignored by {}. Session will be closed'.format(username))
+                        '[Agreement] Agreement was ignored by {0}. Session will be closed'.format(username))
                 else:
                     self.logger.error(
-                        '[Agreement] A problem occurred while executing ask.py. Error Message: {}'.format(str(pout)))
+                        '[Agreement] A problem occurred while executing ask.py. Error Message: {0}'.format(str(pout)))
                 Util.delete_file(agreement_path)
             else:
                 self.logger.error(
-                    '[Agreement] A problem occurred while executing ask.py (Probably argument fault). Error Message: {}'.format(
+                    '[Agreement] A problem occurred while executing ask.py (Probably argument fault). Error Message: {0}'.format(
                         str(pout)))
 
         except Exception as e:
             self.logger.error(
-                '[Agreement] A Problem occurred while displaying agreement. Error Message: {}'.format(str(e)))
+                '[Agreement] A Problem occurred while displaying agreement. Error Message: {0}'.format(str(e)))

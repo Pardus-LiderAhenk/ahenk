@@ -4,7 +4,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import json
 
-from base.model.Profile import Profile
+from base.model.profile import Profile
 
 
 class Policy(object):

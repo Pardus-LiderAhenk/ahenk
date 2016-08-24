@@ -5,7 +5,7 @@ from base.util.util import Util
 from base.system.system import System
 import urllib.request
 
-from base.Scope import Scope
+from base.scope import Scope
 
 
 class Http(object):
@@ -17,7 +17,8 @@ class Http(object):
         try:
             self.url = parameter_map['url']
         except Exception as e:
-            self.logger.error('[Http] A problem occurred while parsing parameter map. Error Message: {}'.format(str(e)))
+            self.logger.error(
+                '[Http] A problem occurred while parsing parameter map. Error Message: {0}'.format(str(e)))
 
     def send_file(self, local_path, md5):
         pass
@@ -34,7 +35,8 @@ class Http(object):
             Util.rename_file(local_full_path, System.Ahenk.received_dir_path() + file_md5)
             self.logger.debug('[FileTransfer] File was downloaded to {0} from {1}'.format(local_full_path, self.url))
         except Exception as e:
-            self.logger.error('[FileTransfer] A problem occurred while downloading file. Exception message: {}'.format(str(e)))
+            self.logger.error(
+                '[FileTransfer] A problem occurred while downloading file. Exception message: {0}'.format(str(e)))
             raise
         return file_md5
 

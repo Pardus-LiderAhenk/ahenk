@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
-from base.event.EventBase import EventBase, Event
+from base.event.event_base import EventBase, Event
 
 
 class EventManager(EventBase):

@@ -4,7 +4,7 @@
 
 from base.util.util import Util
 from base.system.system import System
-from base.Scope import Scope
+from base.scope import Scope
 import paramiko
 import logging
 
@@ -29,7 +29,8 @@ class Ssh(object):
             else:
                 self.p_key = parameter_map['pkey']
         except Exception as e:
-            self.logger.error('[Ssh] A problem occurred while parsing ssh connection parameters. Error Message: {}'.format(str(e)))
+            self.logger.error(
+                '[Ssh] A problem occurred while parsing ssh connection parameters. Error Message: {0}'.format(str(e)))
 
         self.connection = None
         self.logger.debug('[Ssh] Parameters set up')
@@ -49,7 +50,7 @@ class Ssh(object):
             self.logger.debug('[Ssh] File was sent to {0} from {1}'.format(local_path, self.target_path))
             return True
         except Exception as e:
-            self.logger.error('[Ssh] A problem occurred while sending file. Exception message: {}'.format(str(e)))
+            self.logger.error('[Ssh] A problem occurred while sending file. Exception message: {0}'.format(str(e)))
             return False
 
     def get_file(self):
@@ -64,19 +65,21 @@ class Ssh(object):
             Util.rename_file(local_full_path, System.Ahenk.received_dir_path() + file_md5)
             self.logger.debug('[Ssh] File was downloaded to {0} from {1}'.format(local_full_path, self.target_path))
         except Exception as e:
-            self.logger.error('[Ssh] A problem occurred while downloading file. Exception message: {}'.format(str(e)))
+            self.logger.error('[Ssh] A problem occurred while downloading file. Exception message: {0}'.format(str(e)))
             raise
         return file_md5
 
     def connect(self):
-        self.logger.debug('[FileTransfer]  Connecting to {} via {}'.format(self.target_hostname, self.target_port))
+        self.logger.debug('[FileTransfer]  Connecting to {0} via {1}'.format(self.target_hostname, self.target_port))
         try:
             connection = paramiko.Transport(self.target_hostname, int(self.target_port))
             connection.connect(username=self.target_username, password=self.target_password, pkey=self.p_key)
             self.connection = connection
             self.logger.debug('[FileTransfer] Connected.')
         except Exception as e:
-            self.logger.error('[FileTransfer] A problem occurred while connecting to {} . Exception message: {}'.format(self.target_hostname, str(e)))
+            self.logger.error(
+                '[FileTransfer] A problem occurred while connecting to {0} . Exception message: {1}'.format(
+                    self.target_hostname, str(e)))
 
     def disconnect(self):
         self.connection.close()

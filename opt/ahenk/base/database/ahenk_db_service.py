@@ -4,7 +4,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import sqlite3
 
-from base.Scope import Scope
+from base.scope import Scope
 
 
 class AhenkDbService(object):
