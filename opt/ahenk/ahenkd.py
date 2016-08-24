@@ -12,23 +12,23 @@ import threading
 import time
 from multiprocessing import Process
 
-from base.Scope import Scope
+from base.scope import Scope
 from base.agreement.agreement import Agreement
 from base.command.commander import Commander
-from base.config.ConfigManager import ConfigManager
-from base.database.AhenkDbService import AhenkDbService
-from base.deamon.BaseDeamon import BaseDaemon
-from base.event.EventManager import EventManager
-from base.execution.ExecutionManager import ExecutionManager
-from base.logger.AhenkLogger import Logger
-from base.messaging.MessageResponseQueue import MessageResponseQueue
-from base.messaging.Messaging import Messaging
-from base.messaging.Messenger import Messenger
+from base.config.config_manager import ConfigManager
+from base.database.ahenk_db_service import AhenkDbService
+from base.deamon.base_daemon import BaseDaemon
+from base.event.event_manager import EventManager
+from base.execution.execution_manager import ExecutionManager
+from base.logger.ahenk_logger import Logger
+from base.messaging.message_response_queue import MessageResponseQueue
+from base.messaging.messaging import Messaging
+from base.messaging.messenger import Messenger
 from base.plugin.plugin_manager_factory import PluginManagerFactory
-from base.registration.Registration import Registration
+from base.registration.registration import Registration
 from base.scheduler.scheduler_factory import SchedulerFactory
 from base.system.system import System
-from base.task.TaskManager import TaskManager
+from base.task.task_manager import TaskManager
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.util.util import Util
@@ -212,6 +212,14 @@ class AhenkDaemon(BaseDaemon):
         with open(System.Ahenk.pid_path(), 'w+') as f:
             f.write(str(os.getpid()))
 
+    @staticmethod
+    def init_fifo_file():
+        """ docstring"""
+        if Util.is_exist(System.Ahenk.fifo_file()):
+            Util.delete_file(System.Ahenk.fifo_file())
+        Util.create_file(System.Ahenk.fifo_file())
+        Util.set_permission(System.Ahenk.fifo_file(), '600')
+
     def run(self):
         """ docstring"""
         print('Ahenk running...')
@@ -228,6 +236,9 @@ class AhenkDaemon(BaseDaemon):
         self.logger = self.init_logger()
 
         self.init_pid_file()
+        self.logger.info('[AhenkDaemon] Pid file was created')
+
+        self.init_fifo_file()
         self.logger.info('[AhenkDaemon] Pid file was created')
 
         self.init_event_manager()
@@ -274,8 +285,6 @@ class AhenkDaemon(BaseDaemon):
         self.logger.info('[AhenkDaemon] LDAP registration of Ahenk is completed')
 
         self.messenger.send_direct_message('test')
-
-
 
         while True:
             time.sleep(1)
@@ -362,7 +371,8 @@ class AhenkDaemon(BaseDaemon):
                             time.sleep(1)
 
                         if agreement_choice is not None:
-                            messenger.send_direct_message(message_manager.agreement_answer_msg(username, agreement_choice))
+                            messenger.send_direct_message(
+                                message_manager.agreement_answer_msg(username, agreement_choice))
                     else:
                         agreement_choice = True
 
@@ -370,7 +380,8 @@ class AhenkDaemon(BaseDaemon):
                         db_service.delete('session', 'username=\'{0}\''.format(username))
 
                         self.logger.info(
-                            '[AhenkDaemon] Display is {0}, desktop env is {1} for {2}'.format(display, desktop, username))
+                            '[AhenkDaemon] Display is {0}, desktop env is {1} for {2}'.format(display, desktop,
+                                                                                              username))
 
                         db_service.update('session', scope.getDbService().get_cols('session'),
                                           [username, display, desktop, Util.timestamp()])
@@ -453,15 +464,12 @@ class AhenkDaemon(BaseDaemon):
                         self.logger.debug('[AhenkDaemon] Waiting for progress of plugins...')
                         time.sleep(0.5)
 
-                    if Util.is_exist('/tmp/liderahenk.fifo'):
-                        Util.delete_file('/tmp/liderahenk.fifo')
+                    if Util.is_exist(System.Ahenk.fifo_file()):
+                        Util.delete_file(System.Ahenk.fifo_file())
                     ahenk_daemon.stop()
                 else:
                     self.logger.error('[AhenkDaemon] Unknown command error. Command:' + json_data['event'])
                 self.logger.debug('[AhenkDaemon] Processing of handled event is completed')
-                # return True
-            # else:
-                # return False
 
 
 if __name__ == '__main__':
