@@ -3,7 +3,7 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import sqlite3
-
+import threading
 from base.scope import Scope
 
 
@@ -19,6 +19,9 @@ class AhenkDbService(object):
         self.db_path = self.configurationManager.get('BASE', 'dbPath')
         self.connection = None
         self.cursor = None
+
+        self.lock = threading.Lock()
+
 
         # TODO get columns anywhere
         # TODO scheduler db init get here
@@ -50,19 +53,29 @@ class AhenkDbService(object):
             self.logger.error('[AhenkDbService] Database connection error ' + str(e))
 
     def check_and_create_table(self, table_name, cols):
-        if self.cursor:
-            cols = ', '.join([str(x) for x in cols])
-            self.cursor.execute('create table if not exists ' + table_name + ' (' + cols + ')')
-        else:
-            self.logger.warning('[AhenkDbService] Could not create table cursor is None! Table Name : ' + str(table_name))
+
+        try:
+            self.lock.acquire(True)
+            if self.cursor:
+                cols = ', '.join([str(x) for x in cols])
+                self.cursor.execute('create table if not exists ' + table_name + ' (' + cols + ')')
+            else:
+                self.logger.warning('[AhenkDbService] Could not create table cursor is None! Table Name : ' + str(table_name))
+        finally:
+            self.lock.release()
 
     def drop_table(self, table_name):
-        sql = 'DROP TABLE ' + table_name
-        self.cursor.execute(sql)
-        self.connection.commit()
+        try:
+            self.lock.acquire(True)
+            sql = 'DROP TABLE ' + table_name
+            self.cursor.execute(sql)
+            self.connection.commit()
+        finally:
+            self.lock.release()
 
     def update(self, table_name, cols, args, criteria=None):
         try:
+            self.lock.acquire(True)
             if self.connection:
                 if criteria is None:
                     cols = ', '.join([str(x) for x in cols])
@@ -82,14 +95,20 @@ class AhenkDbService(object):
                 return None
         except Exception as e:
             self.logger.error('[AhenkDbService] Updating table error ! Table Name : ' + str(table_name) + ' ' + str(e))
+        finally:
+            self.lock.release()
 
     def delete(self, table_name, criteria):
-        if self.cursor:
-            sql = 'DELETE FROM ' + table_name
-            if criteria:
-                sql += ' where ' + str(criteria)
-            self.cursor.execute(sql)
-            self.connection.commit()
+        try:
+            self.lock.acquire(True)
+            if self.cursor:
+                sql = 'DELETE FROM ' + table_name
+                if criteria:
+                    sql += ' where ' + str(criteria)
+                self.cursor.execute(sql)
+                self.connection.commit()
+        finally:
+            self.lock.release()
 
     def findByProperty(self):
         # Not implemented yet
@@ -98,6 +117,7 @@ class AhenkDbService(object):
     def select(self, table_name, cols='*', criteria='', orderby=''):
         if self.cursor:
             try:
+                self.lock.acquire(True)
                 if not cols == '*':
                     cols = ', '.join([str(x) for x in cols])
                 sql = 'SELECT ' + cols + ' FROM ' + table_name
@@ -113,12 +133,15 @@ class AhenkDbService(object):
                 return rows
             except:
                 raise
+            finally:
+                self.lock.release()
         else:
             self.logger.warning('[AhenkDbService] Could not select table cursor is None! Table Name : ' + str(table_name))
 
     def select_one_result(self, table_name, col, criteria=''):
         if self.cursor:
             try:
+                self.lock.acquire(True)
                 sql = 'SELECT ' + col + ' FROM ' + table_name
                 if criteria != '':
                     sql += ' where '
@@ -131,6 +154,8 @@ class AhenkDbService(object):
                     return None
             except:
                 raise
+            finally:
+                self.lock.release()
         else:
             self.logger.warning('[AhenkDbService] Could not select table cursor is None! Table Name : ' + str(table_name))
 
