@@ -30,7 +30,7 @@ We encourage contributions to the project. To contribute:
 
 ## Changelog
 
-See [changelog](https://github.com/Pardus-Kurumsal/lider/wiki/Changelog) to learn what we have been up to.
+See [changelog](https://github.com/Pardus-Kurumsal/ahenk/wiki/Changelog) to learn what we have been up to.
 
 ## Roadmap
 
