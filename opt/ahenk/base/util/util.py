@@ -96,6 +96,15 @@ class Util:
             return content
 
     @staticmethod
+    def read_file_by_line(full_path, mode='r'):
+        line_list = list()
+        with open(full_path, mode) as f:
+            lines = f.readlines()
+            for line in lines:
+                line_list.append(line)
+        return line_list
+
+    @staticmethod
     def write_file(full_path, content, mode='w+'):
         file = None
         try:
