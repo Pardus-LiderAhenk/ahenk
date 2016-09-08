@@ -44,7 +44,8 @@ class Util:
     @staticmethod
     def delete_file(full_path):
         try:
-            os.remove(full_path)
+            if Util.is_exist(full_path):
+                os.remove(full_path)
         except:
             raise
 
