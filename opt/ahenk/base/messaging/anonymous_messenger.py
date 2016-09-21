@@ -4,6 +4,7 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 import json
 import sys
+import socket
 
 from sleekxmpp import ClientXMPP
 from base.scope import Scope
@@ -14,14 +15,14 @@ sys.path.append('../..')
 class AnonymousMessenger(ClientXMPP):
     def __init__(self, message):
         # global scope of ahenk
-        scope = Scope().getInstance()
+        scope = Scope().get_instance()
 
-        self.logger = scope.getLogger()
-        self.configuration_manager = scope.getConfigurationManager()
-        self.registration = scope.getRegistration()
-        self.event_manager = scope.getEventManager()
+        self.logger = scope.get_logger()
+        self.configuration_manager = scope.get_configuration_manager()
+        self.registration = scope.get_registration()
+        self.event_manager = scope.get_event_manager()
 
-        self.host = str(self.configuration_manager.get('CONNECTION', 'host'))
+        self.host = str(socket.gethostbyname(self.configuration_manager.get('CONNECTION', 'host')))
         self.service = str(self.configuration_manager.get('CONNECTION', 'servicename'))
         self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
 
@@ -40,7 +41,7 @@ class AnonymousMessenger(ClientXMPP):
         else:
             self.use_tls = False
 
-        self.logger.debug('[AnonymousMessenger] XMPP Receiver parameters were set')
+        self.logger.debug('XMPP Receiver parameters were set')
 
         self.add_listeners()
         self.register_extensions()
@@ -48,10 +49,10 @@ class AnonymousMessenger(ClientXMPP):
     def add_listeners(self):
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.recv_direct_message)
-        self.logger.debug('[AnonymousMessenger] Event handlers were added')
+        self.logger.debug('Event handlers were added')
 
     def session_start(self, event):
-        self.logger.debug('[AnonymousMessenger] Session was started')
+        self.logger.debug('Session was started')
         self.get_roster()
         self.send_presence()
 
@@ -63,33 +64,33 @@ class AnonymousMessenger(ClientXMPP):
             self.register_plugin('xep_0030')  # Service Discovery
             self.register_plugin('xep_0199')  # XMPP Ping
 
-            self.logger.debug('[AnonymousMessenger] Extension were registered: xep_0030,xep_0199')
+            self.logger.debug('Extension were registered: xep_0030,xep_0199')
             return True
         except Exception as e:
-            self.logger.error('[AnonymousMessenger] Extension registration is failed! Error Message: {0}'.format(str(e)))
+            self.logger.error('Extension registration is failed! Error Message: {0}'.format(str(e)))
             return False
 
     def connect_to_server(self):
         try:
-            self.logger.debug('[AnonymousMessenger] Connecting to server...')
+            self.logger.debug('Connecting to server...')
             self['feature_mechanisms'].unencrypted_plain = True
             self.connect((self.host, self.port), use_tls=self.use_tls)
             self.process(block=True)
-            self.logger.debug('[AnonymousMessenger] Connection were established successfully')
+            self.logger.debug('Connection were established successfully')
             return True
         except Exception as e:
-            self.logger.error('[AnonymousMessenger] Connection to server is failed! Error Message: {0}'.format(str(e)))
+            self.logger.error('Connection to server is failed! Error Message: {0}'.format(str(e)))
             return False
 
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
-            self.logger.debug('[AnonymousMessenger] ---------->Received message: {0}'.format(str(msg['body'])))
-            self.logger.debug('[AnonymousMessenger] Disconnecting...')
+            self.logger.debug('---------->Received message: {0}'.format(str(msg['body'])))
+            self.logger.debug('Disconnecting...')
             self.disconnect()
             j = json.loads(str(msg['body']))
             message_type = j['type']
             self.event_manager.fireEvent(message_type, str(msg['body']))
 
     def send_direct_message(self, msg):
-        self.logger.debug('[AnonymousMessenger] <<--------Sending message: {0}'.format(msg))
+        self.logger.debug('<<--------Sending message: {0}'.format(msg))
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
