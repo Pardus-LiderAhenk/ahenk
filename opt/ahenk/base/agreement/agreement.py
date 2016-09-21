@@ -9,28 +9,29 @@ from base.system.system import System
 
 class Agreement:
     def __init__(self):
-        scope = Scope().getInstance()
-        self.logger = scope.getLogger()
-        self.message_manager = scope.getMessageManager()
-        self.messenger = scope.getMessenger()
-        self.db_service = scope.getDbService()
+        scope = Scope().get_instance()
+        self.logger = scope.get_logger()
+        self.message_manager = scope.get_message_manager()
+        self.messenger = scope.get_messenger()
+        self.db_service = scope.get_db_service()
         self.ask_path = '/opt/ahenk/base/agreement/ask.py'
-        self.logger.debug('[Agreement] Instance initialized.')
+        self.logger.debug('Instance initialized.')
 
     def agreement_contract_update(self):
         self.messenger.send_direct_message(self.message_manager.agreement_request_msg())
-        self.logger.debug('[Agreement] Requested updated agreement contract from lider.')
+        self.logger.debug('Requested updated agreement contract from lider.')
 
     def check_agreement(self, username):
-        self.logger.debug('[Agreement] Checking agreement for user {0}.'.format(username))
+        self.logger.debug('Checking agreement for user {0}.'.format(username))
         contract_id = self.get_current_contract_id()
         if contract_id is None:
-            self.logger.debug('[Agreement] There is no any contract in database.')
+            self.logger.debug('There is no any contract in database.')
             contract_id = '-1'
 
         if self.db_service.select_one_result('agreement', 'id',
                                              " contract_id='{0}' and username='{1}' and choice='Y' "
                                                      .format(contract_id, username)) is not None:
+            self.logger.debug('{0} answered agreement..')
             return True
         elif self.db_service.select_one_result('agreement', 'id',
                                                " contract_id='{0}' and username='{1}' and choice='N' ".format(
@@ -70,23 +71,23 @@ class Agreement:
             pout = str(p_out).replace('\n', '')
             if pout != 'Error':
                 if pout == 'Y':
-                    self.logger.debug('[Agreement] Agreement was accepted by {0}.'.format(username))
+                    self.logger.debug('Agreement was accepted by {0}.'.format(username))
                     self.db_service.update('agreement', self.db_service.get_cols('agreement'),
                                            [contract_id, username, Util.timestamp(), 'Y'])
                 elif pout == 'N':
                     self.db_service.update('agreement', self.db_service.get_cols('agreement'),
                                            [contract_id, username, Util.timestamp(), 'N'])
                     self.logger.debug(
-                        '[Agreement] Agreement was ignored by {0}. Session will be closed'.format(username))
+                        'Agreement was ignored by {0}. Session will be closed'.format(username))
                 else:
                     self.logger.error(
-                        '[Agreement] A problem occurred while executing ask.py. Error Message: {0}'.format(str(pout)))
+                        'A problem occurred while executing ask.py. Error Message: {0}'.format(str(pout)))
                 Util.delete_file(agreement_path)
             else:
                 self.logger.error(
-                    '[Agreement] A problem occurred while executing ask.py (Probably argument fault). Error Message: {0}'.format(
+                    'A problem occurred while executing ask.py (Probably argument fault). Error Message: {0}'.format(
                         str(pout)))
 
         except Exception as e:
             self.logger.error(
-                '[Agreement] A Problem occurred while displaying agreement. Error Message: {0}'.format(str(e)))
+                'A Problem occurred while displaying agreement. Error Message: {0}'.format(str(e)))
