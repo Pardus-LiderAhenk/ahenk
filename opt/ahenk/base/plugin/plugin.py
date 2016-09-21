@@ -6,12 +6,12 @@
 import json
 import threading
 
-from base.scope import Scope
 from base.file.file_transfer_manager import FileTransferManager
-from base.model.response import Response
 from base.model.enum.content_type import ContentType
 from base.model.enum.message_code import MessageCode
 from base.model.enum.message_type import MessageType
+from base.model.response import Response
+from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
 
@@ -19,7 +19,7 @@ from base.util.util import Util
 class Context(object):
     def __init__(self):
         self.data = dict()
-        self.scope = Scope().getInstance()
+        self.scope = Scope().get_instance()
 
     def put(self, var_name, data):
         self.data[var_name] = data
@@ -39,6 +39,13 @@ class Context(object):
         self.data['responseData'] = data
         self.data['contentType'] = content_type
 
+    def fetch_file(self, local_path=None):
+        file_manager = FileTransferManager(self.get('protocol'), self.get('parameter_map'))
+        file_manager.transporter.connect()
+        success = file_manager.transporter.get_file(local_path)
+        file_manager.transporter.disconnect()
+        return success
+
 
 class Plugin(threading.Thread):
     """
@@ -51,11 +58,11 @@ class Plugin(threading.Thread):
         self.name = name
         self.InQueue = InQueue
 
-        scope = Scope.getInstance()
-        self.logger = scope.getLogger()
-        self.response_queue = scope.getResponseQueue()
-        self.messaging = scope.getMessageManager()
-        self.db_service = scope.getDbService()
+        scope = Scope.get_instance()
+        self.logger = scope.get_logger()
+        self.response_queue = scope.get_response_queue()
+        self.messaging = scope.get_message_manager()
+        self.db_service = scope.get_db_service()
 
         self.keep_run = True
         self.context = Context()
@@ -73,9 +80,13 @@ class Plugin(threading.Thread):
 
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
-                    command = Scope.getInstance().getPluginManager().find_command(self.getName(),
-                                                                                  item_obj.get_command_cls_id().lower())
+                    command = Scope.get_instance().get_plugin_manager().find_command(self.getName(),
+                                                                                     item_obj.get_command_cls_id().lower())
                     self.context.put('task_id', item_obj.get_id())
+
+                    if item_obj.get_file_server() is not None and item_obj.get_file_server() != 'null':
+                        self.context.put('protocol', json.loads(item_obj.get_file_server())['protocol'])
+                        self.context.put('parameterMap', json.loads(item_obj.get_file_server())['parameterMap'])
 
                     task_data = item_obj.get_parameter_map()
 
@@ -121,14 +132,14 @@ class Plugin(threading.Thread):
                             if success is False:
                                 response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(),
                                                     code=MessageCode.TASK_ERROR.value,
-                                                    message='[Ahenk Core] Task processed successfully but file transfer not completed. Check defined server conf')
+                                                    message='Task processed successfully but file transfer not completed. Check defined server conf')
                                 message = self.messaging.task_status_msg(response)
 
-                            Scope.getInstance().getMessenger().send_direct_message(message)
+                            Scope.get_instance().get_messenger().send_direct_message(message)
 
                         else:
                             self.logger.debug('[Plugin] Sending task response')
-                            Scope.getInstance().getMessenger().send_direct_message(
+                            Scope.get_instance().get_messenger().send_direct_message(
                                 self.messaging.task_status_msg(response))
 
                     else:
@@ -139,7 +150,7 @@ class Plugin(threading.Thread):
 
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
-                    policy_module = Scope.getInstance().getPluginManager().find_policy_module(
+                    policy_module = Scope.get_instance().get_plugin_manager().find_policy_module(
                         item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
 
@@ -148,6 +159,10 @@ class Plugin(threading.Thread):
 
                     self.context.put('policy_version', policy_ver)
                     self.context.put('execution_id', execution_id)
+
+                    # if item_obj.get_file_server() is not None  and item_obj.get_file_server() !='null':
+                    #     self.context.put('protocol', json.loads(item_obj.get_file_server())['protocol'])
+                    #     self.context.put('parameterMap', json.loads(item_obj.get_file_server())['parameterMap'])
 
                     self.logger.debug('[Plugin] Sending notify to user about profile process')
 
@@ -189,18 +204,18 @@ class Plugin(threading.Thread):
                             if success is False:
                                 response = Response(type=MessageType.POLICY_STATUS.value, id=item_obj.get_id(),
                                                     code=MessageCode.POLICY_ERROR.value,
-                                                    message='[Ahenk Core] Policy processed successfully but file transfer not completed. Check defined server conf')
+                                                    message='Policy processed successfully but file transfer not completed. Check defined server conf')
                                 message = self.messaging.task_status_msg(response)
-                            Scope.getInstance().getMessenger().send_direct_message(message)
+                            Scope.get_instance().get_messenger().send_direct_message(message)
                         else:
                             self.logger.debug('[Plugin] Sending profile response')
-                            Scope.getInstance().getMessenger().send_direct_message(
+                            Scope.get_instance().get_messenger().send_direct_message(
                                 self.messaging.policy_status_msg(response))
                     else:
                         self.logger.error(
                             '[Plugin] There is no Response. Plugin must create response after run a policy!')
                 elif 'MODE' in obj_name:
-                    module = Scope.getInstance().getPluginManager().find_module(obj_name, self.name)
+                    module = Scope.get_instance().get_plugin_manager().find_module(obj_name, self.name)
                     if module is not None:
                         if item_obj.obj_name in ('LOGIN_MODE', 'LOGOUT_MODE', 'SAFE_MODE'):
                             self.context.put('username', item_obj.username)
