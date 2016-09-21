@@ -2,19 +2,20 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
-from base.scheduler.base_scheduler import BaseScheduler
-from base.scope import Scope
-from base.scheduler.custom.scheduledb import ScheduleTaskDB
-from base.scheduler.custom.schedule_job import ScheduleTaskJob
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
+
+from base.scheduler.base_scheduler import BaseScheduler
+from base.scheduler.custom.schedule_job import ScheduleTaskJob
+from base.scheduler.custom.scheduledb import ScheduleTaskDB
+from base.scope import Scope
 
 
 class CustomScheduler(BaseScheduler):
     def __init__(self):
         self.events = []
         self.keep_run = True
-        self.logger = Scope.getInstance().getLogger()
+        self.logger = Scope.get_instance().get_logger()
         self.scheduledb = ScheduleTaskDB()
 
     def initialize(self):
@@ -27,24 +28,24 @@ class CustomScheduler(BaseScheduler):
     def add_job(self, job):
         self.events.append(job)
 
-    def save_and_add_job(self, task):
+    def Tsave_and_add_job(self, task):
         try:
-            self.logger.debug('[CustomScheduler] Saving scheduled task to database...')
+            self.logger.debug('Saving scheduled task to database...')
             self.scheduledb.save(task)
-            self.logger.debug('[CustomScheduler] Adding scheduled task to events...')
+            self.logger.debug('Adding scheduled task to events...')
             self.events.append(ScheduleTaskJob(task))
         except Exception as e:
             self.logger.error(
-                '[CustomScheduler] A problem occurred while saving and adding job. Error Message: {0}'.format(str(e)))
+                'A problem occurred while saving and adding job. Error Message: {0}'.format(str(e)))
 
-    #unused
+    # unused
     def remove_job(self, task_id):
         for event in self.events:
             if event.task.get_id() == task_id:
                 self.scheduledb.delete(task_id)
-                self.logger.debug('[CustomScheduler] Task was deleted from scheduled tasks table')
+                self.logger.debug('Task was deleted from scheduled tasks table')
                 self.events.remove(event)
-                self.logger.debug('[CustomScheduler] Task was removed from events')
+                self.logger.debug('Task was removed from events')
 
     # unused
     def remove_job_via_task_id(self, task_id):
