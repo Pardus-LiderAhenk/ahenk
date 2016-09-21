@@ -53,25 +53,28 @@ class Ssh(object):
             self.logger.error('A problem occurred while sending file. Exception message: {0}'.format(str(e)))
             return False
 
-    def get_file(self, local_path=None):
+    def get_file(self, local_path=None, file_name=None):
         self.logger.debug('Getting file ...')
-        file_md5 = None
         try:
             tmp_file_name = str(Util.generate_uuid())
             local_full_path = System.Ahenk.received_dir_path() + tmp_file_name
             sftp = paramiko.SFTPClient.from_transport(self.connection)
             sftp.get(self.target_path, local_full_path)
-            file_md5 = str(Util.get_md5_file(local_full_path))
+
             if local_path is None:
                 receive_path = System.Ahenk.received_dir_path()
             else:
                 receive_path = local_path
-            Util.rename_file(local_full_path, receive_path + file_md5)
-            self.logger.debug('File was downloaded to {0} from {1}'.format(local_full_path, self.target_path))
+            if file_name is not None:
+                f_name = file_name
+            else:
+                f_name = str(Util.get_md5_file(local_full_path))
+            Util.rename_file(local_full_path, receive_path + f_name)
+            self.logger.debug('File was downloaded to {0} from {1}'.format(receive_path, self.target_path))
         except Exception as e:
             self.logger.warning('A problem occurred while downloading file. Exception message: {0}'.format(str(e)))
             raise
-        return file_md5
+        return f_name
 
     def connect(self):
         self.logger.debug('Connecting to {0} via {1}'.format(self.target_hostname, self.target_port))
