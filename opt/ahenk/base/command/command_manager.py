@@ -25,7 +25,7 @@ class Commander(object):
     def set_event(self, *args):
 
         if args is None or len(args) < 1:
-            print('ERR')
+            print('Lack of arguments')
 
         params = args[0]
         data = dict()
@@ -39,14 +39,14 @@ class Commander(object):
                 return False
 
             elif len(params) == 5 and params[1] == 'login':
-                print('{1} {0}ing'.format(str(params[1]), str(params[2])))
+                print('{0} logging in'.format(str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
                 data['desktop'] = params[3]
                 data['display'] = params[4]
 
             elif len(params) == 3 and params[1] == 'logout':
-                print('{1} {0}ing'.format(str(params[1]), str(params[2])))
+                print('{0} logging out'.format(str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
 
