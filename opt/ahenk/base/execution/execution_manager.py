@@ -25,15 +25,15 @@ class ExecutionManager(object):
     def __init__(self):
         super(ExecutionManager, self).__init__()
 
-        scope = Scope.getInstance()
-        self.config_manager = scope.getConfigurationManager()
-        self.event_manager = scope.getEventManager()
-        self.task_manager = scope.getTaskManager()
-        self.messenger = scope.getMessenger()
-        self.logger = scope.getLogger()
-        self.db_service = scope.getDbService()
-        self.message_manager = scope.getMessageManager()
-        self.plugin_manager = scope.getPluginManager()
+        scope = Scope.get_instance()
+        self.config_manager = scope.get_configuration_manager()
+        self.event_manager = scope.get_event_manager()
+        self.task_manager = scope.get_task_manager()
+        self.messenger = scope.get_messenger()
+        self.logger = scope.get_logger()
+        self.db_service = scope.get_db_service()
+        self.message_manager = scope.get_message_manager()
+        self.plugin_manager = scope.get_plugin_manager()
         self.policy_executed = dict()
 
         self.event_manager.register_event(MessageType.EXECUTE_SCRIPT.value, self.execute_script)
@@ -65,11 +65,11 @@ class ExecutionManager(object):
                                            [agreement_content, title, json_data['timestamp']])
         except Exception as e:
             self.logger.warning(
-                '[ExecutionManager] A problem occurred while updating agreement. Error Message : {0}'.format(str(e)))
+                'A problem occurred while updating agreement. Error Message : {0}'.format(str(e)))
 
     def install_plugin(self, arg):
         plugin = json.loads(arg)
-        self.logger.debug('[ExecutionManager] Installing missing plugin')
+        self.logger.debug('Installing missing plugin')
         try:
             plugin_name = plugin['pluginName']
             plugin_version = plugin['pluginVersion']
@@ -82,37 +82,37 @@ class ExecutionManager(object):
                 downloaded_file = System.Ahenk.received_dir_path() + file_name
             except Exception as e:
                 self.logger.error(
-                    '[ExecutionManager] Plugin package could not fetch. Error Message: {0}.'.format(str(e)))
-                self.logger.error('[ExecutionManager] Plugin Installation is cancelling')
+                    'Plugin package could not fetch. Error Message: {0}.'.format(str(e)))
+                self.logger.error('Plugin Installation is cancelling')
                 self.plugin_installation_failure(plugin_name, plugin_version)
                 return
 
             try:
                 Util.install_with_gdebi(downloaded_file)
-                self.logger.debug('[ExecutionManager] Plugin installed.')
+                self.logger.debug('Plugin installed.')
             except Exception as e:
-                self.logger.error('[ExecutionManager] Could not install plugin. Error Message: {0}'.format(str(e)))
+                self.logger.error('Could not install plugin. Error Message: {0}'.format(str(e)))
                 self.plugin_installation_failure(plugin_name, plugin_version)
                 return
 
             try:
                 Util.delete_file(downloaded_file)
-                self.logger.debug('[ExecutionManager] Temp files were removed.')
+                self.logger.debug('Temp files were removed.')
             except Exception as e:
-                self.logger.error('[ExecutionManager] Could not remove temp file. Error Message: {0}'.format(str(e)))
+                self.logger.error('Could not remove temp file. Error Message: {0}'.format(str(e)))
 
         except Exception as e:
             self.logger.error(
-                '[ExecutionManager] A problem occurred while installing new Ahenk plugin. Error Message:{0}'.format(
+                'A problem occurred while installing new Ahenk plugin. Error Message:{0}'.format(
                     str(e)))
 
     def plugin_installation_failure(self, plugin_name, plugin_version):
 
-        self.logger.warning('[ExecutionManager] {0} plugin installation failure '.format(plugin_name))
+        self.logger.warning('{0} plugin installation failure '.format(plugin_name))
 
         if plugin_name in self.plugin_manager.delayed_profiles.keys():
             profile = self.plugin_manager.delayed_profiles[plugin_name]
-            self.logger.warning('[ExecutionManager] An error message sending with related profile properties...')
+            self.logger.warning('An error message sending with related profile properties...')
             related_policy = self.db_service.select('policy', ['version', 'execution_id'],
                                                     'id={0}'.format(profile.get_id()))
             data = dict()
@@ -130,14 +130,14 @@ class ExecutionManager(object):
                                         "ve eksik olan eklenti kurulurken hata oluştu",
                                 execution_id=related_policy[0][1], policy_version=related_policy[0][0],
                                 data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
-            messenger = Scope.getInstance().getMessenger()
+            messenger = Scope.get_instance().get_messenger()
             messenger.send_direct_message(self.message_manager.policy_status_msg(response))
             self.logger.warning(
-                '[ExecutionManager] Error message was sent about {0} plugin installation failure while trying to run a profile')
+                'Error message was sent about {0} plugin installation failure while trying to run a profile')
 
         if plugin_name in self.plugin_manager.delayed_tasks.keys():
             task = self.plugin_manager.delayed_tasks[plugin_name]
-            self.logger.warning('[ExecutionManager] An error message sending with related task properties...')
+            self.logger.warning('An error message sending with related task properties...')
 
             data = dict()
             data['message'] = "Görev işletilirken eklenti bulunamadı "
@@ -152,10 +152,10 @@ class ExecutionManager(object):
                                 message="Görev işletilirken eklenti bulunamadı "
                                         "ve eksik olan eklenti kurulmaya çalışırken oluştu.",
                                 data=json.dumps(data), content_type=ContentType.APPLICATION_JSON.value)
-            messenger = Scope.getInstance().getMessenger()
+            messenger = Scope.get_instance().get_messenger()
             messenger.send_direct_message(self.message_manager.task_status_msg(response))
             self.logger.warning(
-                '[ExecutionManager] Error message was sent about {0} plugin installation failure while trying to run a task')
+                'Error message was sent about {0} plugin installation failure while trying to run a task')
 
     def is_policy_executed(self, username):
         if username in self.policy_executed:
@@ -167,11 +167,11 @@ class ExecutionManager(object):
             self.policy_executed[username] = False
 
     def execute_default_policy(self, username):
-        self.logger.debug('[ExecutionManager] Executing active policies for {0} user...'.format(username))
+        self.logger.debug('Executing active policies for {0} user...'.format(username))
         self.task_manager.addPolicy(self.get_active_policies(username))
 
     def execute_policy(self, arg):
-        self.logger.debug('[ExecutionManager] Updating policies...')
+        self.logger.debug('Updating policies...')
         policy = self.json_to_PolicyBean(json.loads(arg))
         self.policy_executed[policy.get_username()] = True
         machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
@@ -213,7 +213,7 @@ class ExecutionManager(object):
                 self.db_service.update('profile', profile_columns, profile_args)
 
         else:
-            self.logger.debug('[ExecutionManager] Already there is ahenk policy. Command Execution Id is updating')
+            self.logger.debug('Already there is ahenk policy. Command Execution Id is updating')
             self.db_service.update('policy', ['execution_id'], [policy.get_agent_execution_id()], 'type = \'A\'')
 
         if policy.get_user_policy_version() != user_policy_version:
@@ -249,7 +249,7 @@ class ExecutionManager(object):
                 self.db_service.update('profile', profile_columns, profile_args)
 
         else:
-            self.logger.debug('[ExecutionManager] Already there is user policy. . Command Execution Id is updating')
+            self.logger.debug('Already there is user policy. . Command Execution Id is updating')
             self.db_service.update('policy', ['execution_id'], [policy.get_user_execution_id()], 'type = \'U\'')
 
         policy = self.get_active_policies(policy.get_username())
@@ -314,10 +314,10 @@ class ExecutionManager(object):
         json_server_conf = json.dumps(json.loads(arg)['fileServerConf'])
 
         task = self.json_to_task_bean(json_task, json_server_conf)
-        self.logger.debug('[ExecutionManager] Adding new  task...Task is:{0}'.format(task.get_command_cls_id()))
+        self.logger.debug('Adding new  task...Task is:{0}'.format(task.get_command_cls_id()))
 
         self.task_manager.addTask(task)
-        self.logger.debug('[ExecutionManager] Task added')
+        self.logger.debug('Task added')
 
     def json_to_task_bean(self, json_data, file_server_conf=None):
         plu = json_data['plugin']
@@ -333,24 +333,24 @@ class ExecutionManager(object):
 
     def execute_script(self, arg):
         try:
-            self.logger.debug('[ExecutionManager] Executing script...')
-            messenger = Scope().getInstance().getMessenger()
+            self.logger.debug('Executing script...')
+            messenger = Scope().get_instance().get_messenger()
 
             json_data = json.loads(arg)
             result_code, p_out, p_err = Util.execute(str(json_data['command']))
 
-            self.logger.debug('[ExecutionManager] Executed script')
+            self.logger.debug('Executed script')
 
             data = dict()
             data['type'] = 'SCRIPT_RESULT'
             data['timestamp'] = str(Util.timestamp())
 
             if result_code == 0:
-                self.logger.debug('[ExecutionManager] Command execution was finished successfully')
+                self.logger.debug('Command execution was finished successfully')
                 try:
                     temp_name = str(Util.generate_uuid())
                     temp_full_path = System.Ahenk.received_dir_path() + temp_name
-                    self.logger.debug('[ExecutionManager] Writing result to file')
+                    self.logger.debug('Writing result to file')
                     Util.write_file(temp_full_path, str(p_out))
                     md5 = Util.get_md5_file(temp_full_path)
                     Util.rename_file(temp_full_path, System.Ahenk.received_dir_path() + md5)
@@ -358,14 +358,14 @@ class ExecutionManager(object):
                     file_manager = FileTransferManager(json_data['fileServerConf']['protocol'],
                                                        json_data['fileServerConf']['parameterMap'])
                     file_manager.transporter.connect()
-                    self.logger.debug('[ExecutionManager] File transfer connection was created')
+                    self.logger.debug('File transfer connection was created')
                     success = file_manager.transporter.send_file(System.Ahenk.received_dir_path() + md5, md5)
-                    self.logger.debug('[ExecutionManager] File was transferred')
+                    self.logger.debug('File was transferred')
                     file_manager.transporter.disconnect()
-                    self.logger.debug('[ExecutionManager] File transfer connection was closed')
+                    self.logger.debug('File transfer connection was closed')
 
                     if success is False:
-                        self.logger.error('[ExecutionManager] A problem occurred while file transferring')
+                        self.logger.error('A problem occurred while file transferring')
                         data['resultCode'] = '-1'
                         data[
                             'errorMessage'] = 'Command executed successfully but a problem occurred while sending result file'
@@ -375,19 +375,19 @@ class ExecutionManager(object):
 
                 except Exception as e:
                     self.logger.error(
-                        '[ExecutionManager] A problem occurred while file transferring. Error Message :{0}'.format(
+                        'A problem occurred while file transferring. Error Message :{0}'.format(
                             str(e)))
                     raise
             else:
                 self.logger.error(
-                    '[ExecutionManager] Command execution was failed. Error Message :{0}'.format(str(result_code)))
+                    'Command execution was failed. Error Message :{0}'.format(str(result_code)))
                 data['resultCode'] = str(result_code)
                 data['errorMessage'] = str(p_err)
 
             messenger.send_direct_message(json.dumps(data))
         except Exception as e:
             self.logger.error(
-                '[ExecutionManager] A problem occurred while running execute script action. Error Message :{0}'.format(
+                'A problem occurred while running execute script action. Error Message :{0}'.format(
                     str(e)))
 
     def json_to_PolicyBean(self, json_data):

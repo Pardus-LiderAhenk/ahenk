@@ -15,10 +15,10 @@ class AbstractPlugin(Util, System):
 
     def __init__(self):
         super(AbstractPlugin, self).__init__()
-        self.scope = Scope.getInstance()
+        self.scope = Scope.get_instance()
 
     def handle_task(profile_data, context):
-        Scope.getInstance().getLogger().error('[AbstractPlugin] Handle function not found')
+        Scope.get_instance().get_logger().error('Handle function not found')
 
     def get_message_code(self):
         return MessageCode
@@ -28,19 +28,19 @@ class AbstractPlugin(Util, System):
 
     def get_logger(self):
         try:
-            return Scope.getInstance().getLogger()
+            return Scope.get_instance().get_logger()
         except Exception as e:
-            self.scope.getLogger().error(
-                '[AbstractPlugin] A problem occurred while getting logger. Error Message: {0}'.format(str(e)))
+            self.scope.get_logger().error(
+                'A problem occurred while getting logger. Error Message: {0}'.format(str(e)))
             return None
 
 
 def configuration_manager(self):
     try:
-        return self.scope.getConfigurationManager()
+        return self.scope.get_configuration_manager()
     except Exception as e:
         self.logger().error(
-            '[AbstractPlugin] A problem occurred while getting configuration manager. Error Message: {0}'.format(
+            'A problem occurred while getting configuration manager. Error Message: {0}'.format(
                 str(e)))
         return None
 

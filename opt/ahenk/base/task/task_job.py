@@ -11,9 +11,9 @@ class TaskJob(threading.Thread):
 
     def __init__(self, task):
         super(TaskJob, self).__init__()
-        scope = Scope.getInstance()
+        scope = Scope.get_instance()
         self.task = task
-        self.pluginManager = scope.getPluginManager()
+        self.pluginManager = scope.get_plugin_manager()
 
     def run(self):
         self.pluginManager.process(self.task)

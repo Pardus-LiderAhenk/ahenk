@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-import datetime
 import json
 
-from base.system.system import System
 from base.scope import Scope
+from base.system.system import System
 from base.util.util import Util
 
 
 # TODO Message Factory
 class Messaging(object):
     def __init__(self):
-        scope = Scope().getInstance()
-        self.logger = scope.getLogger()
-        self.conf_manager = scope.getConfigurationManager()
-        self.db_service = scope.getDbService()
-        self.event_manger = scope.getEventManager()
+        scope = Scope().get_instance()
+        self.logger = scope.get_logger()
+        self.conf_manager = scope.get_configuration_manager()
+        self.db_service = scope.get_db_service()
+        self.event_manger = scope.get_event_manager()
 
     def missing_plugin_message(self, plugin):
         data = dict()
@@ -25,7 +24,7 @@ class Messaging(object):
         data['pluginVersion'] = plugin.get_version()
 
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging]Missing plugin message was created')
+        self.logger.debug('Missing plugin message was created')
         return str(json_data)
 
     def task_status_msg(self, response):
@@ -42,7 +41,7 @@ class Messaging(object):
         data['timestamp'] = response.get_timestamp()
 
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Task status message was created')
+        self.logger.debug('Task status message was created')
         return str(json_data)
 
     def policy_status_msg(self, response):
@@ -62,7 +61,7 @@ class Messaging(object):
         data['timestamp'] = response.get_timestamp()
 
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Policy status message was created')
+        self.logger.debug('Policy status message was created')
         return str(json_data)
 
     def login_msg(self, username):
@@ -72,7 +71,7 @@ class Messaging(object):
         data['ipAddresses'] = str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', '')
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Login message was created')
+        self.logger.debug('Login message was created')
         return json_data
 
     def logout_msg(self, username):
@@ -81,14 +80,15 @@ class Messaging(object):
         data['username'] = str(username)
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Logout message was created')
+        self.logger.debug('Logout message was created')
         return json_data
 
     def policy_request_msg(self, username):
         data = dict()
         data['type'] = 'GET_POLICIES'
 
-        user_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'U\' and name = \'' + username + '\'')
+        user_policy_number = self.db_service.select_one_result('policy', 'version',
+                                                               'type = \'U\' and name = \'' + username + '\'')
         machine_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
 
         data['userPolicyVersion'] = user_policy_number
@@ -97,7 +97,7 @@ class Messaging(object):
         data['username'] = str(username)
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Get Policies message was created')
+        self.logger.debug('Get Policies message was created')
         return json_data
 
     def registration_msg(self):
@@ -115,7 +115,7 @@ class Messaging(object):
 
         data['timestamp'] = self.db_service.select_one_result('registration', 'timestamp', ' 1=1')
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Registration message was created')
+        self.logger.debug('Registration message was created')
         return json_data
 
     def ldap_registration_msg(self):
@@ -128,7 +128,7 @@ class Messaging(object):
         data['hostname'] = str(self.conf_manager.get('REGISTRATION', 'hostname'))
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] LDAP Registration message was created')
+        self.logger.debug('LDAP Registration message was created')
         return json_data
 
     def unregister_msg(self):
@@ -142,7 +142,7 @@ class Messaging(object):
         # data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Unregister message was created')
+        self.logger.debug('Unregister message was created')
         return json_data
 
     def agreement_request_msg(self):
@@ -159,7 +159,7 @@ class Messaging(object):
 
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Agreement request message was created')
+        self.logger.debug('Agreement request message was created')
         return json_data
 
     def agreement_answer_msg(self, username, answer):
@@ -168,12 +168,13 @@ class Messaging(object):
         data['username'] = username
         data['accepted'] = answer
         data['timestamp'] = Util.timestamp()
-        contract_content = self.db_service.select_one_result('contract', 'content', 'id =(select MAX(id) from contract)')
+        contract_content = self.db_service.select_one_result('contract', 'content',
+                                                             'id =(select MAX(id) from contract)')
         if contract_content is not None and contract_content != '':
             data['md5'] = Util.get_md5_text(contract_content)
         else:
             data['md5'] = ''
 
         json_data = json.dumps(data)
-        self.logger.debug('[Messaging] Agreement answer message was created')
+        self.logger.debug('Agreement answer message was created')
         return json_data

@@ -18,9 +18,9 @@ from base.scope import Scope
 
 class System:
     def __init__(self):
-        scope = Scope().getInstance()
-        self.db_service = scope.getDbService()
-        self.logger = scope.getLogger()
+        scope = Scope().get_instance()
+        self.db_service = scope.get_db_service()
+        self.logger = scope.get_logger()
 
     class BIOS(object):
         @staticmethod

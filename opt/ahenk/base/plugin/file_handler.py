@@ -7,7 +7,7 @@ import signal
 
 from watchdog.events import FileSystemEventHandler
 
-from base.command.commander import Commander
+from base.command.command_manager import Commander
 from base.system.system import System
 
 

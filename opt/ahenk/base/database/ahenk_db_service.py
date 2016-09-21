@@ -13,9 +13,9 @@ class AhenkDbService(object):
     """
 
     def __init__(self):
-        scope = Scope.getInstance()
-        self.logger = scope.getLogger()
-        self.configurationManager = scope.getConfigurationManager()
+        scope = Scope.get_instance()
+        self.logger = scope.get_logger()
+        self.configurationManager = scope.get_configuration_manager()
         self.db_path = self.configurationManager.get('BASE', 'dbPath')
         self.connection = None
         self.cursor = None
@@ -50,7 +50,7 @@ class AhenkDbService(object):
             self.connection = sqlite3.connect(self.db_path, check_same_thread=False)
             self.cursor = self.connection.cursor()
         except Exception as e:
-            self.logger.error('[AhenkDbService] Database connection error ' + str(e))
+            self.logger.error('Database connection error: {0}'.format(str(e)))
 
     def check_and_create_table(self, table_name, cols):
 
@@ -60,7 +60,7 @@ class AhenkDbService(object):
                 cols = ', '.join([str(x) for x in cols])
                 self.cursor.execute('create table if not exists ' + table_name + ' (' + cols + ')')
             else:
-                self.logger.warning('[AhenkDbService] Could not create table cursor is None! Table Name : ' + str(table_name))
+                self.logger.warning('Could not create table cursor is None! Table Name : {0}'.format(str(table_name)))
         finally:
             self.lock.release()
 
@@ -91,10 +91,10 @@ class AhenkDbService(object):
                 self.connection.commit()
                 return self.cursor.lastrowid
             else:
-                self.logger.warning('[AhenkDbService] Could not update table cursor is None! Table Name : ' + str(table_name))
+                self.logger.warning('Could not update table cursor is None! Table Name : {0}'.format(str(table_name)))
                 return None
         except Exception as e:
-            self.logger.error('[AhenkDbService] Updating table error ! Table Name : ' + str(table_name) + ' ' + str(e))
+            self.logger.error('Updating table error ! Table Name : {0} Error Mesage: {1}'.format(str(table_name),str(e)))
         finally:
             self.lock.release()
 
@@ -136,7 +136,7 @@ class AhenkDbService(object):
             finally:
                 self.lock.release()
         else:
-            self.logger.warning('[AhenkDbService] Could not select table cursor is None! Table Name : ' + str(table_name))
+            self.logger.warning('Could not select table cursor is None! Table Name : {0}'.format(str(table_name)))
 
     def select_one_result(self, table_name, col, criteria=''):
         if self.cursor:
@@ -157,11 +157,11 @@ class AhenkDbService(object):
             finally:
                 self.lock.release()
         else:
-            self.logger.warning('[AhenkDbService] Could not select table cursor is None! Table Name : ' + str(table_name))
+            self.logger.warning('Could not select table cursor is None! Table Name : {0}'.format(str(table_name)))
 
     def close(self):
         try:
             self.cursor.close()
             self.connection.close()
         except Exception as e:
-            self.logger.error('[AhenkDbService] Closing database connection error:' + str(e))
+            self.logger.error('Closing database connection error: {0}'.format(str(e)))

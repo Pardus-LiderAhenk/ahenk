@@ -8,11 +8,11 @@ from base.scope import Scope
 
 class ScheduleTaskJob(object):
     def __init__(self, task):
-        scope = Scope.getInstance()
+        scope = Scope.get_instance()
 
-        self.logger = scope.getLogger()
-        self.task_manager = scope.getTaskManager()
-        self.plugin_manager = scope.getPluginManager()
+        self.logger = scope.get_logger()
+        self.task_manager = scope.get_task_manager()
+        self.plugin_manager = scope.get_plugin_manager()
         self.task = task
         cron_sj = self.parse_cron_str(task.get_cron_str())
         try:

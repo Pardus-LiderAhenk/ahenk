@@ -9,9 +9,9 @@ from base.file.http_file_transfer import Http
 
 class FileTransferManager(object):
     def __init__(self, protocol, parameter_map):
-        scope = Scope().getInstance()
-        self.logger = scope.getLogger()
-        self.configuration_manager = scope.getConfigurationManager()
+        scope = Scope().get_instance()
+        self.logger = scope.get_logger()
+        self.configuration_manager = scope.get_configuration_manager()
         self.transporter = self.get_instance(protocol, parameter_map)
 
     def get_instance(self, protocol, parameter_map):
@@ -27,6 +27,6 @@ class FileTransferManager(object):
 
         except Exception as e:
             self.logger.error(
-                '[FileTransferManager] A problem occurred while getting instance of related protocol. Error Message: {0}'.format(
+                'A problem occurred while getting instance of related protocol. Error Message: {0}'.format(
                     str(e)))
             return None

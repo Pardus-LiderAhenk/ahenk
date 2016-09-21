@@ -16,52 +16,52 @@ from base.timer.timer import Timer
 
 class Registration:
     def __init__(self):
-        scope = Scope().getInstance()
-        self.logger = scope.getLogger()
-        self.message_manager = scope.getMessageManager()
-        self.event_manager = scope.getEventManager()
-        self.messenger = scope.getMessenger()
-        self.conf_manager = scope.getConfigurationManager()
-        self.db_service = scope.getDbService()
+        scope = Scope().get_instance()
+        self.logger = scope.get_logger()
+        self.message_manager = scope.get_message_manager()
+        self.event_manager = scope.get_event_manager()
+        self.messenger = scope.get_messenger()
+        self.conf_manager = scope.get_configuration_manager()
+        self.db_service = scope.get_db_service()
 
         self.event_manager.register_event('REGISTRATION_RESPONSE', self.registration_process)
 
         if self.is_registered():
-            self.logger.debug('[Registration] Ahenk already registered')
+            self.logger.debug('Ahenk already registered')
         else:
             self.register(True)
 
     def registration_request(self):
-        self.logger.debug('[Registration] Requesting registration')
+        self.logger.debug('Requesting registration')
         SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,
                                checker_func=self.is_registered, kwargs=None))
         anon_messenger = AnonymousMessenger(self.message_manager.registration_msg())
         anon_messenger.connect_to_server()
 
     def ldap_registration_request(self):
-        self.logger.debug('[Registration] Requesting LDAP registration')
+        self.logger.debug('Requesting LDAP registration')
         self.messenger.send_Direct_message(self.message_manager.ldap_registration_msg())
 
     def registration_process(self, reg_reply):
-        self.logger.debug('[Registration] Reading registration reply')
+        self.logger.debug('Reading registration reply')
         j = json.loads(reg_reply)
         self.logger.debug('[Registration]' + j['message'])
         status = str(j['status']).lower()
         dn = str(j['agentDn'])
 
-        self.logger.debug('[Registration] Registration status: ' + str(status))
+        self.logger.debug('Registration status: ' + str(status))
 
         if 'already_exists' == str(status) or 'registered' == str(status) or 'registered_without_ldap' == str(status):
-            self.logger.debug('dn:' + dn)
+            self.logger.debug('Current dn:' + dn)
             self.update_registration_attrs(dn)
         elif 'registration_error' == str(status):
-            self.logger.info('[Registration] Registration is failed. New registration request will send')
+            self.logger.info('Registration is failed. New registration request will send')
             self.re_register()
         else:
-            self.logger.error('[Registration] Bad message type of registration response ')
+            self.logger.error('Bad message type of registration response ')
 
     def update_registration_attrs(self, dn=None):
-        self.logger.debug('[Registration] Registration configuration is updating...')
+        self.logger.debug('Registration configuration is updating...')
         self.db_service.update('registration', ['dn', 'registered'], [dn, 1], ' registered = 0')
 
         if self.conf_manager.has_section('CONNECTION'):
@@ -72,7 +72,7 @@ class Registration:
             # TODO  get file path?
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
-            self.logger.debug('[Registration] Registration configuration file is updated')
+            self.logger.debug('Registration configuration file is updated')
 
     def is_registered(self):
 
@@ -99,7 +99,7 @@ class Registration:
 
         self.db_service.delete('registration', ' 1==1 ')
         self.db_service.update('registration', cols, vals)
-        self.logger.debug('[Registration] Registration parameters were created')
+        self.logger.debug('Registration parameters were created')
 
     def get_registration_params(self):
 
@@ -146,21 +146,21 @@ class Registration:
         return json.dumps(params)
 
     def unregister(self):
-        self.logger.debug('[Registration] Ahenk is unregistering...')
+        self.logger.debug('Ahenk is unregistering...')
         self.db_service.delete('registration', ' 1==1 ')
-        self.logger.debug('[Registration] Ahenk is unregistered')
+        self.logger.debug('Ahenk is unregistered')
 
     def re_register(self):
-        self.logger.debug('[Registration] Reregistrating...')
+        self.logger.debug('Reregistrating...')
         self.unregister()
         self.register(False)
 
     def generate_uuid(self, depend_mac=True):
         if depend_mac is False:
-            self.logger.debug('[Registration] uuid creating randomly')
+            self.logger.debug('uuid creating randomly')
             return uuid.uuid4()  # make a random UUID
         else:
-            self.logger.debug('[Registration] uuid creating according to mac address')
+            self.logger.debug('uuid creating according to mac address')
             return uuid.uuid3(uuid.NAMESPACE_DNS,
                               str(get_mac()))  # make a UUID using an MD5 hash of a namespace UUID and a mac address
 
@@ -169,8 +169,8 @@ class Registration:
 
     def registration_timeout(self):
         self.logger.error(
-            '[Registration] Could not reach registration response from Lider. Be sure XMPP server is reachable and it supports anonymous message, Lider is running properly '
+            'Could not reach registration response from Lider. Be sure XMPP server is reachable and it supports anonymous message, Lider is running properly '
             'and it is connected to XMPP server! Check your Ahenk configuration file (/etc/ahenk/ahenk.conf)')
-        self.logger.error('[Registration] Ahenk is shutting down...')
+        self.logger.error('Ahenk is shutting down...')
         print('Ahenk is shutting down...')
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
