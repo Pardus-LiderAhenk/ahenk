@@ -39,11 +39,18 @@ class Context(object):
         self.data['responseData'] = data
         self.data['contentType'] = content_type
 
-    def fetch_file(self, local_path=None):
-        file_manager = FileTransferManager(self.get('protocol'), self.get('parameter_map'))
-        file_manager.transporter.connect()
-        success = file_manager.transporter.get_file(local_path)
-        file_manager.transporter.disconnect()
+    def fetch_file(self, remote_path, local_path=None, file_name=None):
+        success = None
+        try:
+            custom_map = self.get('parameterMap')
+            custom_map['path'] = remote_path
+            file_manager = FileTransferManager(self.get('protocol'), custom_map)
+            file_manager.transporter.connect()
+            success = file_manager.transporter.get_file(local_path, file_name)
+            file_manager.transporter.disconnect()
+        except Exception as e:
+            raise
+
         return success
 
 
