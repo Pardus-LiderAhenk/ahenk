@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
+import datetime
 import grp
+import hashlib
 import json
 import os
 import pwd
 import shutil
 import stat
 import subprocess
-import hashlib
-import datetime
 import uuid
 
 
@@ -44,7 +44,8 @@ class Util:
     @staticmethod
     def delete_file(full_path):
         try:
-            os.remove(full_path)
+            if Util.is_exist(full_path):
+                os.remove(full_path)
         except:
             raise
 
