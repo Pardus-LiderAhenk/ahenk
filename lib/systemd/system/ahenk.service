@@ -7,6 +7,7 @@ Type=simple
 ExecStart=/usr/bin/python3 /opt/ahenk/ahenkd.py start
 ExecStop=/usr/bin/python3 /opt/ahenk/ahenkd.py stop
 PIDFile=/var/run/ahenkd.pid
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
