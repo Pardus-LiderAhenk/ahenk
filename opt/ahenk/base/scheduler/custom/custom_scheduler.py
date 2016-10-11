@@ -28,7 +28,7 @@ class CustomScheduler(BaseScheduler):
     def add_job(self, job):
         self.events.append(job)
 
-    def Tsave_and_add_job(self, task):
+    def save_and_add_job(self, task):
         try:
             self.logger.debug('Saving scheduled task to database...')
             self.scheduledb.save(task)
