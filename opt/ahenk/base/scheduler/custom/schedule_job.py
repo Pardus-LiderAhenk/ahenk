@@ -23,26 +23,26 @@ class ScheduleTaskJob(object):
                 self.months = self.conv_to_set(cron_sj[3])
                 self.dow = self.conv_to_set(cron_sj[4])
                 self.action = self.process_task
-            self.logger.debug('[ScheduleTaskJob] Instance created.')
+            self.logger.debug('Instance created.')
         except Exception as e:
             self.logger.error(
-                '[ScheduleTaskJob] A problem occurred while creating instance of ScheduleTaskJob. Error Message : {0}'.format(
+                'A problem occurred while creating instance of ScheduleTaskJob. Error Message : {0}'.format(
                     str(e)))
 
     def process_task(self):
         try:
-            self.logger.debug('[ScheduleTaskJob] Running scheduled task now...')
+            self.logger.debug('Running scheduled task now...')
             self.plugin_manager.process_task(self.task)
-            self.logger.debug('[ScheduleTaskJob] Scheduled Task was executed.')
+            self.logger.debug('Scheduled Task was executed.')
             # There is no any single shot task
             # if self.is_single_shot():
             #     Scope.getInstance().get_scheduler().remove_job(self.task.get_id())
         except Exception as e:
             self.logger.error(
-                '[ScheduleTaskJob] A problem occurred while running scheduled task. Error Message: {0}'.format(str(e)))
+                'A problem occurred while running scheduled task. Error Message: {0}'.format(str(e)))
 
     def parse_cron_str(self, cron_str):
-        self.logger.debug('[ScheduleTaskJob] Parsing cron string...')
+        self.logger.debug('Parsing cron string...')
         try:
             cron_exp_arr = cron_str.split(" ")
             cron_sj = []
@@ -65,19 +65,19 @@ class ScheduleTaskJob(object):
                     elif count == 3:
                         cron_sj.append(range(0, 7, range_val))
                     else:
-                        self.logger.warning('[ScheduleTaskJob] Unsupported expression.')
+                        self.logger.warning('Unsupported expression.')
                 elif ',' in exp:
                     cron_sj.append("(" + str(exp) + ")")
                 else:
-                    self.logger.warning('[ScheduleTaskJob] Unsupported expression.')
-                count = count + 1
+                    self.logger.warning('Unsupported expression.')
+                count += 1
             return cron_sj
         except Exception as e:
             self.logger.error(
-                '[ScheduleTaskJob] A problem occurred while parsing cron expression. Error Message: {0}'.format(str(e)))
+                'A problem occurred while parsing cron expression. Error Message: {0}'.format(str(e)))
 
     def conv_to_set(self, obj):
-        self.logger.debug('[ScheduleTaskJob] Converting {0} to set'.format(str(obj)))
+        self.logger.debug('Converting {0} to set'.format(str(obj)))
 
         if str(obj).isdigit():
             return set([int(obj)])
