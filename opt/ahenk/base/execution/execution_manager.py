@@ -3,21 +3,20 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
 import json
-import threading
-from base.scope import Scope
+
 from base.file.file_transfer_manager import FileTransferManager
+from base.model.enum.content_type import ContentType
+from base.model.enum.message_code import MessageCode
+from base.model.enum.message_type import MessageType
 from base.model.plugin_bean import PluginBean
 from base.model.policy_bean import PolicyBean
 from base.model.profile_bean import ProfileBean
 from base.model.response import Response
 from base.model.task_bean import TaskBean
-from base.model.enum.message_code import MessageCode
-from base.model.enum.message_type import MessageType
-from base.model.enum.content_type import ContentType
+from base.scheduler.custom.schedule_job import ScheduleTaskJob
+from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
-from base.scheduler.custom.schedule_job import ScheduleTaskJob
-from base.scheduler.scheduler_factory import SchedulerFactory
 
 
 class ExecutionManager(object):
