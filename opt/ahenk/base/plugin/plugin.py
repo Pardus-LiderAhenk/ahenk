@@ -60,10 +60,10 @@ class Plugin(threading.Thread):
         Plugin class responsible for processing TASK or USER PLUGIN PROFILE.
     """
 
-    def __init__(self, name, InQueue):
+    def __init__(self, name, in_ueue):
         threading.Thread.__init__(self)
         self.name = name
-        self.InQueue = InQueue
+        self.in_queue = in_ueue
 
         scope = Scope.get_instance()
         self.logger = scope.get_logger()
@@ -79,7 +79,7 @@ class Plugin(threading.Thread):
         while self.keep_run:
             try:
                 try:
-                    item_obj = self.InQueue.get(block=True)
+                    item_obj = self.in_queue.get(block=True)
                     obj_name = item_obj.obj_name
                 except Exception as e:
                     self.logger.error(
@@ -88,6 +88,7 @@ class Plugin(threading.Thread):
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
                     command = Scope.get_instance().get_plugin_manager().find_command(self.getName(),
+                                                                                     item_obj.get_plugin().get_version(),
                                                                                      item_obj.get_command_cls_id().lower())
                     self.context.put('task_id', item_obj.get_id())
 
@@ -158,7 +159,7 @@ class Plugin(threading.Thread):
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
                     policy_module = Scope.get_instance().get_plugin_manager().find_policy_module(
-                        item_obj.get_plugin().get_name())
+                        item_obj.get_plugin().get_name(), item_obj.get_plugin().get_version())
                     self.context.put('username', item_obj.get_username())
 
                     execution_id = self.get_execution_id(item_obj.get_id())
