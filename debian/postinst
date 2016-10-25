@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # postinst script for ahenk
 #
 # see: dh_installdeb(1)
@@ -13,29 +13,16 @@ while true; do
     read -p "Eğer makinada var olan bir pam konfigurasyonu varsa geçersiz hale gelecektir.Devam etmek istiyor musunuz? [e/H]" eH
     case $eH in
         [e] ) 
-		if [ -d /etc/pam.d ]
+		if [ -d /usr/share/pam-configs ]
 		then
-			if [ -f /etc/pam.d/common-session ]
-			then
-				cp -f /etc/pam.d/common-session /etc/pam.d/common-session.orig
-				grep -q 'pam_script.so' /etc/pam.d/common-session
-				if [ $? -eq 0 ]
-				then
-					echo "pam_scripst.so zaten mevcut."
-				else
-					echo "pam_script.so bulunamadı! /etc/pam.d/common-session dosyasına ekleniyor..."
-					# Use optional, we don't want access denied if there is a problem:
-					echo "session optional		pam_script.so"  >> /etc/pam.d/common-session
-					echo "pam_script.so eklendi."
-				fi
-			fi
+			echo -e "Name: Support for authentication by external scripts\nDefault: yes\nPriority: 257\nSession-Type: Additional\nSession:\n\toptional\tpam_script.so" > /usr/share/pam-configs/pam_script
+			DEBIAN_FRONTEND=noninteractive pam-auth-update
 		fi
 	break;;
         [H] ) exit;;
         * ) echo "Lütfen e ya da H karakterleri ile yanıtlayın!";;
     esac
 done
-
 
         systemctl --system daemon-reload
         systemctl enable ahenk.service

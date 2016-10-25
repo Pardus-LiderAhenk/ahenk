@@ -1,7 +1,0 @@
-#!/bin/sh
-# postrm script for ahenk
-#
-
-if [ -f /etc/pam.d/common-session.orig ]; then
-   mv -f /etc/pam.d/common-session.orig /etc/pam.d/common-session
-fi
