@@ -46,7 +46,10 @@ class Mail:
         self.server.quit()
         self.logger.debug('Disconnected')
 
-    def send_mail(self, subject, message, files=[]):
+    def send_mail(self, subject, message, files=None):
+
+        if files is None:
+            files = []
 
         msg = MIMEMultipart()
         msg['Date'] = formatdate(localtime=True)
@@ -54,7 +57,7 @@ class Mail:
 
         msg.attach(MIMEText(message))
 
-        #TODO files attachment max size
+        # TODO files attachment max size
         if files is not None:
             for f in files:
                 part = MIMEBase('application', "octet-stream")

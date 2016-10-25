@@ -10,15 +10,15 @@ from base.task.task_job import TaskJob
 class TaskInQueue(threading.Thread):
     """docstring for TaskInQueue"""
 
-    def __init__(self, inQueue):
+    def __init__(self, in_queue):
         super(TaskInQueue, self).__init__()
-        self.inQueue = inQueue
+        self.in_queue = in_queue
 
     def run(self):
         # Add task to db. Adding task to db important because task can be lost when processing.
         # Call plugin manager and process message inside task job
         try:
-            task = self.inQueue.get()
+            task = self.in_queue.get()
             print(task)
             # Can be validate task before processing
             job = TaskJob(task)
