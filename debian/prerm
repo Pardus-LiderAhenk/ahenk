@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # prerm script for ahenk
 #
 /usr/bin/python3 /opt/ahenk/ahenkd.py clean
