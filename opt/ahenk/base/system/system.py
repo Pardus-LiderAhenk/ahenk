@@ -2,18 +2,21 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
-import platform
-import psutil
-import cpuinfo
-import re
-import os
 import configparser
-import socket
 import fcntl
+import glob
+import os
+import platform
+import re
+import socket
 import struct
 from uuid import getnode as get_mac
-from base.util.util import Util
+
+import cpuinfo
+import psutil
+
 from base.scope import Scope
+from base.util.util import Util
 
 
 class System:
@@ -473,12 +476,82 @@ class System:
                 return arr
 
         @staticmethod
+        def screen_info_json_obj(info):
+            label_list = [
+                # 'Identifier',
+                          'ModelName', 'VendorName', 'Monitor Manufactured', 'DisplaySize',
+                          # 'Gamma',
+                          # 'Horizsync',
+                          # 'VertRefresh'
+                          ]
+            data = dict()
+
+            for line in info.splitlines():
+                line = line.strip().replace('"', '')
+                intersection = list(set(line.split(' ')).intersection(label_list))
+                if len(intersection) > 0:
+                    data[str(intersection[0])] = line.split(intersection[0])[1].strip()
+
+            return data
+
+        @staticmethod
+        def monitors():
+            edid_list = glob.glob('/sys/class/drm/*/edid')
+
+            monitor_list = list()
+            for edid in edid_list:
+                result_code, p_out, p_err = Util.execute('parse-edid < {0}'.format(edid))
+
+                if result_code == 0:
+                    monitor_list.append(System.Hardware.screen_info_json_obj(p_out))
+
+            return monitor_list
+
+        @staticmethod
+        def screens():
+            result_code, p_out, p_err = Util.execute('xrandr')
+            arr = []
+            if result_code == 0:
+                for line in p_out.splitlines():
+                    if len(list(set(line.split(' ')).intersection(['connected']))) > 0:
+                        arr.append(line)
+            return arr
+
+        @staticmethod
+        def usb_devices():
+            result_code, p_out, p_err = Util.execute('lsusb')
+            arr = []
+            if result_code == 0:
+                for line in p_out.splitlines():
+                    if ':' in line and 'Device 001' not in line.split(':')[0]:
+                        arr.append(line)
+            return arr
+
+        @staticmethod
+        def printers():
+            result_code, p_out, p_err = Util.execute('lpstat -a')
+            arr = None
+            if result_code == 0:
+                arr = p_out.splitlines()
+            return arr
+
+        @staticmethod
+        def system_definitions():
+            result_code, p_out, p_err = Util.execute('dmidecode -t system')
+            arr = []
+            if result_code == 0:
+                for line in p_out.splitlines():
+                    line = line.strip()
+                    if len(list(set(line.split(' ')).intersection(['Manufacturer:', 'Product']))) > 0:
+                        arr.append(line)
+            return arr
+
+        @staticmethod
         def machine_type():
             config = configparser.ConfigParser()
             config._interpolation = configparser.ExtendedInterpolation()
             config.read(System.Ahenk.config_path())
             return config.get('MACHINE', 'type')
-
 
         @staticmethod
         def interfaces_details():
@@ -543,4 +616,3 @@ class System:
             @staticmethod
             def model():
                 return cpuinfo.get_cpu_info()['model']
-
