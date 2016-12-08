@@ -70,6 +70,13 @@ class Messaging(object):
         data['username'] = username
         data['ipAddresses'] = str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', '')
         data['timestamp'] = Util.timestamp()
+
+        data['hardware.monitors'] = str(System.Hardware.monitors()),
+        data['hardware.screens'] = str(System.Hardware.screens()),
+        data['hardware.usbDevices'] = str(System.Hardware.usb_devices()),
+        data['hardware.printers'] = str(System.Hardware.printers()),
+        data['hardware.systemDefinitions'] = str(System.Hardware.system_definitions()),
+
         json_data = json.dumps(data)
         self.logger.debug('Login message was created')
         return json_data
