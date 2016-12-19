@@ -158,8 +158,7 @@ class Plugin(threading.Thread):
 
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
-                    policy_module = Scope.get_instance().get_plugin_manager().find_policy_module(
-                        item_obj.get_plugin().get_name(), item_obj.get_plugin().get_version())
+                    policy_module = Scope.get_instance().get_plugin_manager().find_policy_module(item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
 
                     execution_id = self.get_execution_id(item_obj.get_id())
