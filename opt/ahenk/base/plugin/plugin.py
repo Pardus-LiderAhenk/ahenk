@@ -87,9 +87,6 @@ class Plugin(threading.Thread):
 
                 if obj_name == "TASK":
                     self.logger.debug('[Plugin] Executing task')
-                    command = Scope.get_instance().get_plugin_manager().find_command(self.getName(),
-                                                                                     item_obj.get_plugin().get_version(),
-                                                                                     item_obj.get_command_cls_id().lower())
                     self.context.put('task_id', item_obj.get_id())
 
                     if item_obj.get_file_server() is not None and item_obj.get_file_server() != 'null':
@@ -108,7 +105,9 @@ class Plugin(threading.Thread):
                                              user)
 
                     self.logger.debug('[Plugin] Handling task')
-                    command.handle_task(task_data, self.context)
+                    Scope.get_instance().get_plugin_manager().find_command(self.getName(),
+                                                                           item_obj.get_plugin().get_version(),
+                                                                           item_obj.get_command_cls_id().lower()).handle_task(task_data, self.context)
 
                     if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
@@ -158,7 +157,6 @@ class Plugin(threading.Thread):
 
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
-                    policy_module = Scope.get_instance().get_plugin_manager().find_policy_module(item_obj.get_plugin().get_name())
                     self.context.put('username', item_obj.get_username())
 
                     execution_id = self.get_execution_id(item_obj.get_id())
@@ -178,7 +176,7 @@ class Plugin(threading.Thread):
                                      System.Sessions.display(item_obj.get_username()),
                                      item_obj.get_username())
                     self.logger.debug('[Plugin] Handling profile')
-                    policy_module.handle_policy(profile_data, self.context)
+                    Scope.get_instance().get_plugin_manager().find_policy_module(item_obj.get_plugin().get_name()).handle_policy(profile_data, self.context)
 
                     if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
