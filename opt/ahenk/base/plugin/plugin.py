@@ -20,6 +20,9 @@ class Context(object):
     def __init__(self):
         self.data = dict()
         self.scope = Scope().get_instance()
+        self.mail_send = False
+        self.mail_subject = ''
+        self.mail_content = ''
 
     def put(self, var_name, data):
         self.data[var_name] = data
@@ -52,6 +55,24 @@ class Context(object):
             raise
 
         return success
+
+    def is_mail_send(self):
+        return self.mail_send
+
+    def set_mail_send(self, mail_send):
+        self.mail_send=mail_send
+
+    def get_mail_subject(self):
+        return self.mail_subject
+
+    def set_mail_subject(self, mail_subject):
+        self.mail_subject=mail_subject
+
+    def get_mail_content(self):
+        return self.mail_content
+
+    def set_mail_content(self, mail_content):
+        self.mail_content = mail_content
 
 
 class Plugin(threading.Thread):
@@ -94,6 +115,11 @@ class Plugin(threading.Thread):
                         self.context.put('parameterMap', json.loads(item_obj.get_file_server())['parameterMap'])
 
                     task_data = item_obj.get_parameter_map()
+
+                    # check if mail send is actve or not and set mail params to context object.. plugins get mail params via context object
+                    self.context.set_mail_send(task_data['mailSend'] if 'mailSend' in task_data else False)
+                    self.context.set_mail_subject(task_data['mailSubject'] if 'mailSubject' in task_data else '')
+                    self.context.set_mail_content(task_data['mailContent'] if 'mailContent' in task_data else '')
 
                     self.logger.debug('[Plugin] Sending notify to user about task process')
 
