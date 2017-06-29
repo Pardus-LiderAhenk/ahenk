@@ -6,8 +6,9 @@
 class PolicyBean(object):
     """docstring for PolicyBean"""
 
-    def __init__(self, ahenk_policy_version=None, user_policy_version=None, ahenk_profiles=None, user_profiles=None, timestamp=None, username=None, agent_execution_id=None, user_execution_id=None):
-
+    def __init__(self, ahenk_policy_version=None, user_policy_version=None, ahenk_profiles=None, user_profiles=None,
+                 timestamp=None, username=None, agent_execution_id=None, user_execution_id=None,
+                 agent_expiration_date=None, user_expiration_date=None):
         self.ahenk_policy_version = ahenk_policy_version
         self.user_policy_version = user_policy_version
         self.ahenk_profiles = ahenk_profiles
@@ -16,6 +17,8 @@ class PolicyBean(object):
         self.username = username
         self.agent_execution_id = agent_execution_id
         self.user_execution_id = user_execution_id
+        self.agent_expiration_date = agent_expiration_date
+        self.user_expiration_date = user_expiration_date
 
     def get_ahenk_policy_version(self):
         return self.ahenk_policy_version
