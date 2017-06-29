@@ -22,7 +22,6 @@ class AhenkDbService(object):
 
         self.lock = threading.Lock()
 
-
         # TODO get columns anywhere
         # TODO scheduler db init get here
 
@@ -34,7 +33,7 @@ class AhenkDbService(object):
                                      'file_server TEXT'])
         self.check_and_create_table('policy',
                                     ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'type TEXT', 'version TEXT', 'name TEXT',
-                                     'execution_id TEXT'])
+                                     'execution_id TEXT','expiration_date TEXT'])
         self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT',
                                                 'overridable INTEGER', 'active TEXT', 'deleted TEXT',
                                                 'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT'])
