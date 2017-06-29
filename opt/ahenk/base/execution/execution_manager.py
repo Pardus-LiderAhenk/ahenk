@@ -3,7 +3,7 @@
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
 import json
-
+import time
 from base.file.file_transfer_manager import FileTransferManager
 from base.model.enum.content_type import ContentType
 from base.model.enum.message_code import MessageCode
@@ -229,11 +229,13 @@ class ExecutionManager(object):
             if ahenk_policy_id is not None:
                 self.db_service.delete('profile', 'id=' + str(ahenk_policy_id))
                 self.db_service.delete('plugin', 'id=' + str(ahenk_policy_id))
-                self.db_service.update('policy', ['version'], [str(policy.get_ahenk_policy_version())], 'type=\'A\'')
+                self.db_service.update('policy', ['version', 'execution_id', 'expiration_date'],
+                                       [str(policy.get_ahenk_policy_version()), policy.agent_execution_id,
+                                        policy.agent_expiration_date], 'type=\'A\'')
             else:
-                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id'],
+                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id', 'expiration_date'],
                                        ['A', str(policy.get_ahenk_policy_version()), machine_uid,
-                                        policy.get_agent_execution_id()])
+                                        policy.get_agent_execution_id(), policy.agent_expiration_date])
                 ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
 
             for profile in policy.get_ahenk_profiles():
@@ -263,12 +265,14 @@ class ExecutionManager(object):
                 # TODO remove profiles' plugins
                 self.db_service.delete('profile', 'id=' + str(user_policy_id))
                 self.db_service.delete('plugin', 'id=' + str(user_policy_id))
-                self.db_service.update('policy', ['version'], [str(policy.get_user_policy_version())],
+                self.db_service.update('policy', ['version', 'execution_id', 'expiration_date'],
+                                       [str(policy.get_user_policy_version()), policy.user_execution_id,
+                                        policy.user_expiration_date],
                                        'type=\'U\' and name=\'' + policy.get_username() + '\'')
             else:
                 self.db_service.update('policy', ['type', 'version', 'name', 'execution_id'],
                                        ['U', str(policy.get_user_policy_version()), policy.get_username(),
-                                        policy.get_user_execution_id()])
+                                        policy.get_user_execution_id(), policy.user_expiration_date])
                 user_policy_id = self.db_service.select_one_result('policy', 'id',
                                                                    'type = \'U\' and name=\'' + policy.get_username() + '\'')
 
@@ -293,13 +297,17 @@ class ExecutionManager(object):
             self.db_service.update('policy', ['execution_id'], [policy.get_user_execution_id()], 'type = \'U\'')
 
         policy = self.get_active_policies(policy.get_username())
+        # TODO check is null
         self.task_manager.addPolicy(policy)
 
     def get_active_policies(self, username):
 
-        user_policy = self.db_service.select('policy', ['id', 'version', 'name'],
+        # TODO vt den gecerli son tarihi olani cek
+        user_policy = self.db_service.select('policy', ['id', 'version', 'name', 'expiration_date'],
                                              ' type=\'U\' and name=\'' + username + '\'')
-        ahenk_policy = self.db_service.select('policy', ['id', 'version'], ' type=\'A\' ')
+        ahenk_policy = self.db_service.select('policy', ['id', 'version', 'expiration_date'], ' type=\'A\' ')
+
+        current_timestamp = int(time.time()) * 1000
 
         plugin_columns = ['id', 'active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date',
                           'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
@@ -308,9 +316,10 @@ class ExecutionManager(object):
 
         policy = PolicyBean(username=username)
 
-        if len(user_policy) > 0:
+        if len(user_policy) > 0 and int(user_policy[0][3]) > current_timestamp:
             user_policy_version = user_policy[0][0]
             policy.set_user_policy_version(user_policy_version)
+
             user_profiles = self.db_service.select('profile', profile_columns, ' id=' + str(user_policy_version) + ' ')
             arr_profiles = []
             if len(user_profiles) > 0:
@@ -326,7 +335,7 @@ class ExecutionManager(object):
                                     profile[7], profile[8], plugin, policy.get_username()))
                 policy.set_user_profiles(arr_profiles)
 
-        if len(ahenk_policy) > 0:
+        if len(ahenk_policy) > 0 and int(ahenk_policy[0][2]) > current_timestamp:
             ahenk_policy_version = ahenk_policy[0][0]
             policy.set_ahenk_policy_version(ahenk_policy_version)
             ahenk_profiles = self.db_service.select('profile', profile_columns,
@@ -470,4 +479,6 @@ class ExecutionManager(object):
                           user_policy_version=json_data['userPolicyVersion'], ahenk_profiles=ahenk_prof_arr,
                           user_profiles=user_prof_arr, timestamp=json_data['timestamp'], username=json_data['username'],
                           agent_execution_id=json_data['agentCommandExecutionId'],
-                          user_execution_id=json_data['userCommandExecutionId'])
+                          user_execution_id=json_data['userCommandExecutionId'],
+                          agent_expiration_date=json_data['agentPolicyExpirationDate'],
+                          user_expiration_date=json_data['userPolicyExpirationDate'])
