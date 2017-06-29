@@ -103,7 +103,7 @@ class Plugin(threading.Thread):
                                              "{0} eklentisi şu anda bir görev çalıştırıyor.".format(self.getName()),
                                              System.Sessions.display(user),
                                              user)
-                    self.context.put('taskData',task_data)
+                    self.context.put('taskData', task_data)
                     self.context.put('taskId', item_obj.get_id())
 
                     self.logger.debug('[Plugin] Handling task')
