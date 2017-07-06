@@ -50,7 +50,7 @@ class AhenkDbService(object):
         self.check_and_create_table('agreement',
                                     ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'contract_id TEXT', 'username TEXT',
                                      'timestamp TEXT', 'choice TEXT'])
-        self.check_and_create_table('session', ['username TEXT', 'display TEXT', 'desktop TEXT', 'timestamp TEXT'])
+        self.check_and_create_table('session', ['username TEXT', 'display TEXT', 'desktop TEXT', 'timestamp TEXT', 'ip TEXT'])
 
         self.check_and_create_table('mail', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'command TEXT', 'mailstatus INTEGER',  'timestamp TEXT'])
 
@@ -61,7 +61,7 @@ class AhenkDbService(object):
         elif table_name == 'contract':
             return ['content', 'title', 'timestamp']
         elif table_name == 'session':
-            return ['username', 'display', 'desktop', 'timestamp']
+            return ['username', 'display', 'desktop', 'timestamp', 'ip']
         elif table_name == 'task':
             return ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin',
                     'cron_expr', 'file_server']
