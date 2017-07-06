@@ -28,6 +28,9 @@ class CommandRunner(object):
 
     def check_last_login(self):
         last_login_tmstmp=self.db_service.select_one_result('session', 'timestamp')
+        if not last_login_tmstmp:
+            return True
+
         if (int(time.time())-int(last_login_tmstmp))<10:
             return False
         else:
@@ -57,6 +60,11 @@ class CommandRunner(object):
                     username = json_data['username']
                     display = json_data['display']
                     desktop = json_data['desktop']
+
+                    ip = None
+                    if 'ip' in json_data:
+                        ip = json_data['ip']
+
                     self.logger.info('login event is handled for user: {0}'.format(username))
                     login_message = self.message_manager.login_msg(username)
                     self.messenger.send_direct_message(login_message)
@@ -110,7 +118,7 @@ class CommandRunner(object):
                                                                                 username))
                         session_columns = self.db_service.get_cols('session')
                         self.db_service.update('session', session_columns,
-                                               [username, display, desktop, str(int(time.time()))])
+                                               [username, display, desktop, str(int(time.time())),ip])
                         get_policy_message = self.message_manager.policy_request_msg(username)
 
                         self.plugin_manager.process_mode('safe', username)

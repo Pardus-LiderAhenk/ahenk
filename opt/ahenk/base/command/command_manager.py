@@ -38,12 +38,14 @@ class Commander(object):
                 self.clean()
                 return False
 
-            elif len(params) == 5 and params[1] == 'login':
+            elif len(params) > 4 and params[1] == 'login':
                 print('{0} logging in'.format(str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
                 data['desktop'] = params[3]
                 data['display'] = params[4]
+                if len(params) == 6:
+                    data['ip'] = params[5]
 
             elif len(params) == 3 and params[1] == 'logout':
                 print('{0} logging out'.format(str(params[2])))
