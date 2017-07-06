@@ -121,6 +121,15 @@ class System:
                 return None
 
         @staticmethod
+        def ip():
+            system = System()
+            try:
+                ip = system.db_service.select_one_result('session', 'ip')
+                return ip
+            except:
+                return None
+
+        @staticmethod
         def get_pid_number():
             pid_number = None
             try:
