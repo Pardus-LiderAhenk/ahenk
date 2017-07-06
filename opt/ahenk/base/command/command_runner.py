@@ -26,6 +26,13 @@ class CommandRunner(object):
         self.db_service = scope.get_db_service()
         self.execute_manager = scope.get_execution_manager()
 
+    def check_last_login(self):
+        last_login_tmstmp=self.db_service.select_one_result('session', 'timestamp')
+        if (int(time.time())-int(last_login_tmstmp))<10:
+            return False
+        else:
+            return True
+
     def run_command_from_fifo(self, num, stack):
         """ docstring"""
 
@@ -46,7 +53,7 @@ class CommandRunner(object):
                 self.logger.debug('Signal handled')
                 self.logger.debug('Signal is :{0}'.format(str(json_data['event'])))
 
-                if str(json_data['event']) == 'login':
+                if str(json_data['event']) == 'login' and self.check_last_login():
                     username = json_data['username']
                     display = json_data['display']
                     desktop = json_data['desktop']
@@ -103,7 +110,7 @@ class CommandRunner(object):
                                                                                 username))
                         session_columns = self.db_service.get_cols('session')
                         self.db_service.update('session', session_columns,
-                                               [username, display, desktop, Util.timestamp()])
+                                               [username, display, desktop, str(int(time.time()))])
                         get_policy_message = self.message_manager.policy_request_msg(username)
 
                         self.plugin_manager.process_mode('safe', username)
