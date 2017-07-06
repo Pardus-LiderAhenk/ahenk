@@ -132,10 +132,13 @@ class Util:
             raise
 
     @staticmethod
-    def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True, as_user=None):
+    def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True, as_user=None, ip=None):
 
         try:
-            if as_user is not None:
+            if ip:
+                command = 'ssh root@{0} "{1}"'.format(ip, command)
+
+            elif as_user:
                 command = 'su - {0} -c "{1}"'.format(as_user, command)
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
                                        stdout=subprocess.PIPE, shell=shell)
@@ -297,7 +300,7 @@ class Util:
             inner_command += ' -i {0}'.format(icon)
 
         if user != 'root':
-            Util.execute('export DISPLAY={0}; su - {1} -c \'{2}\''.format(display, user,inner_command))
+            Util.execute('export DISPLAY={0}; su - {1} -c \'{2}\''.format(display, user, inner_command))
 
     @staticmethod
     def ask_permission(display, username, message, title):
