@@ -5,7 +5,7 @@
 
 import json
 import threading
-
+import ast
 from base.file.file_transfer_manager import FileTransferManager
 from base.model.enum.content_type import ContentType
 from base.model.enum.message_code import MessageCode
@@ -135,7 +135,8 @@ class Plugin(threading.Thread):
                     self.logger.debug('[Plugin] Handling task')
                     Scope.get_instance().get_plugin_manager().find_command(self.getName(),
                                                                            item_obj.get_plugin().get_version(),
-                                                                           item_obj.get_command_cls_id().lower()).handle_task(task_data, self.context)
+                                                                           item_obj.get_command_cls_id().lower()).handle_task(ast.literal_eval(str(task_data)), self.context)
+
 
                     if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
