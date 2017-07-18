@@ -53,7 +53,6 @@ class ScheduleTaskDB(object):
         self.logger.debug('Getting task from db.')
         try:
             db_task = self.db_service.select('task', criteria='id={0}'.format(task_id))[0]
-            self.logger.debug('db_task-------->'+str(db_task))
             return TaskBean(db_task[0], db_task[1], db_task[2], db_task[3], db_task[4], db_task[5],
                             self.get_plugin_by_id(db_task[6]), db_task[7], db_task[8])
         except Exception as e:
@@ -62,7 +61,6 @@ class ScheduleTaskDB(object):
     def get_plugin_by_id(self, plugin_id):
         self.logger.debug('Getting plugin from db.')
         db_plugin = self.db_service.select('plugin', criteria='id={0}'.format(plugin_id))[0]
-        self.logger.debug('db_plugin-------->' + str(db_plugin))
         return PluginBean(db_plugin[0], db_plugin[1], db_plugin[2], db_plugin[3], db_plugin[4], db_plugin[5],
                           db_plugin[6], db_plugin[7], db_plugin[8], db_plugin[11], db_plugin[9], db_plugin[10],
                           db_plugin[12])
