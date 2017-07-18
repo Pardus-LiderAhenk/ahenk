@@ -211,150 +211,160 @@ class ExecutionManager(object):
         return plugin
 
     def execute_policy(self, arg):
-        self.logger.debug('Updating policies...')
-        policy = self.json_to_PolicyBean(json.loads(arg))
-        self.policy_executed[policy.get_username()] = True
-        machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
-        ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
-        user_policy_version = self.db_service.select_one_result('policy', 'version',
-                                                                'type = \'U\' and name = \'' + policy.get_username() + '\'')
+        try:
+            self.logger.debug('Updating policies...')
+            policy = self.json_to_PolicyBean(json.loads(arg))
+            self.policy_executed[policy.get_username()] = True
+            machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
+            ahenk_policy_ver = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
+            user_policy_version = self.db_service.select_one_result('policy', 'version',
+                                                                    'type = \'U\' and name = \'' + policy.get_username() + '\'')
 
-        profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active',
-                           'deleted', 'profile_data', 'plugin']
-        plugin_columns = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name',
-                          'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
+            profile_columns = ['id', 'create_date', 'modify_date', 'label', 'description', 'overridable', 'active',
+                               'deleted', 'profile_data', 'plugin']
+            plugin_columns = ['active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date', 'name',
+                              'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
 
-        if policy.get_ahenk_policy_version() != ahenk_policy_ver:
-            ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
-            if ahenk_policy_id is not None:
-                self.db_service.delete('profile', 'id=' + str(ahenk_policy_id))
-                self.db_service.delete('plugin', 'id=' + str(ahenk_policy_id))
-                self.db_service.update('policy', ['version', 'execution_id', 'expiration_date'],
-                                       [str(policy.get_ahenk_policy_version()), policy.agent_execution_id,
-                                        policy.agent_expiration_date], 'type=\'A\'')
-            else:
-                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id', 'expiration_date'],
-                                       ['A', str(policy.get_ahenk_policy_version()), machine_uid,
-                                        policy.get_agent_execution_id(), policy.agent_expiration_date])
+            if policy.get_ahenk_policy_version() != ahenk_policy_ver:
                 ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
+                if ahenk_policy_id is not None:
+                    self.db_service.delete('profile', 'id=' + str(ahenk_policy_id))
+                    self.db_service.delete('plugin', 'id=' + str(ahenk_policy_id))
+                    self.db_service.update('policy', ['version', 'execution_id', 'expiration_date'],
+                                           [str(policy.get_ahenk_policy_version()), policy.agent_execution_id,
+                                            str(policy.agent_expiration_date)], 'type=\'A\'')
+                else:
+                    self.db_service.update('policy', ['type', 'version', 'name', 'execution_id', 'expiration_date'],
+                                           ['A', str(policy.get_ahenk_policy_version()), machine_uid,
+                                            policy.get_agent_execution_id(), policy.agent_expiration_date])
+                    ahenk_policy_id = self.db_service.select_one_result('policy', 'id', 'type = \'A\'')
 
-            for profile in policy.get_ahenk_profiles():
-                plugin = profile.get_plugin()
+                for profile in policy.get_ahenk_profiles():
+                    plugin = profile.get_plugin()
 
-                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()),
-                               str(plugin.get_description()), str(plugin.get_machine_oriented()),
-                               str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()),
-                               str(plugin.get_user_oriented()), str(plugin.get_version()),
-                               str(plugin.get_task_plugin()), str(plugin.get_x_based())]
-                plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
+                    plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()),
+                                   str(plugin.get_description()), str(plugin.get_machine_oriented()),
+                                   str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()),
+                                   str(plugin.get_user_oriented()), str(plugin.get_version()),
+                                   str(plugin.get_task_plugin()), str(plugin.get_x_based())]
+                    plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
 
-                profile_args = [str(ahenk_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()),
-                                str(profile.get_label()), str(profile.get_description()),
-                                str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()),
-                                str(profile.get_profile_data()), plugin_id]
-                self.db_service.update('profile', profile_columns, profile_args)
+                    profile_args = [str(ahenk_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()),
+                                    str(profile.get_label()), str(profile.get_description()),
+                                    str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()),
+                                    str(profile.get_profile_data()), plugin_id]
+                    self.db_service.update('profile', profile_columns, profile_args)
 
-        else:
-            self.logger.debug('Already there is ahenk policy. Command Execution Id is updating')
-            self.db_service.update('policy', ['execution_id'], [policy.get_agent_execution_id()], 'type = \'A\'')
-
-        if policy.get_user_policy_version() != user_policy_version:
-            user_policy_id = self.db_service.select_one_result('policy', 'id',
-                                                               'type = \'U\' and name=\'' + policy.get_username() + '\'')
-            if user_policy_id is not None:
-                # TODO remove profiles' plugins
-                self.db_service.delete('profile', 'id=' + str(user_policy_id))
-                self.db_service.delete('plugin', 'id=' + str(user_policy_id))
-                self.db_service.update('policy', ['version', 'execution_id', 'expiration_date'],
-                                       [str(policy.get_user_policy_version()), policy.user_execution_id,
-                                        policy.user_expiration_date],
-                                       'type=\'U\' and name=\'' + policy.get_username() + '\'')
+            elif ahenk_policy_ver:
+                self.logger.debug('Already there is ahenk policy. Command Execution Id is updating')
+                self.db_service.update('policy', ['execution_id'], [policy.get_agent_execution_id()], 'type = \'A\'')
             else:
-                self.db_service.update('policy', ['type', 'version', 'name', 'execution_id'],
-                                       ['U', str(policy.get_user_policy_version()), policy.get_username(),
-                                        policy.get_user_execution_id(), policy.user_expiration_date])
+                self.logger.debug('There is no any Ahenk policy.')
+
+            if policy.get_user_policy_version() != user_policy_version:
                 user_policy_id = self.db_service.select_one_result('policy', 'id',
                                                                    'type = \'U\' and name=\'' + policy.get_username() + '\'')
+                if user_policy_id is not None:
+                    # TODO remove profiles' plugins
+                    self.db_service.delete('profile', 'id=' + str(user_policy_id))
+                    self.db_service.delete('plugin', 'id=' + str(user_policy_id))
+                    self.db_service.update('policy', ['version', 'execution_id', 'expiration_date'],
+                                           [str(policy.get_user_policy_version()), policy.user_execution_id,
+                                            str(policy.user_expiration_date)],
+                                           'type=\'U\' and name=\'' + policy.get_username() + '\'')
+                else:
+                    self.db_service.update('policy', ['type', 'version', 'name', 'execution_id', 'expiration_date'],
+                                           ['U', str(policy.get_user_policy_version()), policy.get_username(),
+                                            policy.get_user_execution_id(), policy.user_expiration_date])
+                    user_policy_id = self.db_service.select_one_result('policy', 'id',
+                                                                       'type = \'U\' and name=\'' + policy.get_username() + '\'')
 
-            for profile in policy.get_user_profiles():
-                plugin = profile.get_plugin()
+                for profile in policy.get_user_profiles():
+                    plugin = profile.get_plugin()
 
-                plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()),
-                               str(plugin.get_description()), str(plugin.get_machine_oriented()),
-                               str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()),
-                               str(plugin.get_user_oriented()), str(plugin.get_version()),
-                               str(plugin.get_task_plugin()), str(plugin.get_x_based())]
-                plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
+                    plugin_args = [str(plugin.get_active()), str(plugin.get_create_date()), str(plugin.get_deleted()),
+                                   str(plugin.get_description()), str(plugin.get_machine_oriented()),
+                                   str(plugin.get_modify_date()), str(plugin.get_name()), str(plugin.get_policy_plugin()),
+                                   str(plugin.get_user_oriented()), str(plugin.get_version()),
+                                   str(plugin.get_task_plugin()), str(plugin.get_x_based())]
+                    plugin_id = self.db_service.update('plugin', plugin_columns, plugin_args)
 
-                profile_args = [str(user_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()),
-                                str(profile.get_label()), str(profile.get_description()),
-                                str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()),
-                                str(profile.get_profile_data()), plugin_id]
-                self.db_service.update('profile', profile_columns, profile_args)
+                    profile_args = [str(user_policy_id), str(profile.get_create_date()), str(profile.get_modify_date()),
+                                    str(profile.get_label()), str(profile.get_description()),
+                                    str(profile.get_overridable()), str(profile.get_active()), str(profile.get_deleted()),
+                                    str(profile.get_profile_data()), plugin_id]
+                    self.db_service.update('profile', profile_columns, profile_args)
 
-        else:
-            self.logger.debug('Already there is user policy. . Command Execution Id is updating')
-            self.db_service.update('policy', ['execution_id'], [policy.get_user_execution_id()], 'type = \'U\'')
+            elif user_policy_version:
+                self.logger.debug('Already there is user policy. . Command Execution Id is updating')
+                self.db_service.update('policy', ['execution_id'], [policy.get_user_execution_id()], 'type = \'U\'')
+            else:
+                self.logger.debug('There is no any user policy')
 
-        policy = self.get_active_policies(policy.get_username())
-        # TODO check is null
-        self.task_manager.addPolicy(policy)
+            policy = self.get_active_policies(policy.get_username())
+            # TODO check is null
+            self.task_manager.addPolicy(policy)
+        except Exception as e:
+            self.logger.error('A problem occurred while executing policy. Erroe Message: {0}:'.format(str(e)))
 
     def get_active_policies(self, username):
 
-        # TODO vt den gecerli son tarihi olani cek
-        user_policy = self.db_service.select('policy', ['id', 'version', 'name', 'expiration_date'],
-                                             ' type=\'U\' and name=\'' + username + '\'')
-        ahenk_policy = self.db_service.select('policy', ['id', 'version', 'expiration_date'], ' type=\'A\' ')
+        try:
+            # TODO vt den gecerli son tarihi olani cek
+            user_policy = self.db_service.select('policy', ['id', 'version', 'name', 'expiration_date'],
+                                                 ' type=\'U\' and name=\'' + username + '\'')
+            ahenk_policy = self.db_service.select('policy', ['id', 'version', 'expiration_date'], ' type=\'A\' ')
 
-        current_timestamp = int(time.time()) * 1000
+            current_timestamp = int(time.time()) * 1000
 
-        plugin_columns = ['id', 'active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date',
-                          'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
-        profile_columns = ['id', 'create_date', 'label', 'description', 'overridable', 'active', 'deleted',
-                           'profile_data', 'modify_date', 'plugin']
+            plugin_columns = ['id', 'active', 'create_date', 'deleted', 'description', 'machine_oriented', 'modify_date',
+                              'name', 'policy_plugin', 'user_oriented', 'version', 'task_plugin', 'x_based']
+            profile_columns = ['id', 'create_date', 'label', 'description', 'overridable', 'active', 'deleted',
+                               'profile_data', 'modify_date', 'plugin']
 
-        policy = PolicyBean(username=username)
+            policy = PolicyBean(username=username)
 
-        if len(user_policy) > 0 and int(user_policy[0][3]) > current_timestamp:
-            user_policy_version = user_policy[0][0]
-            policy.set_user_policy_version(user_policy_version)
+            if len(user_policy) > 0 and (user_policy[0][3] is None or int(user_policy[0][3]) > current_timestamp):
+                user_policy_version = user_policy[0][0]
+                policy.set_user_policy_version(user_policy_version)
 
-            user_profiles = self.db_service.select('profile', profile_columns, ' id=' + str(user_policy_version) + ' ')
-            arr_profiles = []
-            if len(user_profiles) > 0:
-                for profile in user_profiles:
-                    plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
-                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3],
-                                        description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7],
-                                        policy_plugin=plu[8], user_oriented=plu[9], version=plu[10],
-                                        task_plugin=plu[11], x_based=plu[12])
+                user_profiles = self.db_service.select('profile', profile_columns, ' id=' + str(user_policy_version) + ' ')
+                arr_profiles = []
+                if len(user_profiles) > 0:
+                    for profile in user_profiles:
+                        plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
+                        plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3],
+                                            description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7],
+                                            policy_plugin=plu[8], user_oriented=plu[9], version=plu[10],
+                                            task_plugin=plu[11], x_based=plu[12])
 
-                    arr_profiles.append(
-                        ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6],
-                                    profile[7], profile[8], plugin, policy.get_username()))
-                policy.set_user_profiles(arr_profiles)
+                        arr_profiles.append(
+                            ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6],
+                                        profile[7], profile[8], plugin, policy.get_username()))
+                    policy.set_user_profiles(arr_profiles)
 
-        if len(ahenk_policy) > 0 and int(ahenk_policy[0][2]) > current_timestamp:
-            ahenk_policy_version = ahenk_policy[0][0]
-            policy.set_ahenk_policy_version(ahenk_policy_version)
-            ahenk_profiles = self.db_service.select('profile', profile_columns,
-                                                    ' id=' + str(ahenk_policy_version) + ' ')
-            arr_profiles = []
-            if len(ahenk_profiles) > 0:
-                for profile in ahenk_profiles:
-                    plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
-                    plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3],
-                                        description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7],
-                                        policy_plugin=plu[8], user_oriented=plu[9], version=plu[10],
-                                        task_plugin=plu[11], x_based=plu[12])
+            if len(ahenk_policy) > 0 and ( ahenk_policy[0][2] is None or int(ahenk_policy[0][2]) > current_timestamp):
+                ahenk_policy_version = ahenk_policy[0][0]
+                policy.set_ahenk_policy_version(ahenk_policy_version)
+                ahenk_profiles = self.db_service.select('profile', profile_columns,
+                                                        ' id=' + str(ahenk_policy_version) + ' ')
+                arr_profiles = []
+                if len(ahenk_profiles) > 0:
+                    for profile in ahenk_profiles:
+                        plu = self.db_service.select('plugin', plugin_columns, ' id=\'' + profile[9] + '\'')[0]
+                        plugin = PluginBean(p_id=plu[0], active=plu[1], create_date=plu[2], deleted=plu[3],
+                                            description=plu[4], machine_oriented=plu[5], modify_date=plu[6], name=plu[7],
+                                            policy_plugin=plu[8], user_oriented=plu[9], version=plu[10],
+                                            task_plugin=plu[11], x_based=plu[12])
 
-                    arr_profiles.append(
-                        ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6],
-                                    profile[7], profile[8], plugin, policy.get_username()))
-                policy.set_ahenk_profiles(arr_profiles)
+                        arr_profiles.append(
+                            ProfileBean(profile[0], profile[1], profile[2], profile[3], profile[4], profile[5], profile[6],
+                                        profile[7], profile[8], plugin, policy.get_username()))
+                    policy.set_ahenk_profiles(arr_profiles)
 
-        return policy
+            return policy
+        except Exception as e:
+            self.logger.error('A problem occurred while getting active policies. Error Message : {0}'.format(str(e)))
 
     def execute_task(self, arg):
 
