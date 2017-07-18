@@ -27,11 +27,11 @@ class CommandRunner(object):
         self.execute_manager = scope.get_execution_manager()
 
     def check_last_login(self):
-        last_login_tmstmp=self.db_service.select_one_result('session', 'timestamp')
+        last_login_tmstmp = self.db_service.select_one_result('session', 'timestamp')
         if not last_login_tmstmp:
             return True
 
-        if (int(time.time())-int(last_login_tmstmp))<10:
+        if (int(time.time()) - int(last_login_tmstmp)) < 10:
             return False
         else:
             return True
@@ -72,7 +72,7 @@ class CommandRunner(object):
                     agreement = Agreement()
                     agreement_choice = None
 
-                    if agreement.check_agreement(username) is not True:
+                    if agreement.check_agreement(username) is not True and System.Ahenk.agreement() == '1':
                         self.logger.debug('User {0} has not accepted agreement.'.format(username))
                         thread_ask = Process(target=agreement.ask, args=(username, display,))
                         thread_ask.start()
@@ -110,7 +110,7 @@ class CommandRunner(object):
                     else:
                         agreement_choice = True
 
-                    if agreement_choice is True:
+                    if agreement_choice is True or System.Ahenk.agreement() != '1':
                         self.db_service.delete('session', 'username=\'{0}\''.format(username))
 
                         self.logger.info(
@@ -118,7 +118,7 @@ class CommandRunner(object):
                                                                                 username))
                         session_columns = self.db_service.get_cols('session')
                         self.db_service.update('session', session_columns,
-                                               [username, display, desktop, str(int(time.time())),ip])
+                                               [username, display, desktop, str(int(time.time())), ip])
                         get_policy_message = self.message_manager.policy_request_msg(username)
 
                         self.plugin_manager.process_mode('safe', username)
