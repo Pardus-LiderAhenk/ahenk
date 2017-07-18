@@ -112,6 +112,13 @@ class System:
             return config.get('PLUGIN', 'mainModuleName')
 
         @staticmethod
+        def agreement():
+            config = configparser.ConfigParser()
+            config._interpolation = configparser.ExtendedInterpolation()
+            config.read(System.Ahenk.config_path())
+            return config.get('MACHINE', 'agreement')
+
+        @staticmethod
         def dn():
             system = System()
             try:
