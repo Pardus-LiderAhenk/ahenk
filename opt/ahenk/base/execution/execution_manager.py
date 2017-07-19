@@ -315,7 +315,7 @@ class ExecutionManager(object):
 
     def check_expiration(self, expiration):
         current_timestamp = int(time.time()) * 1000
-        if expiration.lower() =='none':
+        if str(expiration) =='None':
             return True
         elif int(expiration) > current_timestamp:
             return True
