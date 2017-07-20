@@ -141,7 +141,7 @@ class Plugin(threading.Thread):
                     if self.context.data is not None and self.context.get('responseCode') is not None:
                         self.logger.debug('[Plugin] Creating response')
                         response = Response(type=MessageType.TASK_STATUS.value, id=item_obj.get_id(),
-                                            code=self.context.get('responseCode'),
+                                             code=self.context.get('responseCode'),
                                             message=self.context.get('responseMessage'),
                                             data=self.context.get('responseData'),
                                             content_type=self.context.get('contentType'))
@@ -187,6 +187,12 @@ class Plugin(threading.Thread):
                     self.logger.debug('[Plugin] Executing profile')
                     profile_data = item_obj.get_profile_data()
                     self.context.put('username', item_obj.get_username())
+
+                    json_profile_data=json.loads(profile_data)
+                    self.context.set_mail_send(json_profile_data['mailSend'] if 'mailSend' in json_profile_data else False)
+                    self.context.set_mail_subject(json_profile_data['mailSubject'] if 'mailSubject' in json_profile_data else '')
+                    self.context.set_mail_content(json_profile_data['mailContent'] if 'mailContent' in json_profile_data else '')
+
 
                     execution_id = self.get_execution_id(item_obj.get_id())
                     policy_ver = self.get_policy_version(item_obj.get_id())
