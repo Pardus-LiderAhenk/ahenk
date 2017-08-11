@@ -5,6 +5,7 @@
 from base.scope import Scope
 from base.model.message_factory import MessageFactory
 from base.model.enum.message_type import MessageType
+import json
 
 
 class TaskManager(object):
@@ -50,8 +51,11 @@ class TaskManager(object):
                            str(task.get_plugin().get_user_oriented()), str(task.get_plugin().get_version()),
                            str(task.get_plugin().get_task_plugin()), str(task.get_plugin().get_x_based())]
             plugin_id = self.db_service.update('plugin', plu_cols, plugin_args)
+
+            params = json.dumps(task.get_parameter_map())
+
             values = [str(task.get_id()), str(task.get_create_date()), str(task.get_modify_date()),
-                      str(task.get_command_cls_id()), task.get_parameter_map(), str(task.get_deleted()),
+                      str(task.get_command_cls_id()),  str(params), str(task.get_deleted()),
                       str(plugin_id), str(task.get_cron_str()), str(task.get_file_server())]
             self.db_service.update('task', task_cols, values)
         except Exception as e:
