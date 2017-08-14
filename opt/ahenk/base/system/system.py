@@ -299,6 +299,12 @@ class System:
             desktop = system.db_service.select_one_result('session', 'desktop', " username='{0}'".format(username))
             return desktop
 
+        staticmethod
+        def userip(username):
+            system = System()
+            userip = system.db_service.select_one_result('session', 'ip', " username='{0}'".format(username))
+            return userip
+
         @staticmethod
         def user_home_path(username):
             # TODO temp
