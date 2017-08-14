@@ -72,6 +72,9 @@ class Messaging(object):
         data['timestamp'] = Util.timestamp()
         data['userIp'] = ip
 
+        self.logger.debug('USER IP : '+ str(ip)+ ' IPADDRESSES : '+ str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', ''))
+
+
         data['hardware.monitors'] = str(System.Hardware.monitors()),
         data['hardware.screens'] = str(System.Hardware.screens()),
         data['hardware.usbDevices'] = str(System.Hardware.usb_devices()),
