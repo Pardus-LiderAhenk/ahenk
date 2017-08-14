@@ -47,6 +47,7 @@ class Commander(object):
                 if len(params) == 6:
                     data['ip'] = params[5]
 
+
             elif len(params) == 3 and params[1] == 'logout':
                 print('{0} logging out'.format(str(params[2])))
                 data['event'] = params[1]

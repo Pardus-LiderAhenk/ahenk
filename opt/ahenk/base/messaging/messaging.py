@@ -64,12 +64,13 @@ class Messaging(object):
         self.logger.debug('Policy status message was created')
         return str(json_data)
 
-    def login_msg(self, username):
+    def login_msg(self, username,ip=None):
         data = dict()
         data['type'] = 'LOGIN'
         data['username'] = username
         data['ipAddresses'] = str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', '')
         data['timestamp'] = Util.timestamp()
+        data['userIp'] = ip
 
         data['hardware.monitors'] = str(System.Hardware.monitors()),
         data['hardware.screens'] = str(System.Hardware.screens()),

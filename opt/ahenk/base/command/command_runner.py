@@ -61,12 +61,13 @@ class CommandRunner(object):
                     display = json_data['display']
                     desktop = json_data['desktop']
 
+
                     ip = None
                     if 'ip' in json_data:
                         ip = json_data['ip']
 
                     self.logger.info('login event is handled for user: {0}'.format(username))
-                    login_message = self.message_manager.login_msg(username)
+                    login_message = self.message_manager.login_msg(username,ip)
                     self.messenger.send_direct_message(login_message)
 
                     agreement = Agreement()
