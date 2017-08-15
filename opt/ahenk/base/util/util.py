@@ -155,6 +155,16 @@ class Util:
             return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
 
     @staticmethod
+    def scopy_from_remote(source_path, destination_path, ip):
+        command = 'scp -r root@' + ip + ':' + source_path + ' ' + destination_path
+        process = subprocess.Popen(command,  stderr=subprocess.PIPE,stdout=subprocess.PIPE, shell=True)
+        result_code = process.wait()
+        p_out = process.stdout.read().decode("unicode_escape")
+        p_err = process.stderr.read().decode("unicode_escape")
+
+        return result_code, p_out, p_err
+
+    @staticmethod
     def execute_script(script_path, parameters=None):
         command = []
         if os.path.exists(script_path):
