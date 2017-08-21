@@ -114,7 +114,7 @@ class Plugin(threading.Thread):
                         self.context.put('protocol', json.loads(item_obj.get_file_server())['protocol'])
                         self.context.put('parameterMap', json.loads(item_obj.get_file_server())['parameterMap'])
 
-                    task_data = item_obj.get_parameter_map()
+                    task_data = json.loads(item_obj.get_parameter_map())
 
                     # check if mail send is actve or not and set mail params to context object.. plugins get mail params via context object
                     self.context.set_mail_send(task_data['mailSend'] if 'mailSend' in task_data else False)
