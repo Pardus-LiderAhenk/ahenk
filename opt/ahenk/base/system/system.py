@@ -172,7 +172,7 @@ class System:
 
         @staticmethod
         def received_dir_path():
-            path = '/tmp/.ahenk/'
+            path = '/tmp/' # move this to properties 
             if Util.is_exist(path) is False:
                 Util.create_directory(path)
                 Util.set_permission(path, '777')
