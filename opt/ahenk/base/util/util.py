@@ -136,7 +136,7 @@ class Util:
 
         try:
             if ip:
-                command = 'ssh root@{0} \'{1}\''.format(ip, command)
+                command = 'ssh root@{0} "{1}"'.format(ip, command)
 
             elif as_user:
                 command = 'su - {0} -c "{1}"'.format(as_user, command)
