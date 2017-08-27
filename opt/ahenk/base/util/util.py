@@ -12,7 +12,6 @@ import shutil
 import stat
 import subprocess
 import uuid
-from base.scope import Scope
 
 
 class Util:
@@ -138,11 +137,9 @@ class Util:
         try:
             if ip:
                 command = 'ssh root@{0} "{1}"'.format(ip, command)
-                Scope.get_instance().get_logger().debug('Executing command: ' +str(command))
 
             elif as_user:
                 command = 'su - {0} -c "{1}"'.format(as_user, command)
-                Scope.get_instance().get_logger().debug('Executing command: ' + str(command))
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
                                        stdout=subprocess.PIPE, shell=shell)
 
@@ -156,6 +153,16 @@ class Util:
                 return None, None, None
         except Exception as e:
             return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
+
+    @staticmethod
+    def scopy_from_remote(source_path, destination_path, ip):
+        command = 'scp -r root@' + ip + ':' + source_path + ' ' + destination_path
+        process = subprocess.Popen(command,  stderr=subprocess.PIPE,stdout=subprocess.PIPE, shell=True)
+        result_code = process.wait()
+        p_out = process.stdout.read().decode("unicode_escape")
+        p_err = process.stderr.read().decode("unicode_escape")
+
+        return result_code, p_out, p_err
 
     @staticmethod
     def execute_script(script_path, parameters=None):
