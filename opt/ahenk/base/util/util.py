@@ -12,6 +12,7 @@ import shutil
 import stat
 import subprocess
 import uuid
+from base.scope import Scope
 
 
 class Util:
@@ -137,9 +138,11 @@ class Util:
         try:
             if ip:
                 command = 'ssh root@{0} "{1}"'.format(ip, command)
+                Scope.get_instance().get_logger().debug('Executing command: ' +str(command))
 
             elif as_user:
                 command = 'su - {0} -c "{1}"'.format(as_user, command)
+                Scope.get_instance().get_logger().debug('Executing command: ' +str(command))
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
                                        stdout=subprocess.PIPE, shell=shell)
 
@@ -171,8 +174,6 @@ class Util:
             command.append(script_path)
         else:
             raise Exception('[Util] Script is required')
-
-        if parameters is not None:
             for p in parameters:
                 command.append(p)
 
