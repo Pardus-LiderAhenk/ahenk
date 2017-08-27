@@ -174,6 +174,7 @@ class Util:
             command.append(script_path)
         else:
             raise Exception('[Util] Script is required')
+        if parameters is not None:    
             for p in parameters:
                 command.append(p)
 
