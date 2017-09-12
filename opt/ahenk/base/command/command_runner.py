@@ -145,7 +145,10 @@ class CommandRunner(object):
                     self.execute_manager.remove_user_executed_policy_dict(username)
                     # TODO delete all user records while initializing
                     self.logger.info('logout event is handled for user: {0}'.format(username))
-                    logout_message = self.message_manager.logout_msg(username)
+                    ip = None
+                    if 'ip' in json_data:
+                        ip = json_data['ip']
+                    logout_message = self.message_manager.logout_msg(username,ip)
                     self.messenger.send_direct_message(logout_message)
 
                     self.plugin_manager.process_mode('logout', username)

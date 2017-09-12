@@ -85,11 +85,12 @@ class Messaging(object):
         self.logger.debug('Login message was created')
         return json_data
 
-    def logout_msg(self, username):
+    def logout_msg(self, username,ip):
         data = dict()
         data['type'] = 'LOGOUT'
         data['username'] = str(username)
         data['timestamp'] = Util.timestamp()
+        data['userIp'] = ip
         json_data = json.dumps(data)
         self.logger.debug('Logout message was created')
         return json_data
