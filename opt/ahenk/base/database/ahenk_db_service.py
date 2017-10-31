@@ -54,6 +54,8 @@ class AhenkDbService(object):
 
         self.check_and_create_table('mail', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'command TEXT', 'mailstatus INTEGER',  'timestamp TEXT'])
 
+        self.check_and_create_table('service', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'serviceName TEXT', 'serviceStatus TEXT','timestamp TEXT','task_id INTEGER'])
+
 
     def get_cols(self, table_name):
         if table_name == 'agreement':
