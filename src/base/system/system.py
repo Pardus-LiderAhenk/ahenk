@@ -10,6 +10,7 @@ import platform
 import re
 import socket
 import struct
+import netifaces
 from uuid import getnode as get_mac
 
 import cpuinfo
@@ -460,12 +461,17 @@ class System:
             @staticmethod
             def ip_addresses():
                 arr = []
-                for iface in psutil.net_io_counters(pernic=True):
-                    f = os.popen('ifconfig {0} | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1'.format(iface))
-                    ip = str(f.read()).replace('\n', '')
-                    if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$',
+                for iface in netifaces.interfaces():
+                    link = None
+                    try:
+                        link = netifaces.ifaddresses(iface)[netifaces.AF_INET][0]
+                    except:
+                        link = None
+                    if link is not None:
+                        ip = link['addr']
+                        if re.match(r'^((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])$',
                                 ip) and str(ip) != 'localhost' and str(ip) != '127.0.0.1':
-                        arr.append(ip)
+                            arr.append(ip)
                 return arr
 
             @staticmethod
