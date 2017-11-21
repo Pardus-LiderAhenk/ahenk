@@ -1,5 +1,0 @@
-#!/bin/bash
-# prerm script for ahenk
-#
-/usr/bin/python3 /opt/ahenk/ahenkd.py clean
-find /opt/ahenk | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
