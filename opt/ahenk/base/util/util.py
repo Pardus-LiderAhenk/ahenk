@@ -316,7 +316,7 @@ class Util:
 
     @staticmethod
     def ask_permission(display, username, message, title):
-        ask_path = '/opt/ahenk/base/agreement/confirm.py'
+        ask_path = '/usr/share/ahenk/base/agreement/confirm.py'
         try:
 
             if username is not None:

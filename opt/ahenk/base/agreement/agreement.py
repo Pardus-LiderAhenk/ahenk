@@ -14,7 +14,7 @@ class Agreement:
         self.message_manager = scope.get_message_manager()
         self.messenger = scope.get_messenger()
         self.db_service = scope.get_db_service()
-        self.ask_path = '/opt/ahenk/base/agreement/ask.py'
+        self.ask_path = '/usr/share/ahenk/base/agreement/ask.py'
         self.logger.debug('Instance initialized.')
 
     def agreement_contract_update(self):

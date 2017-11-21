@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /opt/ahenk/ahenkd.py start
-ExecStop=/usr/bin/python3 /opt/ahenk/ahenkd.py stop
+ExecStart=/usr/bin/python3 /usr/share/ahenk/ahenkd.py start
+ExecStop=/usr/bin/python3 /usr/share/ahenk/ahenkd.py stop
 PIDFile=/var/run/ahenkd.pid
 Restart=always
 
