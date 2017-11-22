@@ -1,0 +1,5 @@
+src/* /usr/share/ahenk/
+config/* /etc/ahenk/
+libpam-script/* /usr/share/libpam-script/
+service-files/ahenk.service /lib/systemd/system/
+service-files/ahenk /etc/init.d/
