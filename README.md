@@ -13,6 +13,60 @@ Ahenk is a Linux agent written in Python which enables Lider to manage & monitor
 * Learn how to [run](https://github.com/Pardus-LiderAhenk/ahenk/wiki/02.-Running) ahenk.
 * Create [Ahenk distribution](https://github.com/Pardus-LiderAhenk/ahenk/wiki/03.-Ahenk-Distribution) as .deb package
 
+## Packaging
+Install necessary packages
+```bash
+sudo apt install build-essential git-buildpackage debhelper debmake
+```
+
+Clone the project and switch to branch 'debian'
+```bash
+git clone https://github.com/Pardus-LiderAhenk/ahenk.git
+cd ahenk/
+git checkout debian
+```
+
+Install build dependencies via git-buildpackage
+```bash
+sudo mk-build-deps -ir
+```
+
+Build binary package
+```bash
+gbp buildpackage --git-export-dir=/tmp/build-area -b -us -uc
+#check the output directory
+ls -1 /tmp/build-area
+#output should be like this
+ahenk_1.0.0-2_all.deb
+ahenk_1.0.0-2_amd64.build
+ahenk_1.0.0-2_amd64.buildinfo
+ahenk_1.0.0-2_amd64.changes
+ahenk_1.0.0.orig.tar.gz
+```
+Build source package
+```bash
+gbp buildpackage --git-export-dir=/tmp/build-area -S -us -uc
+#check the output directory
+ls -1 /tmp/build-area
+#output should be like this
+ahenk_1.0.0-2.debian.tar.xz
+ahenk_1.0.0-2.dsc
+ahenk_1.0.0-2_source.build
+ahenk_1.0.0-2_source.buildinfo
+ahenk_1.0.0-2_source.changes
+ahenk_1.0.0.orig.tar.gz
+```
+
+If the master has new version tagged (eg: 1.0.2), debian branch should rebased
+```bash
+git rebase 1.0.2
+```
+Changelog should be updated after rebase and new debian tag should be created
+```bash
+gbp dch -Rc
+gbp buildpackage --git-tag-only
+```
+
 ## Contribution
 
 We encourage contributions to the project. To contribute:
