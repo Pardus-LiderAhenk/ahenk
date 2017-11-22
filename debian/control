@@ -1,0 +1,24 @@
+Source: ahenk
+Section: utils
+Priority: optional
+Maintainer: İsmail Başaran <ismail.basaran@tubitak.gov.tr>
+Uploaders: Yunusemre Şentürk <yunusemre.senturk@pardus.org.tr>
+Build-Depends: debhelper (>=9), dh-python, python3-all
+Standards-Version: 3.9.8
+Homepage: http://www.liderahenk.org.tr
+X-Python3-Version: >= 3.2
+
+Package: ahenk
+Architecture: all
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         python3-cpuinfo,
+         python3-netifaces,
+         python3-paramiko, 
+         python3-psutil,
+         python3-sleekxmpp,
+         python3-watchdog
+Description: The client side of the Lider Ahenk Project
+ Lider Ahenk is an open source project which provides solutions
+ to manage, monitor and audit unlimited number of different 
+ systems and users on a network.

@@ -1,0 +1,11 @@
+ahenk (1.0.0-2) unstable; urgency=medium
+
+  * Add postinstall and post remove script to take everything under control
+
+ -- Yunusemre Şentürk <yunusemre.senturk@pardus.org.tr>  Wed, 22 Nov 2017 09:59:39 +0300
+
+ahenk (1.0.0-1) onyedi; urgency=medium
+
+  * Initial release.
+
+ -- Yunusemre Şentürk <yunusemre.senturk@pardus.org.tr>  Tue, 21 Nov 2017 15:06:11 +0300
