@@ -3,3 +3,15 @@
 set -e
 
 mkdir -p /usr/share/ahenk/plugins
+
+if [ -f /etc/pam.d/common-session ]; then
+
+    mkdir -p /usr/share/ahenk/pam_scipts_original
+    cp -fr /etc/pam.d/common-session /usr/share/ahenk/pam_scripts_original/cammon-session
+    sed -i '/pam_script.so/d' /etc/pam.d/common-session
+    echo "session optional        pam_script.so"  >> /etc/pam.d/common-session
+    pam-auth-update
+fi
+
+systemctl enable ahenk
+systemctl start ahenk

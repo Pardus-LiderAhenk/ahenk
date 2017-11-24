@@ -18,6 +18,7 @@ Depends: ${misc:Depends},
          python3-psutil,
          python3-sleekxmpp,
          python3-watchdog
+Replaces: libpam-runtime
 Description: The client side of the Lider Ahenk Project
  Lider Ahenk is an open source project which provides solutions
  to manage, monitor and audit unlimited number of different 
