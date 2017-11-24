@@ -1,3 +1,9 @@
+ahenk (1.0.0-4) unstable; urgency=medium
+
+  * update postrm script
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 24 Nov 2017 10:21:56 +0300
+
 ahenk (1.0.0-3) unstable; urgency=medium
 
   * udpate control file and postins script for overriding pam script
