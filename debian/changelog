@@ -1,3 +1,9 @@
+ahenk (1.0.0-5) unstable; urgency=medium
+
+  * fix postins syntax
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 24 Nov 2017 10:33:23 +0300
+
 ahenk (1.0.0-4) unstable; urgency=medium
 
   * update postrm script
