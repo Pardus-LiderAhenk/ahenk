@@ -1,3 +1,9 @@
+ahenk (1.0.0-3) unstable; urgency=medium
+
+  * udpate control file and postins script for overriding pam script
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 24 Nov 2017 10:04:38 +0300
+
 ahenk (1.0.0-2) unstable; urgency=medium
 
   * Add postinstall and post remove script to take everything under control
