@@ -300,7 +300,7 @@ class System:
             desktop = system.db_service.select_one_result('session', 'desktop', " username='{0}'".format(username))
             return desktop
 
-        staticmethod
+        @staticmethod
         def userip(username):
             system = System()
             userip = system.db_service.select_one_result('session', 'ip', " username='{0}'".format(username))
