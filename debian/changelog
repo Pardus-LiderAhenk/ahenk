@@ -1,8 +1,11 @@
 ahenk (1.0.0-6) unstable; urgency=medium
 
+  [ Tuncay ÇOLAK ]
   * Add preinst script to fix uninstalled configs
 
- -- Yunusemre Şentürk <yunusemre.senturk@pardus.org.tr>  Fri, 05 Jan 2018 14:03:06 +0300
+  [ Tuncay ÇOLAK ]
+
+ -- Tuncay ÇOLAK <tcolak@localhost.localdomain>  Mon, 12 Feb 2018 11:07:33 +0300
 
 ahenk (1.0.0-5) unstable; urgency=medium
 
