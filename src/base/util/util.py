@@ -223,7 +223,7 @@ class Util:
             raise
 
     @staticmethod
-    def install_with_gdebi(full_path):
+    def install_with_dpkg(full_path):
         command_dpkg = 'dpkg -i {0}'
         command_dep = 'apt -f install -y'
         commands = [command_dpkg.format(full_path),command_dep]

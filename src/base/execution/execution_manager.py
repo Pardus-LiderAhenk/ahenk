@@ -90,7 +90,7 @@ class ExecutionManager(object):
                 return
 
             try:
-                Util.install_with_gdebi(downloaded_file)
+                Util.install_with_dpkg(downloaded_file)
                 self.logger.debug('Plugin installed.')
             except Exception as e:
                 self.logger.error('Could not install plugin. Error Message: {0}'.format(str(e)))
