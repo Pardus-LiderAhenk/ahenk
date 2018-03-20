@@ -18,6 +18,7 @@ Depends: ${misc:Depends},
          python3-psutil,
          python3-sleekxmpp,
          python3-watchdog,
+         python3-easygui,
          libpam-script
 Replaces: libpam-runtime
 Description: The client side of the Lider Ahenk Project
