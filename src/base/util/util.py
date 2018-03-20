@@ -224,11 +224,15 @@ class Util:
 
     @staticmethod
     def install_with_gdebi(full_path):
-        try:
-            process = subprocess.Popen('gdebi -n ' + full_path, shell=True)
-            process.wait()
-        except:
-            raise
+        command_dpkg = 'dpkg -i {0}'
+        command_dep = 'apt -f install -y'
+        commands = [command_dpkg.format(full_path),command_dep]
+        for cmd in commands:
+            try:
+                process = subprocess.Popen(cmd, shell=True)
+                process.wait()
+            except:
+                raise
 
     @staticmethod
     def install_with_apt_get(package_name, package_version=None):
