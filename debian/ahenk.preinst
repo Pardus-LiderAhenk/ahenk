@@ -11,3 +11,4 @@ if [ -d /etc/ahenk ]; then
 else
 
     mkdir -p /etc/ahenk
+fi
