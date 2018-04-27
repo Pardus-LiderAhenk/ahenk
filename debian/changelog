@@ -3,6 +3,8 @@ ahenk (1.0.0-7) unstable; urgency=medium
   [ Ömer Çakmak ]
   * Add dependency python3-easygui
   * Changed to package installer dpkg
+  * the agent conf file is deleted while the agent is purged
+  * update agent from 1.0.0-6 from 1.0.0-7
 
   [ Tuncay ÇOLAK ]
 

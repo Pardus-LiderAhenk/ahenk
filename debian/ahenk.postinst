@@ -13,5 +13,12 @@ if [ -f /etc/pam.d/common-session ]; then
     DEBIAN_FRONTEND=noninteractive pam-auth-update
 fi
 
+# update ahenk from 1.0.0-6 to 1.0.0-7
+if [ ! -d /etc/ahenk ]; then
+
+    mkdir -p /etc/ahenk
+    cp -rf /tmp/ahenk/* /etc/ahenk
+fi
+
 systemctl enable ahenk
 systemctl start ahenk
