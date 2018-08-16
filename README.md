@@ -95,18 +95,18 @@ See [changelog](https://github.com/Pardus-LiderAhenk/ahenk/wiki/Changelog) to le
 * Administration console built as Eclipse RCP
 * Open sourced, easy to access and setup, stable Lider Ahenk v1.0.0
 
-#### 2016
-
-* Scalable infrastructure suitable for million+ users & systems
-* 10+ new plugins (such as file distribution via torrent, remote installation)
-* New reporting module & dashboard
-
 #### 2017
 
 * Agents for Windows and mobile platforms
 * Platform-independent administration console
 * Inventory scan & management
 * Printer management
+
+#### 2016
+
+* Scalable infrastructure suitable for million+ users & systems
+* 10+ new plugins (such as file distribution via torrent, remote installation)
+* New reporting module & dashboard
 
 ## License
 
