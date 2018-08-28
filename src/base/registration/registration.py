@@ -191,6 +191,7 @@ class Registration:
         result_code, p_out, p_err = self.util.execute(command_users)
         lines = p_out.split('\n')
         lines.pop()
+        self.logger.debug("will be disabled: "+str(lines))
         for line in lines:
             detail = line.split(':')
             if detail[0] != 'root':
@@ -198,4 +199,4 @@ class Registration:
                 self.util.execute(command_logout_user.format(detail[0]))
                 self.logger.debug('{0} has been disabled and killed all processes for {0}'.format(detail[0]))
             else:
-                self.logger.info("machine has only root user")
+                self.logger.info("Ahenk has only root user")
