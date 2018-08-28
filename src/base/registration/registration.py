@@ -12,6 +12,7 @@ from base.messaging.anonymous_messenger import AnonymousMessenger
 from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
+from base.util.util import Util
 
 
 class Registration:
@@ -23,6 +24,7 @@ class Registration:
         self.messenger = scope.get_messenger()
         self.conf_manager = scope.get_configuration_manager()
         self.db_service = scope.get_db_service()
+        self.util = Util()
 
         self.event_manager.register_event('REGISTRATION_RESPONSE', self.registration_process)
 
@@ -73,6 +75,7 @@ class Registration:
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
             self.logger.debug('Registration configuration file is updated')
+            self.disable_local_users()
 
     def is_registered(self):
 
@@ -180,3 +183,19 @@ class Registration:
         self.logger.error('Ahenk is shutting down...')
         print('Ahenk is shutting down...')
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
+
+    def disable_local_users(self):
+        command_users = 'awk -F: \'{print $1 ":" $6 ":" $7}\' /etc/passwd | grep /bin/bash'
+        command_user_disable = 'passwd -l {}'
+        command_logout_user = 'pkill -u {}'
+        result_code, p_out, p_err = self.util.execute(command_users)
+        lines = p_out.split('\n')
+        lines.pop()
+        for line in lines:
+            detail = line.split(':')
+            if detail[0] != 'root':
+                self.util.execute(command_user_disable.format(detail[0]))
+                self.util.execute(command_logout_user.format(detail[0]))
+                self.logger.debug('{0} has been disabled and killed all processes for {0}'.format(detail[0]))
+            else:
+                self.logger.info("machine has only root user")
