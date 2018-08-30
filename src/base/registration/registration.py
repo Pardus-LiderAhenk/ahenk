@@ -14,6 +14,9 @@ from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.util.util import Util
 
+from helper import system as sysx
+import pwd
+
 
 class Registration:
     def __init__(self):
@@ -185,18 +188,12 @@ class Registration:
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
     def disable_local_users(self):
-        command_users = 'awk -F: \'{print $1 ":" $6 ":" $7}\' /etc/passwd | grep /bin/bash'
-        command_user_disable = 'passwd -l {}'
-        command_logout_user = 'pkill -u {}'
-        result_code, p_out, p_err = self.util.execute(command_users)
-        lines = p_out.split('\n')
-        lines.pop()
-        self.logger.debug("will be disabled: "+str(lines))
-        for line in lines:
-            detail = line.split(':')
-            if detail[0] != 'root':
-                self.util.execute(command_user_disable.format(detail[0]))
-                self.util.execute(command_logout_user.format(detail[0]))
-                self.logger.debug('{0} has been disabled and killed all processes for {0}'.format(detail[0]))
-            else:
-                self.logger.info("Ahenk has only root user")
+        passwd_cmd = 'passwd -l {}'
+        for p in pwd.getpwall():
+            if not sysx.shell_is_interactive(p.pw_shell):
+                continue
+            if p.pw_uid == 0:
+                continue
+            self.logger.debug("User: '{0}' will be disabled".format(p.pw_name))
+            self.util.execute(passwd_cmd.format(p.pw_name))
+            sysx.killuserprocs(p.pw_uid)
