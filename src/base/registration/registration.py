@@ -97,7 +97,7 @@ class Registration:
     def register(self, uuid_depend_mac=False):
 
         cols = ['jid', 'password', 'registered', 'params', 'timestamp']
-        vals = [str(self.generate_uuid(uuid_depend_mac)), str(self.generate_password()), 0,
+        vals = [str(System.Os.hostname()), str(self.generate_password()), 0,
                 str(self.get_registration_params()), str(datetime.datetime.now().strftime("%d-%m-%Y %I:%M"))]
 
         self.db_service.delete('registration', ' 1==1 ')
