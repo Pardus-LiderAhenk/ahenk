@@ -573,6 +573,14 @@ class System:
                     if len(list(set(line.split(' ')).intersection(['Manufacturer:', 'Product']))) > 0:
                         arr.append(line)
             return arr
+       
+	@staticmethod
+        def machine_model():
+            try:
+                result_code, p_out, p_err = Util.execute('sudo dmidecode --string system-version')
+                return str(p_out)
+            except:
+                raise
 
         @staticmethod
         def machine_type():

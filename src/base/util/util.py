@@ -292,6 +292,11 @@ class Util:
         return str(uuid.uuid4())
 
     @staticmethod
+    def get_language():
+        locale_info = locale.getdefaultlocale()
+        return locale_info[0]
+
+    @staticmethod
     def set_permission(path, permission_code):
         Util.execute('chmod -R {0} {1}'.format(permission_code, path))
 
