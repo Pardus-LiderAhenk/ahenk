@@ -207,4 +207,4 @@ class Registration:
                 self.util.execute(passwd_cmd.format(p.pw_name))
                 self.util.execute(change_username.format(new_username, p.pw_name))
                 self.util.execute(change_home.format(new_home_dir, new_username))
-                print("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
+                self.logger.debug("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
