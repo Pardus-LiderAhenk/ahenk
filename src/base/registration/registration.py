@@ -13,9 +13,9 @@ from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.util.util import Util
-
 from helper import system as sysx
 import pwd
+import os, signal
 
 
 class Registration:
@@ -189,11 +189,22 @@ class Registration:
 
     def disable_local_users(self):
         passwd_cmd = 'passwd -l {}'
+        change_home = 'usermod -m -d {0} {1}'
+        change_username = 'usermod -l {0} {1}'
+        content = self.util.read_file('/etc/passwd')
         for p in pwd.getpwall():
+
             if not sysx.shell_is_interactive(p.pw_shell):
                 continue
             if p.pw_uid == 0:
                 continue
-            self.logger.debug("User: '{0}' will be disabled".format(p.pw_name))
-            self.util.execute(passwd_cmd.format(p.pw_name))
-            sysx.killuserprocs(p.pw_uid)
+            if p.pw_name in content:
+
+                new_home_dir = p.pw_dir.rstrip('/') + '-local/'
+                new_username = p.pw_name+'-local'
+                print(new_home_dir, new_username)
+                sysx.killuserprocs(p.pw_uid)
+                self.util.execute(passwd_cmd.format(p.pw_name))
+                self.util.execute(change_username.format(new_username, p.pw_name))
+                self.util.execute(change_home.format(new_home_dir, new_username))
+                print("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
