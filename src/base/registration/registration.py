@@ -202,7 +202,6 @@ class Registration:
 
                 new_home_dir = p.pw_dir.rstrip('/') + '-local/'
                 new_username = p.pw_name+'-local'
-                print(new_home_dir, new_username)
                 sysx.killuserprocs(p.pw_uid)
                 self.util.execute(passwd_cmd.format(p.pw_name))
                 self.util.execute(change_username.format(new_username, p.pw_name))
