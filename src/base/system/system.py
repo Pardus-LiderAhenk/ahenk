@@ -575,6 +575,14 @@ class System:
             return arr
 
         @staticmethod
+        def machine_model():
+            try:
+                result_code, p_out, p_err = Util.execute('sudo dmidecode --string system-version')
+                return str(p_out)
+            except:
+                raise
+
+        @staticmethod
         def machine_type():
             config = configparser.ConfigParser()
             config._interpolation = configparser.ExtendedInterpolation()

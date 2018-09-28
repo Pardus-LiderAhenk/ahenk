@@ -136,6 +136,7 @@ class Registration:
             'hardware.usbDevices': str(System.Hardware.usb_devices()),
             'hardware.printers': str(System.Hardware.printers()),
             'hardware.systemDefinitions': str(System.Hardware.system_definitions()),
+            'hardware.model.version': str(System.Hardware.machine_model()),
             'hardware.memory.total': System.Hardware.Memory.total(),
             'hardware.network.ipAddresses': str(System.Hardware.Network.ip_addresses()),
             'sessions.userNames': str(System.Sessions.user_name()),
