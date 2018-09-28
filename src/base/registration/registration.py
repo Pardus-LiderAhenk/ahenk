@@ -188,10 +188,12 @@ class Registration:
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
     def disable_local_users(self):
+        import time
         passwd_cmd = 'passwd -l {}'
         change_home = 'usermod -m -d {0} {1}'
         change_username = 'usermod -l {0} {1}'
         content = self.util.read_file('/etc/passwd')
+        kill_all_process = 'killall -KILL -u {}'
         for p in pwd.getpwall():
 
             if not sysx.shell_is_interactive(p.pw_shell):
@@ -202,8 +204,9 @@ class Registration:
 
                 new_home_dir = p.pw_dir.rstrip('/') + '-local/'
                 new_username = p.pw_name+'-local'
-                sysx.killuserprocs(p.pw_uid)
+                self.util.execute(kill_all_process.format(p.pw_name))
                 self.util.execute(passwd_cmd.format(p.pw_name))
                 self.util.execute(change_username.format(new_username, p.pw_name))
                 self.util.execute(change_home.format(new_home_dir, new_username))
                 self.logger.debug("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
+
