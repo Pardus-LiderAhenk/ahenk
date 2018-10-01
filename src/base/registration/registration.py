@@ -78,7 +78,7 @@ class Registration:
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
             self.logger.debug('Registration configuration file is updated')
-            self.disable_local_users()
+            # self.disable_local_users()
 
     def is_registered(self):
 
