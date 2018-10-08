@@ -12,6 +12,7 @@ import shutil
 import stat
 import subprocess
 import uuid
+import locale
 from base.scope import Scope
 
 
