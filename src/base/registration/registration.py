@@ -189,7 +189,6 @@ class Registration:
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
     def disable_local_users(self):
-        import time
         passwd_cmd = 'passwd -l {}'
         change_home = 'usermod -m -d {0} {1}'
         change_username = 'usermod -l {0} {1}'
@@ -211,3 +210,20 @@ class Registration:
                 self.util.execute(change_home.format(new_home_dir, new_username))
                 self.logger.debug("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
 
+    def enable_local_users(self):
+        passwd_cmd = 'passwd -u {}'
+        change_home = 'usermod -m -d {0} {1}'
+        change_username = 'usermod -l {0} {1}'
+        content = self.util.read_file('/etc/passwd')
+        for p in pwd.getpwall():
+            if not sysx.shell_is_interactive(p.pw_shell):
+                continue
+            if p.pw_uid == 0:
+                continue
+            if p.pw_name in content:
+                new_home_dir = p.pw_dir.rstrip('-local/') + '/'
+                new_username = p.pw_name.rstrip('-local')
+                self.util.execute(passwd_cmd.format(p.pw_name))
+                self.util.execute(change_username.format(new_username, p.pw_name))
+                self.util.execute(change_home.format(new_home_dir, new_username))
+                self.logger.debug("User: '{0}' will be enabled and changed username and home directory of username".format(p.pw_name))
