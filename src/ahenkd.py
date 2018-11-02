@@ -29,6 +29,7 @@ from base.scope import Scope
 from base.system.system import System
 from base.task.task_manager import TaskManager
 from base.util.util import Util
+from easygui import msgbox
 
 sys.path.append('../..')
 
@@ -144,21 +145,47 @@ class AhenkDaemon(BaseDaemon):
 
     def check_registration(self):
         """ docstring"""
-        max_attempt_number = int(System.Hardware.Network.interface_size()) * 3
+        # max_attempt_number = int(System.Hardware.Network.interface_size()) * 3
+        max_attempt_number = 1
         # self.logger.debug()
         # logger = Scope.getInstance().getLogger()
         registration = Scope.get_instance().get_registration()
 
         try:
-            while registration.is_registered() is False:
+            #if registration.is_registered() is False:
+            #    self.logger.debug('Ahenk is not registered. Attempting for registration')
+            #    if registration.registration_request() == False:
+            #        self.registration_failed()
+
+            if registration.is_registered() is False:
+                print("Registation attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
-                registration.registration_request()
-                if max_attempt_number < 0:
-                    self.logger.warning('Number of Attempting for registration is over')
-                    self.registration_failed()
-                    break
+                #registration.registration_request()
+
+                if registration.registration_request() == False:
+                    if max_attempt_number < 0:
+                        self.registration_failed()
+                    else:
+                        registration.registration_request()
+
+                #if max_attempt_number < 0:
+                #    self.logger.warning('Number of Attempting for registration is over')
+                #    self.registration_failed()
+                #    break
         except Exception as e:
+            self.registration_failed()
+            self.logger.error('Registration failed. Error message: {0}'.format(str(e)))
+
+
+    def is_registered(self):
+        try:
+            registration = Scope.get_instance().get_registration()
+            if registration.is_registered() is False:
+                self.registration_failed()
+
+        except Exception as e:
+            self.registration_failed()
             self.logger.error('Registration failed. Error message: {0}'.format(str(e)))
 
     @staticmethod
@@ -170,8 +197,7 @@ class AhenkDaemon(BaseDaemon):
 
     def registration_failed(self):
         """ docstring"""
-        self.logger.error(
-            'Registration failed. All registration attempts were failed. Ahenk is stopping...')
+        self.logger.error('Registration failed. All registration attempts were failed. Ahenk is stopping...')
         print('Registration failed. Ahenk is stopping..')
         ahenk_daemon.stop()
 
@@ -265,6 +291,9 @@ class AhenkDaemon(BaseDaemon):
         self.logger.info('Execution Manager was set')
 
         self.check_registration()
+
+        self.is_registered()
+
         self.logger.info('Ahenk was registered')
 
         self.messenger = self.init_messenger()

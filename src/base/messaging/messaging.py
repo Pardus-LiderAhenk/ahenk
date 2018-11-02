@@ -112,7 +112,7 @@ class Messaging(object):
         self.logger.debug('Get Policies message was created')
         return json_data
 
-    def registration_msg(self):
+    def registration_msg(self, userName= None, userPassword=None):
         data = dict()
         data['type'] = 'REGISTER'
         data['from'] = self.db_service.select_one_result('registration', 'jid', ' 1=1')
@@ -124,6 +124,12 @@ class Messaging(object):
         data['macAddresses'] = json_params['macAddresses']
         data['ipAddresses'] = json_params['ipAddresses']
         data['hostname'] = json_params['hostname']
+
+        if userName is not None:
+            data["userName"] = str(userName)
+
+        if userPassword is not None:
+            data["userPassword"] = str(userPassword)
 
         data['timestamp'] = self.db_service.select_one_result('registration', 'timestamp', ' 1=1')
         json_data = json.dumps(data)
@@ -144,13 +150,42 @@ class Messaging(object):
         return json_data
 
     def unregister_msg(self):
+        from easygui import multpasswordbox,msgbox
+
+        field_names = []
+        field_names.append("Yetkili Kullanıcı")
+        field_names.append("Parola")
+
+        field_values = multpasswordbox(
+            msg='Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen devam eden işlemlerini sonlandırdığınıza emin olunuz !',
+            title='ETKI ALANI ÇIKARMA', fields=(field_names))
+
+        if field_values is None:
+            return None;
+
+        is_fieldvalue_empty = False;
+
+        for value in field_values:
+            if value == '':
+                is_fieldvalue_empty = True;
+
+        if is_fieldvalue_empty:
+            msgbox("Lütfen zorunlu alanları giriniz.", ok_button="Tamam")
+            return False;
+
         data = dict()
         data['type'] = 'UNREGISTER'
-        data['from'] = str(self.conf_manager.get('REGISTRATION', 'from'))
-        data['password'] = str(self.conf_manager.get('REGISTRATION', 'password'))
-        data['macAddresses'] = str(self.conf_manager.get('REGISTRATION', 'macAddresses'))
-        data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION', 'ipAddresses'))
-        data['hostname'] = str(self.conf_manager.get('REGISTRATION', 'hostname'))
+        data['from'] = str(self.conf_manager.get('CONNECTION', 'uid'))
+        data['password'] = str(self.conf_manager.get('CONNECTION', 'password'))
+
+        user_registration_info = list(field_values)
+
+        data['userName'] = user_registration_info[0];
+        data['userPassword'] = user_registration_info[1];
+
+        #data['macAddresses'] = str(self.conf_manager.get('REGISTRATION', 'macAddresses'))
+        #data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION', 'ipAddresses'))
+        #data['hostname'] = str(self.conf_manager.get('REGISTRATION', 'hostname'))
         # data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)

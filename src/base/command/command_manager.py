@@ -73,6 +73,10 @@ class Commander(object):
                 data['event'] = 'remove'
                 data['plugins'] = params[3]
 
+            elif len(params) > 1 and params[1] == 'unregister':
+                data['event'] = params[1]
+
+
             elif len(params) > 5 and params[1] == 'send':
                 data['event'] = params[1]
                 response = dict()
@@ -138,7 +142,6 @@ class Commander(object):
                                 print(
                                     'Wrong or missing parameter.(-e|-s|-w parameters are optional) Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')
                                 return None
-
                     else:
                         print(
                             'Wrong or missing parameter. Usage: send -p <policy_version> -c <command_execution_id> -m|-f <message_content>|<file_path> -e|-s|-w')

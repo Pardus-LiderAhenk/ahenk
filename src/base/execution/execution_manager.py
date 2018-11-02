@@ -17,6 +17,7 @@ from base.scheduler.custom.schedule_job import ScheduleTaskJob
 from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
+from easygui import *
 
 
 class ExecutionManager(object):
@@ -43,6 +44,7 @@ class ExecutionManager(object):
         self.event_manager.register_event(MessageType.INSTALL_PLUGIN.value, self.install_plugin)
         self.event_manager.register_event(MessageType.RESPONSE_AGREEMENT.value, self.agreement_update)
         self.event_manager.register_event(MessageType.UPDATE_SCHEDULED_TASK.value, self.update_scheduled_task)
+        self.event_manager.register_event(MessageType.REGISTRATION_RESPONSE.value, self.unregister) # registration message for unregister event
 
     def agreement_update(self, arg):
 
@@ -396,6 +398,19 @@ class ExecutionManager(object):
 
         self.task_manager.addTask(task)
         self.logger.debug('Task added')
+
+    def unregister(self, msg):
+        j = json.loads(msg)
+        status = str(j['status']).lower()
+
+        if 'not_authorized' == str(status):
+            self.logger.info('Registration is failed. User not authorized')
+            msgbox('Ahenk etki alanından çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
+                   'Kullanıcı Yetkilendirme Hatası')
+        else :
+            registration= Scope.get_instance().get_registration()
+            registration.purge_and_unregister()
+
 
     def json_to_task_bean(self, json_data, file_server_conf=None):
         plu = json_data['plugin']

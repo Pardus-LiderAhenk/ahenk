@@ -7,7 +7,7 @@ import easygui
 
 
 def ask(content, title):
-    choice = easygui.textbox(msg=title, text=content, codebox=0)
+    choice = easygui.buttonbox(msg=title, title=content, choices=['TAMAM'])
     if choice:
         print('Y')
     else:

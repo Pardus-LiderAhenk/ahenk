@@ -5,15 +5,20 @@
 import json
 import sys
 import socket
+from base.util.util import Util
+import time
+from base.system.system import System
 
 from sleekxmpp import ClientXMPP
 from base.scope import Scope
+
+from easygui import msgbox
 
 sys.path.append('../..')
 
 
 class AnonymousMessenger(ClientXMPP):
-    def __init__(self, message):
+    def __init__(self, message, host= None, servicename= None):
         # global scope of ahenk
         scope = Scope().get_instance()
 
@@ -22,17 +27,20 @@ class AnonymousMessenger(ClientXMPP):
         self.registration = scope.get_registration()
         self.event_manager = scope.get_event_manager()
 
-        self.host = str(socket.gethostbyname(self.configuration_manager.get('CONNECTION', 'host')))
-        self.service = str(self.configuration_manager.get('CONNECTION', 'servicename'))
-        self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
+        if host is not None and servicename is not None:
+            self.host = str(host)
+            self.service = str(servicename)
+            self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
+
+        # self.host = str(socket.gethostbyname(self.configuration_manager.get('CONNECTION', 'host')))
+        # self.service = str(self.configuration_manager.get('CONNECTION', 'servicename'))
+        # self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
 
         ClientXMPP.__init__(self, self.service, None)
 
         self.message = message
         self.receiver_resource = self.configuration_manager.get('CONNECTION', 'receiverresource')
-        self.receiver = self.configuration_manager.get('CONNECTION',
-                                                       'receiverjid') + '@' + self.configuration_manager.get(
-            'CONNECTION', 'servicename')
+        self.receiver = self.configuration_manager.get('CONNECTION','receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename')
         if self.receiver_resource:
             self.receiver += '/' + self.receiver_resource
 
@@ -85,11 +93,54 @@ class AnonymousMessenger(ClientXMPP):
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
             self.logger.debug('---------->Received message: {0}'.format(str(msg['body'])))
-            self.logger.debug('Disconnecting...')
-            self.disconnect()
+            self.logger.debug('Reading registration reply')
             j = json.loads(str(msg['body']))
             message_type = j['type']
-            self.event_manager.fireEvent(message_type, str(msg['body']))
+            status = str(j['status']).lower()
+            dn = str(j['agentDn'])
+            self.logger.debug('Registration status: ' + str(status))
+
+            if 'not_authorized' == str(status):
+                self.logger.info('Registration is failed. User not authorized')
+                msgbox('Ahenk etki alanına alınamadı !! Sadece yetkili kullanıcılar etki alanına kayıt yapabilir.', 'Kullanıcı Yetkilendirme Hatası')
+                self.logger.debug('Disconnecting...')
+                self.disconnect()
+
+            elif 'already_exists' == str(status) or 'registered' == str(status) or 'registered_without_ldap' == str(status):
+                try:
+                    self.logger.info('Registred from server. Registration process starting.')
+                    self.event_manager.fireEvent('REGISTRATION_SUCCESS', j)
+                    msg = str(self.host) + " Etki Alanına hoş geldiniz."
+                    msgbox(msg, "")
+                    msg = "Değişikliklerin etkili olması için sistem yeniden başlayacaktır. Sistem yeniden başlatılıyor...."
+                    msgbox(msg, "")
+                    time.sleep(5)
+                    self.logger.info('Disconnecting...')
+                    self.disconnect()
+
+                    self.logger.info('Rebooting...')
+                    Util.shutdown();
+                    System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
+                    sys.exit(2)
+
+
+                except Exception as e:
+                    self.logger.error('Error Message: {0}.'.format(str(e)))
+                    msgbox(str(e))
+                    self.logger.debug('Disconnecting...')
+                    self.disconnect()
+
+
+            elif 'registration_error' == str(status):
+                self.logger.info('Registration is failed. New registration request will send')
+                #self.event_manager.fireEvent('REGISTRATION_ERROR', str(j))
+                msgbox('Ahenk etki alanına alınamadı !! Kayıt esnasında hata oluştu. Lütfen sistem yöneticinize başvurunuz.',
+                       'Sistem Hatası')
+                self.logger.debug('Disconnecting...')
+                self.disconnect()
+            else:
+                self.event_manger.fireEvent(message_type, str(msg['body']))
+                self.logger.debug('Fired event is: {0}'.format(message_type))
 
     def send_direct_message(self, msg):
         self.logger.debug('<<--------Sending message: {0}'.format(msg))

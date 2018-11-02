@@ -92,6 +92,9 @@ class Plugin(threading.Thread):
         self.messaging = scope.get_message_manager()
         self.db_service = scope.get_db_service()
 
+        self.configurationManager = scope.get_configuration_manager()
+        self.is_user_notify_active = self.configurationManager.get('MACHINE', 'agreement')
+
         self.keep_run = True
         self.context = Context()
 
@@ -126,12 +129,13 @@ class Plugin(threading.Thread):
 
                     self.logger.debug('[Plugin] Sending notify to user about task process')
 
-                    if System.Sessions.user_name() is not None and len(System.Sessions.user_name()) > 0:
+                    if System.Sessions.user_name() is not None and len(System.Sessions.user_name()) > 0 and self.is_user_notify_active == 1:
                         for user in System.Sessions.user_name():
                             Util.send_notify("Lider Ahenk",
                                              "{0} eklentisi şu anda bir görev çalıştırıyor.".format(self.getName()),
                                              System.Sessions.display(user),
                                              user)
+
                     self.context.put('taskData', task_data)
                     self.context.put('taskId', item_obj.get_id())
 

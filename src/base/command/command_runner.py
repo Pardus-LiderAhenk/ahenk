@@ -160,6 +160,13 @@ class CommandRunner(object):
                     message = json.dumps(json_data['message'])
                     self.messenger.send_direct_message(message)
 
+
+                elif str(json_data['event']) == 'unregister':
+                    self.logger.info('Unregistering..')
+                    unregister_message = self.message_manager.unregister_msg()
+                    if unregister_message is not None:
+                        self.messenger.send_direct_message(unregister_message)
+
                 elif str(json_data['event']) == 'load':
                     plugin_name = str(json_data['plugins'])
 
