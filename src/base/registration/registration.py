@@ -103,8 +103,9 @@ class Registration:
             self.logger.info('Current dn:' + dn)
             self.logger.info('updating host name and service')
             self.install_and_config_ldap(reg_reply)
-            #self.disable_local_users()
             self.update_registration_attrs(dn)
+            self.logger.info('Disable Users')
+            self.disable_local_users()
 
         except Exception as e:
             self.logger.error('Registartion error. Error Message: {0}.'.format(str(e)))
@@ -397,6 +398,10 @@ class Registration:
         self.clean()
 
         self.logger.info('Ahenk conf cleaned from db')
+        self.logger.info('Enable Users')
+        self.enable_local_users()
+
+
 
         msgbox("Ahenk etki alanından çıkarılmıştır.")
 
