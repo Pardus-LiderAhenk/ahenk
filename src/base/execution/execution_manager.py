@@ -405,7 +405,7 @@ class ExecutionManager(object):
 
         if 'not_authorized' == str(status):
             self.logger.info('Registration is failed. User not authorized')
-            msgbox('Ahenk etki alanından çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
+            Util.show_message('Ahenk etki alanından çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
                    'Kullanıcı Yetkilendirme Hatası')
         else :
             registration= Scope.get_instance().get_registration()

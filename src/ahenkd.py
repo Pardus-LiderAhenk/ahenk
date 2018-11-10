@@ -294,7 +294,7 @@ class AhenkDaemon(BaseDaemon):
 
         self.is_registered()
 
-        self.logger.info('Ahenk was registered')
+        #self.logger.info('Ahenk was registered')
 
         self.messenger = self.init_messenger()
         self.logger.info('Messenger was set')

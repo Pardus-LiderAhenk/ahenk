@@ -14,9 +14,9 @@ from helper import system as sysx
 import pwd
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
-from easygui import multpasswordbox, msgbox
 import re
 import sys
+import os
 
 class Registration:
     def __init__(self):
@@ -47,37 +47,18 @@ class Registration:
         self.host = self.conf_manager.get("CONNECTION", "host")
         self.servicename = self.conf_manager.get("CONNECTION", "servicename")
 
-        self.user_name =''
-        self.user_password=''
+        self.user_name = ''
+        self.user_password= ''
 
-        field_names = []
-        if self.host == '':
-            field_names.append("Sunucu Adresi")
+        pout = Util.show_registration_message('Makineyi etki alanına almak için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
+                                              'ETKI ALANINA KAYIT', self.host)
 
-
-        field_names.append("Yetkili Kullanıcı")
-        field_names.append("Parola")
-
-        field_values = multpasswordbox(msg='Makineyi etki alanına almak için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
-                                       title='ETKI ALANINA KAYIT', fields=(field_names))
-
-        if field_values is None:
-            return False;
-
-        is_fieldvalue_empty= False;
-
-        for value in field_values :
-            if value == '' :
-                is_fieldvalue_empty = True;
-
-        if is_fieldvalue_empty:
-            msgbox("Lütfen zorunlu alanları giriniz.", ok_button="Tamam")
-            return False;
+        field_values = pout.split(' ')
 
         user_registration_info = list(field_values)
 
         if self.host == '' :
-            self.host = user_registration_info[0];
+            self.host = user_registration_info[0]
             self.user_name = user_registration_info[1];
             self.user_password = user_registration_info[2];
         else:
@@ -359,33 +340,14 @@ class Registration:
             'and it is connected to XMPP server! Check your Ahenk configuration file (/etc/ahenk/ahenk.conf)')
         self.logger.error('Ahenk is shutting down...')
         print('Ahenk is shutting down...')
-        msgbox('Etki alanı sunucusuna ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....','HATA')
+
+        Util.show_message("Etki alanı sunucusuna ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
+
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
-    def disable_local_users(self):
-        passwd_cmd = 'passwd -l {}'
-        change_home = 'usermod -m -d {0} {1}'
-        change_username = 'usermod -l {0} {1}'
-        content = self.util.read_file('/etc/passwd')
-        kill_all_process = 'killall -KILL -u {}'
-        for p in pwd.getpwall():
 
-            if not sysx.shell_is_interactive(p.pw_shell):
-                continue
-            if p.pw_uid == 0:
-                continue
-            if p.pw_name in content:
-
-                new_home_dir = p.pw_dir.rstrip('/') + '-local/'
-                new_username = p.pw_name+'-local'
-                self.util.execute(kill_all_process.format(p.pw_name))
-                self.util.execute(passwd_cmd.format(p.pw_name))
-                self.util.execute(change_username.format(new_username, p.pw_name))
-                self.util.execute(change_home.format(new_home_dir, new_username))
-                self.logger.debug("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
 
     def purge_and_unregister(self):
-        from easygui import msgbox,boolbox
         self.logger.info('Ahenk conf cleaned')
         self.logger.info('Ahenk conf cleaning from db')
         self.unregister()
@@ -401,11 +363,9 @@ class Registration:
         self.logger.info('Enable Users')
         self.enable_local_users()
 
+        Util.show_message("Ahenk etki alanından çıkarılmıştır.", "")
 
-
-        msgbox("Ahenk etki alanından çıkarılmıştır.")
-
-        if boolbox("Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.","",["Yeniden Başlat", "Vazgeç"]):
+        if Util.show_message("Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.",""):
             Util.shutdown()
 
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))

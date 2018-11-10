@@ -7,7 +7,8 @@ import easygui
 
 
 def confirm(message, title):
-    choice = easygui.ccbox(msg=message, title=title, choices=("Evet", "Hayır"))
+    choice = easygui.buttonbox(msg=message, title=title, choices=["Tamam"])
+
     if choice:
         print('Y')
     else:

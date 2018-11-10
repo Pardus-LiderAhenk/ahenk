@@ -68,6 +68,7 @@ class Agreement:
                                                                                                      agreement_path,
                                                                                                      title)
             result_code, p_out, p_err = Util.execute(command)
+
             pout = str(p_out).replace('\n', '')
             if pout != 'Error':
                 if pout == 'Y':

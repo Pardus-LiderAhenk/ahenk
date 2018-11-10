@@ -332,8 +332,10 @@ class Util:
             Util.execute('export DISPLAY={0}; su - {1} -c \'{2}\''.format(display, user, inner_command))
 
     @staticmethod
-    def ask_permission(display, username, message, title):
-        ask_path = '/usr/share/ahenk/base/agreement/confirm.py'
+    def show_message(message, title=""):
+        ask_path = '/usr/share/ahenk/src/base/agreement/confirm.py'
+        display= ":0"
+        username= os.getlogin()
         try:
 
             if username is not None:
@@ -354,3 +356,27 @@ class Util:
                 return None
         except Exception:
             return None
+
+    @staticmethod
+    def show_registration_message(message,title,host=None):
+        login_user_name = os.getlogin()
+
+        ask_path = '/usr/share/ahenk/src/base/agreement/ahenkmessage.py'
+
+        display_number = ":0"
+
+        if host is None:
+            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number, login_user_name,
+                                                                                        ask_path, message, title)
+        else:
+            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \'{5}\' \"'.format(display_number,
+                                                                                                        login_user_name,
+                                                                                                        ask_path,
+                                                                                                        message, title,
+                                                                                                        host)
+        result_code, p_out, p_err = Util.execute(command)
+
+        pout = str(p_out).replace('\n', '')
+
+        return pout
+
