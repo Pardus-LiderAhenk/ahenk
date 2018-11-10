@@ -358,8 +358,7 @@ class Util:
             return None
 
     @staticmethod
-    def show_registration_message(message,title,host=None):
-        login_user_name = os.getlogin()
+    def show_registration_message(login_user_name,message,title,host=None):
 
         ask_path = '/usr/share/ahenk/src/base/agreement/ahenkmessage.py'
 

@@ -50,8 +50,14 @@ class Registration:
         self.user_name = ''
         self.user_password= ''
 
-        pout = Util.show_registration_message('Makineyi etki alanına almak için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
+        user_name= os.getlogin()
+
+        self.logger.debug('User : '+ str(user_name))
+
+        pout = Util.show_registration_message(user_name,'Makineyi etki alanına almak için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
                                               'ETKI ALANINA KAYIT', self.host)
+
+        self.logger.debug('pout : ' + str(pout))
 
         field_values = pout.split(' ')
 
