@@ -91,8 +91,6 @@ class Registration:
             self.logger.info('updating host name and service')
             self.install_and_config_ldap(reg_reply)
             self.update_registration_attrs(dn)
-            self.logger.info('Disable Users')
-            self.disable_local_users()
 
         except Exception as e:
             self.logger.error('Registartion error. Error Message: {0}.'.format(str(e)))
