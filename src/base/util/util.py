@@ -333,7 +333,7 @@ class Util:
 
     @staticmethod
     def show_message(message, title=""):
-        ask_path = '/usr/share/ahenk/src/base/agreement/confirm.py'
+        ask_path = '/usr/share/ahenk/base/agreement/confirm.py'
         display= ":0"
         username= os.getlogin()
         try:
@@ -360,7 +360,7 @@ class Util:
     @staticmethod
     def show_registration_message(login_user_name,message,title,host=None):
 
-        ask_path = '/usr/share/ahenk/src/base/agreement/ahenkmessage.py'
+        ask_path = '/usr/share/ahenk/base/agreement/ahenkmessage.py'
 
         display_number = ":0"
 
