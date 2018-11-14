@@ -9,6 +9,7 @@ import signal
 import sys
 import threading
 import time
+from glob import glob
 
 from base.agreement.agreement import Agreement
 from base.command.command_manager import Commander
@@ -293,6 +294,23 @@ class AhenkDaemon(BaseDaemon):
         self.check_registration()
 
         self.is_registered()
+
+        conf_manager= global_scope.get_configuration_manager()
+
+        if conf_manager.has_section('MACHINE'):
+            user_disabled = conf_manager.get("MACHINE", "user_disabled")
+            if user_disabled==0:
+                self.logger.info('local user disabling')
+                global_scope.get_registration().disable_local_users()
+
+                conf_manager.set('MACHINE', 'user_disabled', 1)
+
+                with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
+                    self.conf_manager.write(configfile)
+                self.logger.info('local user disabled')
+            else :
+                self.logger.info('users already disabled')
+
 
         #self.logger.info('Ahenk was registered')
 
