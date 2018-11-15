@@ -296,15 +296,16 @@ class AhenkDaemon(BaseDaemon):
             self.logger.info('User disabled value='+ str(user_disabled))
             if user_disabled == '0':
                 self.logger.info('local user disabling')
-                global_scope.get_registration().disable_local_users()
+                #global_scope.get_registration().disable_local_users()
 
                 conf_manager.set('MACHINE', 'user_disabled', '1')
 
                 with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
+                    self.logger.info('oepning config file ')
                     self.conf_manager.write(configfile)
-                self.logger.info('local user disabled')
+
                 user_disabled = conf_manager.get("MACHINE", "user_disabled")
-                self.logger.info('User disabled value=' + str(user_disabled))
+                self.logger.info('User succesfully disabled value=' + str(user_disabled))
             else :
                 self.logger.info('users already disabled')
 
