@@ -162,13 +162,7 @@ class AhenkDaemon(BaseDaemon):
                 print("Registation attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
-                #registration.registration_request()
-
-                if registration.registration_request() == False:
-                    if max_attempt_number < 0:
-                        self.registration_failed()
-                    else:
-                        registration.registration_request()
+                registration.registration_request()
 
                 #if max_attempt_number < 0:
                 #    self.logger.warning('Number of Attempting for registration is over')

@@ -120,8 +120,8 @@ class AnonymousMessenger(ClientXMPP):
                     self.logger.info('Disconnecting...')
                     self.disconnect()
                     self.logger.info('Rebooting...')
-                    System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
-                    sys.exit(2)
+                    #System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
+                    #sys.exit(2)
                     Util.shutdown();
 
                 except Exception as e:
