@@ -302,7 +302,7 @@ class AhenkDaemon(BaseDaemon):
 
                 with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                     self.logger.info('oepning config file ')
-                    self.conf_manager.write(configfile)
+                    conf_manager.write(configfile)
 
                 user_disabled = conf_manager.get("MACHINE", "user_disabled")
                 self.logger.info('User succesfully disabled value=' + str(user_disabled))
