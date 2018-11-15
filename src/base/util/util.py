@@ -377,5 +377,23 @@ class Util:
 
         pout = str(p_out).replace('\n', '')
 
+        return pout\
+
+    @staticmethod
+    def show_unregistration_message(login_user_name,message,title):
+
+        ask_path = '/usr/share/ahenk/base/agreement/unregistrationmessage.py'
+
+        display_number = ":0"
+
+        command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number,
+                                                                                                        login_user_name,
+                                                                                                        ask_path,
+                                                                                                        message, title
+                                                                                                        )
+        result_code, p_out, p_err = Util.execute(command)
+
+        pout = str(p_out).replace('\n', '')
+
         return pout
 

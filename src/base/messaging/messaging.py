@@ -6,6 +6,7 @@ import json
 from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
+import os
 
 
 # TODO Message Factory
@@ -150,35 +151,25 @@ class Messaging(object):
         return json_data
 
     def unregister_msg(self):
-        from easygui import multpasswordbox,msgbox
 
-        field_names = []
-        field_names.append("Yetkili Kullanıcı")
-        field_names.append("Parola")
+        user_name = os.getlogin()
 
-        field_values = multpasswordbox(
-            msg='Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen devam eden işlemlerini sonlandırdığınıza emin olunuz !',
-            title='ETKI ALANI ÇIKARMA', fields=(field_names))
+        self.logger.debug('User : ' + str(user_name))
 
-        if field_values is None:
-            return None;
+        pout = Util.show_unregistration_message(user_name,
+                                              'Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen DEVAM EDEN İŞLEMLERİNİZİ sonlandırdığınıza emin olunuz !',
+                                              'ETKI ALANINDAN ÇIKARMA')
 
-        is_fieldvalue_empty = False;
+        self.logger.debug('pout : ' + str(pout))
 
-        for value in field_values:
-            if value == '':
-                is_fieldvalue_empty = True;
+        field_values = pout.split(' ')
 
-        if is_fieldvalue_empty:
-            msgbox("Lütfen zorunlu alanları giriniz.", ok_button="Tamam")
-            return False;
+        user_registration_info = list(field_values)
 
         data = dict()
         data['type'] = 'UNREGISTER'
         data['from'] = str(self.conf_manager.get('CONNECTION', 'uid'))
         data['password'] = str(self.conf_manager.get('CONNECTION', 'password'))
-
-        user_registration_info = list(field_values)
 
         data['userName'] = user_registration_info[0];
         data['userPassword'] = user_registration_info[1];
