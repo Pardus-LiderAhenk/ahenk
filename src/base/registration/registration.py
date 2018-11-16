@@ -345,7 +345,7 @@ class Registration:
         self.logger.error('Ahenk is shutting down...')
         print('Ahenk is shutting down...')
 
-        Util.show_message("Etki alanı sunucusuna ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
+        Util.show_message(os.getlogin(),':0',"Etki alanı sunucusuna ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
 
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
@@ -369,9 +369,12 @@ class Registration:
         self.logger.info('Enable Users')
         self.enable_local_users()
 
-        Util.show_message("Ahenk etki alanından çıkarılmıştır.", "")
+        user_name = self.db_service.select_one_result('session', 'username')
+        display = self.db_service.select_one_result('session', 'display')
 
-        if Util.show_message("Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.",""):
+        Util.show_message(user_name,display,"Ahenk etki alanından çıkarılmıştır.", "")
+
+        if Util.show_message(user_name,display,"Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.",""):
             Util.shutdown()
 
         #System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))

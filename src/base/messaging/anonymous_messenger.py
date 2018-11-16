@@ -10,6 +10,7 @@ import time
 from base.system.system import System
 
 import pwd
+import os
 
 from helper import system as sysx
 
@@ -104,7 +105,7 @@ class AnonymousMessenger(ClientXMPP):
 
             if 'not_authorized' == str(status):
                 self.logger.info('Registration is failed. User not authorized')
-                Util.show_message('Ahenk etki alanına alınamadı !! Sadece yetkili kullanıcılar etki alanına kayıt yapabilir.', 'Kullanıcı Yetkilendirme Hatası')
+                Util.show_message(os.getlogin(), ':0','Ahenk etki alanına alınamadı !! Sadece yetkili kullanıcılar etki alanına kayıt yapabilir.', 'Kullanıcı Yetkilendirme Hatası')
                 self.logger.debug('Disconnecting...')
                 self.disconnect()
 
@@ -113,10 +114,10 @@ class AnonymousMessenger(ClientXMPP):
                     self.logger.info('Registred from server. Registration process starting.')
                     self.event_manager.fireEvent('REGISTRATION_SUCCESS', j)
                     msg = str(self.host) + " Etki Alanına hoş geldiniz."
-                    Util.show_message(msg, "")
+                    Util.show_message(os.getlogin(), ':0',msg, "UYARI")
                     msg = "Değişikliklerin etkili olması için sistem yeniden başlayacaktır. Sistem yeniden başlatılıyor...."
-                    Util.show_message(msg, "")
-                    time.sleep(5)
+                    Util.show_message(os.getlogin(), ':0',msg, "UYARI")
+                    time.sleep(3)
                     self.logger.info('Disconnecting...')
                     self.disconnect()
                     self.logger.info('Rebooting...')
@@ -126,7 +127,7 @@ class AnonymousMessenger(ClientXMPP):
 
                 except Exception as e:
                     self.logger.error('Error Message: {0}.'.format(str(e)))
-                    Util.show_message(str(e))
+                    Util.show_message(os.getlogin(), ':0',str(e))
                     self.logger.debug('Disconnecting...')
                     self.disconnect()
 
@@ -134,7 +135,7 @@ class AnonymousMessenger(ClientXMPP):
             elif 'registration_error' == str(status):
                 self.logger.info('Registration is failed. New registration request will send')
                 #self.event_manager.fireEvent('REGISTRATION_ERROR', str(j))
-                Util.show_message('Ahenk etki alanına alınamadı !! Kayıt esnasında hata oluştu. Lütfen sistem yöneticinize başvurunuz.',
+                Util.show_message(os.getlogin(), ':0','Ahenk etki alanına alınamadı !! Kayıt esnasında hata oluştu. Lütfen sistem yöneticinize başvurunuz.',
                        'Sistem Hatası')
                 self.logger.debug('Disconnecting...')
                 self.disconnect()

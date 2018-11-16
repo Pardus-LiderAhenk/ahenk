@@ -153,10 +153,11 @@ class Messaging(object):
     def unregister_msg(self):
 
         user_name = self.db_service.select_one_result('session', 'username')
+        display = self.db_service.select_one_result('session', 'display')
 
         self.logger.debug('User : ' + str(user_name))
 
-        pout = Util.show_unregistration_message(user_name,
+        pout = Util.show_unregistration_message(user_name,display,
                                               'Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen DEVAM EDEN İŞLEMLERİNİZİ sonlandırdığınıza emin olunuz !',
                                               'ETKI ALANINDAN ÇIKARMA')
 
