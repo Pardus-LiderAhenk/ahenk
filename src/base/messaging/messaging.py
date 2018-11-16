@@ -152,7 +152,7 @@ class Messaging(object):
 
     def unregister_msg(self):
 
-        user_name = os.getlogin()
+        user_name = self.db_service.select_one_result('session', 'username')
 
         self.logger.debug('User : ' + str(user_name))
 
