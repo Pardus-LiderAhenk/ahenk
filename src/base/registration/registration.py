@@ -352,30 +352,36 @@ class Registration:
 
 
     def purge_and_unregister(self):
-        self.logger.info('Ahenk conf cleaned')
-        self.logger.info('Ahenk conf cleaning from db')
-        self.unregister()
-        self.logger.info('Purge ldap packages')
-        Util.execute("sudo apt purge libpam-ldap libnss-ldap ldap-utils -y")
-        #self.logger.info('Purge ahenk packages')
-        #Util.execute("sudo apt purge ahenk ahenk-* -y")
-        Util.execute("sudo apt autoremove -y")
-        self.change_configs_after_purge()
-        self.logger.info('purging successfull')
-        self.logger.info('Cleaning ahenk conf..')
-        self.clean()
+        try:
+            user_name = self.db_service.select_one_result('session', 'username')
+            display = self.db_service.select_one_result('session', 'display')
 
-        self.logger.info('Ahenk conf cleaned from db')
-        self.logger.info('Enable Users')
-        self.enable_local_users()
+            self.logger.info('Ahenk conf cleaned')
+            self.logger.info('Ahenk conf cleaning from db')
+            self.unregister()
+            self.logger.info('Purge ldap packages')
+            Util.execute("sudo apt purge libpam-ldap libnss-ldap ldap-utils -y")
+            # self.logger.info('Purge ahenk packages')
+            # Util.execute("sudo apt purge ahenk ahenk-* -y")
+            Util.execute("sudo apt autoremove -y")
+            self.change_configs_after_purge()
+            self.logger.info('purging successfull')
+            self.logger.info('Cleaning ahenk conf..')
+            self.clean()
 
-        user_name = self.db_service.select_one_result('session', 'username')
-        display = self.db_service.select_one_result('session', 'display')
+            self.logger.info('Ahenk conf cleaned from db')
+            self.logger.info('Enable Users')
+            self.enable_local_users()
 
-        Util.show_message(user_name,display,"Ahenk etki alanından çıkarılmıştır.", "")
+            Util.show_message(user_name, display, "Ahenk etki alanından çıkarılmıştır.", "")
 
-        if Util.show_message(user_name,display,"Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.",""):
-            Util.shutdown()
+            if Util.show_message(user_name, display,
+                                 "Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.", ""):
+                Util.shutdown()
+
+        except Exception as e:
+            self.logger.error("Error while running purge_and_unregister process.. Error Message  " + str(e))
+
 
         #System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
         #sys.exit(2)
@@ -475,6 +481,7 @@ class Registration:
             file.close()
             print('Ahenk cleaned.')
         except Exception as e:
+            self.logger.error("Error while running clean command. Error Message  " + str(e))
             print('Error while running clean command. Error Message {0}'.format(str(e)))
 
     def enable_local_users(self):
