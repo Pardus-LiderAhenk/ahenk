@@ -54,8 +54,8 @@ class Registration:
 
         self.logger.debug('User : '+ str(user_name))
 
-        pout = Util.show_registration_message(user_name,'Makineyi etki alanına almak için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
-                                              'ETKI ALANINA KAYIT', self.host)
+        pout = Util.show_registration_message(user_name,'Makineyi Lider MYS sistemine kaydetmek için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
+                                              'LIDER MYS SISTEMINE KAYIT', self.host)
 
         self.logger.debug('pout : ' + str(pout))
 
@@ -345,7 +345,7 @@ class Registration:
         self.logger.error('Ahenk is shutting down...')
         print('Ahenk is shutting down...')
 
-        Util.show_message(os.getlogin(),':0',"Etki alanı sunucusuna ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
+        Util.show_message(os.getlogin(),':0',"Lider MYS sistemine ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
 
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
@@ -355,6 +355,11 @@ class Registration:
         try:
             user_name = self.db_service.select_one_result('session', 'username')
             display = self.db_service.select_one_result('session', 'display')
+
+            Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
+
+            Util.show_message(user_name, display,
+                                 "Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.", "")
 
             self.logger.info('Ahenk conf cleaned')
             self.logger.info('Ahenk conf cleaning from db')
@@ -368,16 +373,10 @@ class Registration:
             self.logger.info('purging successfull')
             self.logger.info('Cleaning ahenk conf..')
             self.clean()
-
             self.logger.info('Ahenk conf cleaned from db')
             self.logger.info('Enable Users')
             self.enable_local_users()
-
-            Util.show_message(user_name, display, "Ahenk etki alanından çıkarılmıştır.", "")
-
-            if Util.show_message(user_name, display,
-                                 "Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.", ""):
-                Util.shutdown()
+            Util.shutdown()
 
         except Exception as e:
             self.logger.error("Error while running purge_and_unregister process.. Error Message  " + str(e))

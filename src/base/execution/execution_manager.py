@@ -409,7 +409,7 @@ class ExecutionManager(object):
             user_name = self.db_service.select_one_result('session', 'username')
             display = self.db_service.select_one_result('session', 'display')
 
-            Util.show_message(user_name,display,'Ahenk etki alanından çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
+            Util.show_message(user_name,display,'Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
                    'Kullanıcı Yetkilendirme Hatası')
         else :
             registration= Scope.get_instance().get_registration()
