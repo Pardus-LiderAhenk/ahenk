@@ -474,6 +474,7 @@ class Registration:
 
             config.set('CONNECTION', 'uid', '')
             config.set('CONNECTION', 'password', '')
+            config.set('MACHINE', 'user_disabled', '0')
 
             with open(System.Ahenk.config_path(), 'w') as file:
                 config.write(file)

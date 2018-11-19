@@ -114,7 +114,7 @@ class AnonymousMessenger(ClientXMPP):
                     self.logger.info('Registred from server. Registration process starting.')
                     self.event_manager.fireEvent('REGISTRATION_SUCCESS', j)
                     msg = str(self.host) + " Etki Alanına hoş geldiniz."
-                    Util.show_message(os.getlogin(), ':0',msg, "UYARI")
+                    Util.show_message(os.getlogin(), ':0' ,msg, "UYARI")
                     msg = "Değişikliklerin etkili olması için sistem yeniden başlayacaktır. Sistem yeniden başlatılıyor...."
                     Util.show_message(os.getlogin(), ':0',msg, "UYARI")
                     time.sleep(3)
