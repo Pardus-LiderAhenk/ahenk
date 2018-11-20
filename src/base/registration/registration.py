@@ -105,15 +105,20 @@ class Registration:
         admin_dn = str(reg_reply['ldapUserDn']) # get user full dn from server.. password same
         admin_password = self.user_password # same user get from server
 
-        (result_code, p_out, p_err) = self.util.execute("/bin/bash /usr/share/ahenk/plugins/ldap-login/scripts/ldap-login.sh {0} {1} {2} {3} {4}".format(
-            server_address, "\'" + dn + "\'", "\'" + admin_dn + "\'", "\'" + admin_password + "\'", version))
-        if result_code == 0:
-            self.logger.info("Script has run successfully")
-            self.change_pam_ldap_configs()
-        else:
-            self.logger.error("Script could not run successfully: " + p_err)
-            print("ERROR ---> " + str(p_err))
-            raise Exception('LDAP Ayarları yapılırken hata oluştu. Lütfen ağ bağlantınızı kontrol ediniz. Deponuzun güncel olduğundan emin olunuz.')
+        if server_address != '' and dn != '' and  version != '' and admin_dn != '' and admin_password != '':
+            (result_code, p_out, p_err) = self.util.execute("/bin/bash /usr/share/ahenk/plugins/ldap-login/scripts/ldap-login.sh {0} {1} {2} {3} {4}".format(
+                server_address, "\'" + dn + "\'", "\'" + admin_dn + "\'", "\'" + admin_password + "\'", version))
+            if result_code == 0:
+                self.logger.info("Script has run successfully")
+                self.change_pam_ldap_configs()
+            else:
+                self.logger.error("Script could not run successfully: " + p_err)
+                print("ERROR ---> " + str(p_err))
+                raise Exception('LDAP Ayarları yapılırken hata oluştu. Lütfen ağ bağlantınızı kontrol ediniz. Deponuzun güncel olduğundan emin olunuz.')
+        else :
+            raise Exception(
+                'LDAP Ayarları yapılırken hata oluştu. Lütfen ağ bağlantınızı kontrol ediniz. Deponuzun güncel olduğundan emin olunuz.')
+
 
 
     def registration_error(self, reg_reply):
