@@ -50,7 +50,7 @@ class AhenkDbService(object):
         self.check_and_create_table('agreement',
                                     ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'contract_id TEXT', 'username TEXT',
                                      'timestamp TEXT', 'choice TEXT'])
-        self.check_and_create_table('session', ['username TEXT', 'display TEXT', 'desktop TEXT', 'timestamp TEXT', 'ip TEXT'])
+        self.check_and_create_table('session', ['id INTEGER PRIMARY KEY AUTOINCREMENT','username TEXT', 'display TEXT', 'desktop TEXT', 'timestamp TEXT', 'ip TEXT'])
 
         self.check_and_create_table('mail', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'command TEXT', 'mailstatus INTEGER',  'timestamp TEXT'])
 

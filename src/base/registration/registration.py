@@ -358,13 +358,7 @@ class Registration:
 
     def purge_and_unregister(self):
         try:
-            user_name = self.db_service.select_one_result('session', 'username')
-            display = self.db_service.select_one_result('session', 'display')
 
-            Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
-
-            Util.show_message(user_name, display,
-                                 "Değişikliklerin etkili olması için sistem yeniden başlatmanız gerekmektedir.", "")
 
             self.logger.info('Ahenk conf cleaned')
             self.logger.info('Ahenk conf cleaning from db')

@@ -403,17 +403,18 @@ class ExecutionManager(object):
         j = json.loads(msg)
         status = str(j['status']).lower()
 
+        user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
+        display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
+
         if 'not_authorized' == str(status):
             self.logger.info('Registration is failed. User not authorized')
-
-            user_name = self.db_service.select_one_result('session', 'username')
-            display = self.db_service.select_one_result('session', 'display')
-
             Util.show_message(user_name,display,'Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
                    'Kullanıcı Yetkilendirme Hatası')
         else :
-            registration= Scope.get_instance().get_registration()
-            registration.purge_and_unregister()
+            Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
+            if Util.show_message(user_name, display, "Değişikliklerin etkili olması için sistemi yeniden başlatmanız gerekmektedir.", "") :
+                registration= Scope.get_instance().get_registration()
+                registration.purge_and_unregister()
 
 
     def json_to_task_bean(self, json_data, file_server_conf=None):
