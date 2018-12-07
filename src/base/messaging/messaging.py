@@ -72,6 +72,7 @@ class Messaging(object):
         data['ipAddresses'] = str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', '')
         data['timestamp'] = Util.timestamp()
         data['userIp'] = ip
+        data['hostname'] = str(System.Os.hostname())
 
         self.logger.debug('USER IP : '+ str(ip)+ ' IPADDRESSES : '+ str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', ''))
 

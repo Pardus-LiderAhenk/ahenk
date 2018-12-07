@@ -508,6 +508,7 @@ class Registration:
         change_username = 'usermod -l {0} {1}'
         content = Util.read_file('/etc/passwd')
         kill_all_process = 'killall -KILL -u {}'
+        change_permisson = "chmod -R 700 {}"
         for p in pwd.getpwall():
             self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
             if not sysx.shell_is_interactive(p.pw_shell):
@@ -521,3 +522,4 @@ class Registration:
                 Util.execute(passwd_cmd.format(p.pw_name))
                 Util.execute(change_username.format(new_username, p.pw_name))
                 Util.execute(change_home.format(new_home_dir, new_username))
+                Util.execute(change_permisson.format(new_home_dir))

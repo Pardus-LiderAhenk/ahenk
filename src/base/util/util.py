@@ -359,7 +359,9 @@ class Util:
 
     @staticmethod
     def show_registration_message(login_user_name,message,title,host=None):
+
         ask_path = '/usr/share/ahenk/base/agreement/ahenkmessage.py'
+
         display_number = ":0"
 
         if host is None:

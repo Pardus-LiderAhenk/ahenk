@@ -310,7 +310,7 @@ class AhenkDaemon(BaseDaemon):
 
         self.check_registration()
 
-        #self.is_registered()
+        self.is_registered()
 
         self.disable_local_users()
 
@@ -322,7 +322,8 @@ class AhenkDaemon(BaseDaemon):
         self.init_signal_listener()
         self.logger.info('Signals listeners was set')
 
-        Agreement().agreement_contract_update()
+        # Agreement().agreement_contract_update()
+
         global_scope.put_custom_map('ahenk_daemon', ahenk_daemon)
         self.init_message_response_queue()
 
