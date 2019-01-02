@@ -97,6 +97,26 @@ class Registration:
             print(e)
             raise
 
+
+    def update_registration_attrs(self, dn=None):
+        self.logger.debug('Registration configuration is updating...')
+        self.db_service.update('registration', ['dn', 'registered'], [dn, 1], ' registered = 0')
+
+        if self.conf_manager.has_section('CONNECTION'):
+            self.conf_manager.set('CONNECTION', 'uid',
+                                  self.db_service.select_one_result('registration', 'jid', ' registered=1'))
+            self.conf_manager.set('CONNECTION', 'password',
+                                  self.db_service.select_one_result('registration', 'password', ' registered=1'))
+
+            if  self.host and self.servicename:
+                self.conf_manager.set('CONNECTION', 'host', self.host)
+                self.conf_manager.set('CONNECTION', 'servicename', self.servicename)
+
+            # TODO  get file path?
+            with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
+                self.conf_manager.write(configfile)
+            self.logger.debug('Registration configuration file is updated')
+
     def install_and_config_ldap(self, reg_reply):
         self.logger.info('ldap install process starting')
         server_address = str(reg_reply['ldapServer'])

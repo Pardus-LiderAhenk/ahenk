@@ -340,7 +340,7 @@ class Util:
 
     @staticmethod
     def show_message(username,display=':0',message='', title=''):
-        ask_path = Util.get_ask_path_file()+ '/confirm.py'
+        ask_path = Util.get_ask_path_file()+ 'confirm.py'
         try:
 
             if username is not None:
