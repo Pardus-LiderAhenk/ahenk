@@ -120,7 +120,7 @@ class Registration:
                 server_address, "\'" + dn + "\'", "\'" + admin_dn + "\'", "\'" + admin_password + "\'", version))
             if result_code == 0:
                 self.logger.info("Script has run successfully")
-                self.change_pam_ldap_configs()
+                self.change_pam_ldap_configs(reg_reply)
             else:
                 self.logger.error("Script could not run successfully: " + p_err)
                 print("ERROR ---> " + str(p_err))
@@ -134,7 +134,6 @@ class Registration:
 
 
     def change_pam_ldap_configs(self,reg_reply):
-
         server_address = str(reg_reply['ldapServer'])
         dn = str(reg_reply['ldapBaseDn'])
 
