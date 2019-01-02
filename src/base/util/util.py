@@ -17,8 +17,15 @@ from base.scope import Scope
 
 
 class Util:
+
+
     def __init__(self):
         super().__init__()
+
+
+    @staticmethod
+    def get_ask_path_file():
+        return '/usr/share/ahenk/base/agreement/'
 
     @staticmethod
     def close_session(username):
@@ -27,7 +34,7 @@ class Util:
     @staticmethod
     def shutdown():
         print("shutting down")
-        Util.execute('reboot')
+        #Util.execute('reboot')
 
     @staticmethod
     def create_file(full_path):
@@ -333,7 +340,7 @@ class Util:
 
     @staticmethod
     def show_message(username,display=':0',message='', title=''):
-        ask_path = '/usr/share/ahenk/base/agreement/confirm.py'
+        ask_path = Util.get_ask_path_file()+ '/confirm.py'
         try:
 
             if username is not None:
@@ -357,10 +364,12 @@ class Util:
 
             return None;
 
+
+
     @staticmethod
     def show_registration_message(login_user_name,message,title,host=None):
 
-        ask_path = '/usr/share/ahenk/base/agreement/ahenkmessage.py'
+        ask_path = Util.get_ask_path_file()+ 'ahenkmessage.py'
 
         display_number = ":0"
 
@@ -382,7 +391,7 @@ class Util:
     @staticmethod
     def show_unregistration_message(login_user_name,display_number,message,title):
 
-        ask_path = '/usr/share/ahenk/base/agreement/unregistrationmessage.py'
+        ask_path = Util.get_ask_path_file()+ 'unregistrationmessage.py'
 
         command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number,
                                                                                                         login_user_name,

@@ -89,8 +89,8 @@ class Registration:
             dn = str(reg_reply['agentDn'])
             self.logger.info('Current dn:' + dn)
             self.logger.info('updating host name and service')
-            self.install_and_config_ldap(reg_reply)
             self.update_registration_attrs(dn)
+            self.install_and_config_ldap(reg_reply)
 
         except Exception as e:
             self.logger.error('Registartion error. Error Message: {0}.'.format(str(e)))
@@ -103,7 +103,8 @@ class Registration:
         dn = str(reg_reply['ldapBaseDn'])
         version = str(reg_reply['ldapVersion'])
         admin_dn = str(reg_reply['ldapUserDn']) # get user full dn from server.. password same
-        admin_password = self.user_password # same user get from server
+        #admin_password = self.user_password # same user get from server
+        admin_password = self.db_service.select_one_result('registration', 'password', ' registered=1')
 
         if server_address != '' and dn != '' and  version != '' and admin_dn != '' and admin_password != '':
             (result_code, p_out, p_err) = self.util.execute("/bin/bash /usr/share/ahenk/plugins/ldap-login/scripts/ldap-login.sh {0} {1} {2} {3} {4}".format(
@@ -139,35 +140,38 @@ class Registration:
         pam_script_original_file_path = "/usr/share/pam-configs/pam_script"
         pam_script_configured_file_path = "/usr/share/ahenk/plugins/ldap-login/config-files/pam_script"
 
-        #create pam_scripts_original directory if not exists
-        if not self.util.is_exist(pam_scripts_original_directory_path):
+        # create pam_scripts_original directory if not exists
+        if not self.is_exist(pam_scripts_original_directory_path):
             self.logger.info("Creating {0} directory.".format(pam_scripts_original_directory_path))
-            self.util.create_directory(pam_scripts_original_directory_path)
+            self.create_directory(pam_scripts_original_directory_path)
 
-        if self.util.is_exist(ldap_back_up_file_path):
+        if self.is_exist(ldap_back_up_file_path):
             self.logger.info("Changing {0} with {1}.".format(ldap_original_file_path, ldap_configured_file_path))
-            self.util.copy_file(ldap_configured_file_path, ldap_original_file_path)
+            self.copy_file(ldap_configured_file_path, ldap_original_file_path)
         else:
             self.logger.info("Backing up {0}".format(ldap_original_file_path))
-            self.util.copy_file(ldap_original_file_path, ldap_back_up_file_path)
-            self.logger.info("{0} file is replaced with {1}.".format(ldap_original_file_path, ldap_configured_file_path))
-            self.util.copy_file(ldap_configured_file_path, ldap_original_file_path)
+            self.copy_file(ldap_original_file_path, ldap_back_up_file_path)
+            self.logger.info(
+                "{0} file is replaced with {1}.".format(ldap_original_file_path, ldap_configured_file_path))
+            self.copy_file(ldap_configured_file_path, ldap_original_file_path)
 
-        if self.util.is_exist(pam_script_back_up_file_path):
-            self.util.copy_file(pam_script_configured_file_path, pam_script_original_file_path)
-            self.logger.info("{0} is replaced with {1}.".format(pam_script_original_file_path, pam_script_configured_file_path))
+        if self.is_exist(pam_script_back_up_file_path):
+            self.copy_file(pam_script_configured_file_path, pam_script_original_file_path)
+            self.logger.info(
+                "{0} is replaced with {1}.".format(pam_script_original_file_path, pam_script_configured_file_path))
         else:
             self.logger.info("Backing up {0}".format(pam_script_original_file_path))
-            self.util.copy_file(pam_script_original_file_path, pam_script_back_up_file_path)
-            self.logger.info("{0} file is replaced with {1}".format(pam_script_original_file_path, pam_script_configured_file_path))
-            self.util.copy_file(pam_script_configured_file_path, pam_script_original_file_path)
+            self.copy_file(pam_script_original_file_path, pam_script_back_up_file_path)
+            self.logger.info(
+                "{0} file is replaced with {1}".format(pam_script_original_file_path, pam_script_configured_file_path))
+            self.copy_file(pam_script_configured_file_path, pam_script_original_file_path)
 
-        (result_code, p_out, p_err) = self.util.execute("DEBIAN_FRONTEND=noninteractive pam-auth-update --package")
+        (result_code, p_out, p_err) = self.execute("DEBIAN_FRONTEND=noninteractive pam-auth-update --package")
         if result_code == 0:
             self.logger.info("'DEBIAN_FRONTEND=noninteractive pam-auth-update --package' has run successfully")
         else:
-            self.logger.error("'DEBIAN_FRONTEND=noninteractive pam-auth-update --package' could not run successfully: " + p_err)
-
+            self.logger.error(
+                "'DEBIAN_FRONTEND=noninteractive pam-auth-update --package' could not run successfully: " + p_err)
 
         # Configure nsswitch.conf
         file_ns_switch = open("/etc/nsswitch.conf", 'r')
@@ -199,12 +203,108 @@ class Registration:
         file_ns_switch.write(file_data)
         file_ns_switch.close()
 
+        # configure ldap-cache
+        self.logger.info("Starting to ldap-cache configurations.")
+        result_code, p_out, p_err = self.execute("apt-get install nss-updatedb -y")
+        if result_code != 0:
+            self.logger.error("Error occured while downloading nss-updatedb.")
+        else:
+            self.logger.info("nss-updatedb downloaded successfully. Configuring /etc/nsswitch.conf.")
+            file_ns_switch = open("/etc/nsswitch.conf", 'r')
+            file_data = file_ns_switch.read()
+
+            # cleared file data from spaces, tabs and newlines
+            text = pattern.sub('', file_data)
+
+            did_configuration_change = False
+            if "passwd:compatldap[NOTFOUND=return]db" not in text:
+                file_data = file_data.replace("passwd:         compat ldap",
+                                              "passwd:         compat ldap [NOTFOUND=return] db")
+                did_configuration_change = True
+
+            if "group:compatldap[NOTFOUND=return]db" not in text:
+                file_data = file_data.replace("group:          compat ldap",
+                                              "group:          compat ldap [NOTFOUND=return] db")
+                did_configuration_change = True
+
+            if "gshadow:files" in text and "#gshadow:files" not in text:
+                file_data = file_data.replace("gshadow:        files", "#gshadow:        files")
+                did_configuration_change = True
+
+            if did_configuration_change:
+                self.logger.info("nsswitch.conf configuration has been configured for ldap cache.")
+            else:
+                self.logger.info("nsswitch.conf has already been configured for ldap cache.")
+
+            file_ns_switch.close()
+            file_ns_switch = open("/etc/nsswitch.conf", 'w')
+            file_ns_switch.write(file_data)
+            file_ns_switch.close()
+            self.execute("nss_updatedb ldap")
+
+        # create cron job for ldap cache
+        content = "#!/bin/bash\n" \
+                  "nss-updatedb ldap"
+        nss_update_cron_job_file_path = "/etc/cron.daily/nss-updatedb"
+        if self.is_exist(nss_update_cron_job_file_path):
+            self.logger.info(
+                "{0} exists. File will be deleted and creating new one.".format(nss_update_cron_job_file_path))
+            self.delete_file(nss_update_cron_job_file_path)
+            self.create_file(nss_update_cron_job_file_path)
+            self.write_file(nss_update_cron_job_file_path, content, 'w+')
+            self.execute("chmod +x " + nss_update_cron_job_file_path)
+        else:
+            self.logger.info(
+                "{0} doesnt exist. File will be created and content will be written.".format(
+                    nss_update_cron_job_file_path))
+            self.create_file(nss_update_cron_job_file_path)
+            self.write_file(nss_update_cron_job_file_path, content, 'w+')
+            self.execute("chmod +x " + nss_update_cron_job_file_path)
+
+        # configure /etc/libnss-ldap.conf
+        libnss_ldap_file_path = "/etc/libnss-ldap.conf"
+        content = "bind_policy hard" \
+                  "\nnss_reconnect_tries 1" \
+                  "\nnss_reconnect_sleeptime 1" \
+                  "\nnss_reconnect_maxsleeptime 8" \
+                  "\nnss_reconnect_maxconntries 2"
+        if self.is_exist(libnss_ldap_file_path):
+            self.logger.info("{0} exists.".format(libnss_ldap_file_path))
+            self.execute("sed -i '/bind_policy hard/c\\' " + libnss_ldap_file_path)
+            self.execute("sed -i '/nss_reconnect_tries 1/c\\' " + libnss_ldap_file_path)
+            self.execute("sed -i '/nss_reconnect_sleeptime 1/c\\' " + libnss_ldap_file_path)
+            self.execute("sed -i '/nss_reconnect_maxsleeptime 8/c\\' " + libnss_ldap_file_path)
+            self.execute("sed -i '/nss_reconnect_maxconntries 2/c\\' " + libnss_ldap_file_path)
+            self.write_file(libnss_ldap_file_path, content, 'a+')
+            self.logger.info("Configuration has been made to {0}.".format(libnss_ldap_file_path))
+
+        result_code, p_out, p_err = self.execute("apt-get install libnss-db libpam-ccreds -y")
+        if result_code != 0:
+            self.logger.error("Error occured while downloading libnss-db libpam-ccreds.")
+        else:
+            self.logger.error("libnss-db libpam-ccreds are downloaded.")
+
+        # configure sudo-ldap
+        sudo_ldap_conf_file_path = "/etc/sudo-ldap.conf"
+        content = "sudoers_base ou=Roles," + self.data['dn'] \
+                  + "\nBASE " + self.data['dn'] \
+                  + "\nURI ldap://" + self.data['server-address']
+        # clean if config is already written
+        self.execute("sed -i '/BASE /c\\' " + sudo_ldap_conf_file_path)
+        self.execute("sed -i '/sudoers_base /c\\' " + sudo_ldap_conf_file_path)
+        self.execute("sed -i '/URI /c\\' " + sudo_ldap_conf_file_path)
+
+        if self.is_exist(sudo_ldap_conf_file_path):
+            self.logger.info("{0} exists.".format(sudo_ldap_conf_file_path))
+            self.write_file(sudo_ldap_conf_file_path, content, 'a+')
+            self.logger.info("Content is written to {0} successfully.".format(sudo_ldap_conf_file_path))
+
         # Configure lightdm.service
         # check if 99-pardus-xfce.conf exists if not create
         pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
-        if not self.util.is_exist(pardus_xfce_path):
+        if not self.is_exist(pardus_xfce_path):
             self.logger.info("99-pardus-xfce.conf does not exist.")
-            self.util.create_file(pardus_xfce_path)
+            self.create_file(pardus_xfce_path)
 
             file_lightdm = open(pardus_xfce_path, 'a')
             file_lightdm.write("[Seat:*]\n")
@@ -213,36 +313,17 @@ class Registration:
             self.logger.info("lightdm has been configured.")
         else:
             self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
-            self.util.delete_file(pardus_xfce_path)
-            self.util.create_file(pardus_xfce_path)
+            self.delete_file(pardus_xfce_path)
+            self.create_file(pardus_xfce_path)
 
             file_lightdm = open(pardus_xfce_path, 'a')
             file_lightdm.write("[Seat:*]")
             file_lightdm.write("greeter-hide-users=true")
             file_lightdm.close()
             self.logger.info("lightdm.conf has been configured.")
-        self.util.execute("systemctl restart nscd.service")
-        self.logger.info("Operation finished")
-
-
-    def update_registration_attrs(self, dn=None):
-        self.logger.debug('Registration configuration is updating...')
-        self.db_service.update('registration', ['dn', 'registered'], [dn, 1], ' registered = 0')
-
-        if self.conf_manager.has_section('CONNECTION'):
-            self.conf_manager.set('CONNECTION', 'uid',
-                                  self.db_service.select_one_result('registration', 'jid', ' registered=1'))
-            self.conf_manager.set('CONNECTION', 'password',
-                                  self.db_service.select_one_result('registration', 'password', ' registered=1'))
-
-            if  self.host and self.servicename:
-                self.conf_manager.set('CONNECTION', 'host', self.host)
-                self.conf_manager.set('CONNECTION', 'servicename', self.servicename)
-
-            # TODO  get file path?
-            with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
-                self.conf_manager.write(configfile)
-            self.logger.debug('Registration configuration file is updated')
+        self.execute("systemctl restart nscd.service")
+        self.execute("pam-auth-update --force")
+        self.logger.info("LDAP Login operation has been completed.")
 
 
 
@@ -385,7 +466,6 @@ class Registration:
         #sys.exit(2)
 
     def change_configs_after_purge(self):
-
         # pattern for clearing file data from spaces, tabs and newlines
         pattern = re.compile(r'\s+')
 
@@ -395,23 +475,25 @@ class Registration:
         pam_script_back_up_file_path = "/usr/share/ahenk/pam_scripts_original/pam_script"
         pam_script_original_file_path = "/usr/share/pam-configs/pam_script"
 
-        if self.util.is_exist(ldap_back_up_file_path):
+        if self.is_exist(ldap_back_up_file_path):
             self.logger.info("Replacing {0} with {1}".format(ldap_original_file_path, ldap_back_up_file_path))
-            self.util.copy_file(ldap_back_up_file_path, ldap_original_file_path)
+            self.copy_file(ldap_back_up_file_path, ldap_original_file_path)
             self.logger.info("Deleting {0}".format(ldap_back_up_file_path))
-            self.util.delete_file(ldap_back_up_file_path)
+            self.delete_file(ldap_back_up_file_path)
 
-        if self.util.is_exist(pam_script_back_up_file_path):
-            self.logger.info("Replacing {0} with {1}".format(pam_script_original_file_path, pam_script_back_up_file_path))
-            self.util.copy_file(pam_script_back_up_file_path, pam_script_original_file_path)
+        if self.is_exist(pam_script_back_up_file_path):
+            self.logger.info(
+                "Replacing {0} with {1}".format(pam_script_original_file_path, pam_script_back_up_file_path))
+            self.copy_file(pam_script_back_up_file_path, pam_script_original_file_path)
             self.logger.info("Deleting {0}".format(pam_script_back_up_file_path))
-            self.util.delete_file(pam_script_back_up_file_path)
+            self.delete_file(pam_script_back_up_file_path)
 
-        (result_code, p_out, p_err) = self.util.execute("DEBIAN_FRONTEND=noninteractive pam-auth-update --package")
+        (result_code, p_out, p_err) = self.execute("DEBIAN_FRONTEND=noninteractive pam-auth-update --package")
         if result_code == 0:
             self.logger.info("'DEBIAN_FRONTEND=noninteractive pam-auth-update --package' has run successfully")
         else:
-            self.logger.error("'DEBIAN_FRONTEND=noninteractive pam-auth-update --package' could not run successfully: " + p_err)
+            self.logger.error(
+                "'DEBIAN_FRONTEND=noninteractive pam-auth-update --package' could not run successfully: " + p_err)
 
         # Configure nsswitch.conf
         file_ns_switch = open("/etc/nsswitch.conf", 'r')
@@ -421,16 +503,20 @@ class Registration:
         text = pattern.sub('', file_data)
 
         did_configuration_change = False
-        if "passwd:compatldap" in text:
-            file_data = file_data.replace("passwd:         compat ldap", "passwd:         compat")
+        if "passwd:compatldap[NOTFOUND=return]db" in text:
+            file_data = file_data.replace("passwd:         compat ldap [NOTFOUND=return] db", "passwd:         compat")
             did_configuration_change = True
 
-        if "group:compatldap" in text:
-            file_data = file_data.replace("group:          compat ldap", "group:          compat")
+        if "group:compatldap[NOTFOUND=return]db" in text:
+            file_data = file_data.replace("group:          compat ldap [NOTFOUND=return] db", "group:          compat")
             did_configuration_change = True
 
         if "shadow:compatldap" in text:
             file_data = file_data.replace("shadow:         compat ldap", "shadow:         compat")
+            did_configuration_change = True
+
+        if "#gshadow:files" in text:
+            file_data = file_data.replace("#gshadow:        files", "gshadow:        files")
             did_configuration_change = True
 
         if did_configuration_change:
@@ -443,15 +529,20 @@ class Registration:
         file_ns_switch.write(file_data)
         file_ns_switch.close()
 
+        # Configure ldap-cache
+        nss_update_cron_job_file_path = "/etc/cron.daily/nss-updatedb"
+        if self.is_exist(nss_update_cron_job_file_path):
+            self.delete_file(nss_update_cron_job_file_path)
+            self.logger.info("{0} is deleted.".format(nss_update_cron_job_file_path))
+
         # Configure lightdm.service
         pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
-        if self.util.is_exist(pardus_xfce_path):
+        if self.is_exist(pardus_xfce_path):
             self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
-            self.util.delete_file(pardus_xfce_path)
+            self.delete_file(pardus_xfce_path)
 
-        self.util.execute("systemctl restart nscd.service")
+        self.execute("systemctl restart nscd.service")
         self.logger.info("Operation finished")
-
 
     def clean(self):
         print('Ahenk cleaning..')

@@ -42,6 +42,7 @@ class CommandRunner(object):
         if not Util.is_exist(ahenk_policy_file):
             self.logger.info('Ahenk polkit file not found')
         else:
+            Util.delete_file(ahenk_policy_file)
             Util.write_file(ahenk_policy_file, content)
             self.logger.info('Root added ahenk polkit file')
 
