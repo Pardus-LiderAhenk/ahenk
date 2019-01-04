@@ -33,8 +33,8 @@ class Util:
 
     @staticmethod
     def shutdown():
-        print("shutting down")
-        #Util.execute('reboot')
+        pass
+        Util.execute('reboot')
 
     @staticmethod
     def create_file(full_path):
