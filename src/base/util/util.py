@@ -22,7 +22,6 @@ class Util:
     def __init__(self):
         super().__init__()
 
-
     @staticmethod
     def get_ask_path_file():
         return '/usr/share/ahenk/base/agreement/'
@@ -33,7 +32,6 @@ class Util:
 
     @staticmethod
     def shutdown():
-        pass
         Util.execute('reboot')
 
     @staticmethod

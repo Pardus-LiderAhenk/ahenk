@@ -162,7 +162,7 @@ class AhenkDaemon(BaseDaemon):
                 print("Registation attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
-                registration.registration_request()
+                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password)
 
                 #if max_attempt_number < 0:
                 #    self.logger.warning('Number of Attempting for registration is over')
@@ -239,6 +239,11 @@ class AhenkDaemon(BaseDaemon):
             Util.delete_file(System.Ahenk.fifo_file())
         Util.create_file(System.Ahenk.fifo_file())
         Util.set_permission(System.Ahenk.fifo_file(), '600')
+
+    def set_register_user(self, hostName, username, password):
+        self.register_hostname=hostName
+        self.register_user_name=username
+        self.register_user_password=password
 
     def disable_local_users(self):
 
@@ -344,6 +349,7 @@ if __name__ == '__main__':
     ahenk_daemon = AhenkDaemon(System.Ahenk.pid_path())
     try:
         if len(sys.argv) == 2 and (sys.argv[1] in ('start', 'stop', 'restart', 'status')):
+            ahenk_daemon.set_register_user(None, None, None)
             if sys.argv[1] == 'start':
                 if System.Ahenk.is_running() is True:
                     print('There is already running Ahenk service. It will be killed.[{0}]'.format(
@@ -369,6 +375,14 @@ if __name__ == '__main__':
             else:
                 print('Unknown command. Usage : %s start|stop|restart|status|clean' % sys.argv[0])
                 sys.exit(2)
+        elif len(sys.argv) > 2 and (sys.argv[1] in ('register')):
+            params = sys.argv[1]
+            hostName = sys.argv[2]
+            userName = sys.argv[3]
+            password = sys.argv[4]
+            ahenk_daemon.set_register_user(hostName,userName,password)
+            ahenk_daemon.run()
+
         else:
             result = Commander().set_event(sys.argv)
             if result is None:
