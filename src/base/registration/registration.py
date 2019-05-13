@@ -96,7 +96,7 @@ class Registration:
             self.install_and_config_ldap(reg_reply)
 
         except Exception as e:
-            self.logger.error('Registartion error. Error Message: {0}.'.format(str(e)))
+            self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
             print(e)
             raise
 
