@@ -1,0 +1,15 @@
+
+# Automatically added by dh_python3:
+if which py3compile >/dev/null 2>&1; then
+	py3compile -p ahenk /usr/share/ahenk -V 3.2-
+fi
+
+# End automatically added section
+# Automatically added by dh_installinit
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ]; then
+	if [ -x "/etc/init.d/ahenk" ]; then
+		update-rc.d ahenk defaults >/dev/null
+		invoke-rc.d ahenk start || exit $?
+	fi
+fi
+# End automatically added section
