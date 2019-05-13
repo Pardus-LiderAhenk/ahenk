@@ -16,8 +16,8 @@ from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 import re
 import os
-from base.registration.execute_cancel_ldap_login import ExecuteCancelLDAPLogin
-from base.registration.execute_ldap_login import ExecuteLDAPLogin
+from base.registration.execute_cancel_sssd_authentication import ExecuteCancelSSSDAuthentication
+from base.registration.execute_sssd_authentication import ExecuteSSSDAuthentication
 
 class Registration:
     def __init__(self):
@@ -35,8 +35,8 @@ class Registration:
         self.event_manager.register_event('REGISTRATION_SUCCESS', self.registration_success)
         self.event_manager.register_event('REGISTRATION_ERROR', self.registration_error)
 
-        self.ldap_login_cancel = ExecuteCancelLDAPLogin()
-        self.ldap_login = ExecuteLDAPLogin()
+        self.ldap_login_cancel = ExecuteCancelSSSDAuthentication()
+        self.ldap_login = ExecuteSSSDAuthentication()
 
         if self.is_registered():
             self.logger.debug('Ahenk already registered')
