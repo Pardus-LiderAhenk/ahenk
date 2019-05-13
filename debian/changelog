@@ -1,0 +1,61 @@
+ahenk (1.0.0-7.2) unstable; urgency=medium
+
+  [ Hasan Kara ]
+  * firefox autostart is added if profile is not created for user.
+
+  [ edip ]
+  * register dependency
+  * change log
+
+ -- edip <edip@localhost.localdomain>  Mon, 13 May 2019 12:16:29 +0300
+
+ahenk (1.0.0-7.1) unstable; urgency=medium
+
+  [ Ömer Çakmak ]
+  * Add dependency python3-easygui
+  * Changed to package installer dpkg
+  * the agent conf file is deleted while the agent is purged
+  * update agent from 1.0.0-6 to 1.0.0-7
+
+  [ Tuncay ÇOLAK ]
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Wed, 25 Apr 2018 16:05:13 +0300
+
+ahenk (1.0.0-6) unstable; urgency=medium
+
+  [ Tuncay ÇOLAK ]
+  * Add preinst script to fix uninstalled configs
+
+  [ Tuncay ÇOLAK ]
+
+ -- Tuncay ÇOLAK <tcolak@localhost.localdomain>  Mon, 12 Feb 2018 11:07:33 +0300
+
+ahenk (1.0.0-5) unstable; urgency=medium
+
+  * fix postins syntax
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 24 Nov 2017 10:33:23 +0300
+
+ahenk (1.0.0-4) unstable; urgency=medium
+
+  * update postrm script
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 24 Nov 2017 10:21:56 +0300
+
+ahenk (1.0.0-3) unstable; urgency=medium
+
+  * udpate control file and postins script for overriding pam script
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 24 Nov 2017 10:04:38 +0300
+
+ahenk (1.0.0-2) unstable; urgency=medium
+
+  * Add postinstall and post remove script to take everything under control
+
+ -- Yunusemre Şentürk <yunusemre.senturk@pardus.org.tr>  Wed, 22 Nov 2017 09:59:39 +0300
+
+ahenk (1.0.0-1) onyedi; urgency=medium
+
+  * Initial release.
+
+ -- Yunusemre Şentürk <yunusemre.senturk@pardus.org.tr>  Tue, 21 Nov 2017 15:06:11 +0300
