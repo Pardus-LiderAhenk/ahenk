@@ -1,0 +1,11 @@
+/var/log/ahenk.log {
+    weekly
+    missingok
+    notifempty
+    rotate 5
+    compress
+    delaycompress
+    copytruncate
+    minsize 1000k
+    create 0766 root root
+}
