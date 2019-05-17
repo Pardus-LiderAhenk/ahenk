@@ -1,0 +1,45 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          ahenk
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Manages ahenk service.
+# Description:       Debian init script for the ahenk executables
+#                    scheduler
+### END INIT INFO
+#
+# Author:       S Suleyman Arslan <sarslan@innova.com.tr>
+#
+
+# Activate the python virtual environment
+#    . /path_to_virtualenv/activate
+case "$1" in
+  start)
+    echo "Starting server"
+    # Start the daemon
+    #python $AHENKDPATH start
+    systemctl start ahenk.service
+    ;;
+  stop)
+    echo "Stopping server"
+    systemctl stop ahenk.service
+    ;;
+  restart)
+    echo "Restarting server"
+    systemctl restart ahenk.service
+    ;;
+  status)
+    echo "Server Status"
+    # Status of the daemon
+    systemctl status ahenk.service
+    ;;
+  *)
+    # Refuse to do other stuff
+    echo "Usage: /etc/init.d/ahenk.sh {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
