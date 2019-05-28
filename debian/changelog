@@ -1,15 +1,4 @@
-ahenk (1.0.0-7.2) unstable; urgency=medium
-
-  [ Hasan Kara ]
-  * firefox autostart is added if profile is not created for user.
-
-  [ edip ]
-  * register dependency
-  * change log
-
- -- edip <edip@localhost.localdomain>  Mon, 13 May 2019 12:16:29 +0300
-
-ahenk (1.0.0-7.1) unstable; urgency=medium
+ahenk (1.0.0-7) unstable; urgency=medium
 
   [ Ömer Çakmak ]
   * Add dependency python3-easygui
