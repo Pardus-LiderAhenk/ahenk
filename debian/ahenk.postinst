@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+#mkdir -p /usr/share/ahenk/plugins
+
+# update ahenk from 1.0.0-6 to 1.0.0-7
+if [ ! -d /etc/ahenk ]; then
+
+    mkdir -p /etc/ahenk
+    cp -rf /tmp/ahenk/* /etc/ahenk
+fi
+
+systemctl enable ahenk
+systemctl start ahenk
