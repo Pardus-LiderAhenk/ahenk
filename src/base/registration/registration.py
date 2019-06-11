@@ -396,6 +396,19 @@ class Registration:
         content = Util.read_file('/etc/passwd')
         kill_all_process = 'killall -KILL -u {}'
         change_permisson = "chmod -R 700 {}"
+
+        add_user_conf_file = "/etc/adduser.conf"
+        file_dir_mode = open(add_user_conf_file, 'r')
+        file_data = file_dir_mode.read()
+        file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
+        file_dir_mode.close()
+
+        file_dir_mode = open(add_user_conf_file, 'w')
+        file_dir_mode.write(file_data)
+        file_dir_mode.close()
+
+        self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
+
         for p in pwd.getpwall():
             self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
             if not sysx.shell_is_interactive(p.pw_shell):
