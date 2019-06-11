@@ -128,9 +128,9 @@ class Registration:
         #admin_password = self.user_password # same user get from server
         admin_password = self.db_service.select_one_result('registration', 'password', ' registered=1')
         if server_address != '' and dn != '' and  version != '' and admin_dn != '' and admin_password != '':
-            self.logger.info("PAM LDAP configuration process starting....")
-            self.ldap_login.login(server_address,dn,version,admin_dn,admin_password)
-            self.logger.info("PAM LDAP configuration process starting....")
+            self.logger.info("SSSD configuration process starting....")
+            self.ldap_login.authenticate(server_address, dn, admin_dn, admin_password)
+            self.logger.info("SSSD configuration process starting....")
         else :
             raise Exception(
                 'LDAP Ayarları yapılırken hata oluştu. Lütfen ağ bağlantınızı kontrol ediniz. Deponuzun güncel olduğundan emin olunuz.')

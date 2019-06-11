@@ -156,7 +156,7 @@ class ExecuteSSSDAuthentication:
                 self.logger.info("lightdm.conf has been configured.")
 
             self.util.execute("systemctl restart nscd.service")
-            self.util.execute("pam-auth-update --force")
+            # self.util.execute("pam-auth-update --force")
             self.logger.info("LDAP Login operation has been completed.")
 
             self.logger.info("LDAP Login işlemi başarı ile sağlandı.")
