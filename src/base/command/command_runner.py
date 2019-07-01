@@ -36,6 +36,16 @@ class CommandRunner(object):
         else:
             return True
 
+    def delete_polkit_user(self):
+        content = "[Configuration] \nAdminIdentities=unix-user:root"
+        ahenk_policy_file = "/etc/polkit-1/localauthority.conf.d/99-ahenk-policy.conf"
+        if not Util.is_exist(ahenk_policy_file):
+            self.logger.info('Ahenk polkit file not found')
+        else:
+            Util.delete_file(ahenk_policy_file)
+            Util.write_file(ahenk_policy_file, content)
+            self.logger.info('Root added ahenk polkit file')
+
     def run_command_from_fifo(self, num, stack):
         """ docstring"""
 
@@ -182,6 +192,9 @@ class CommandRunner(object):
                     logout_message = self.message_manager.logout_msg(username,ip)
                     self.messenger.send_direct_message(logout_message)
 
+                    self.logger.info('Ahenk polkit file deleting..')
+                    self.delete_polkit_user()
+
                     self.plugin_manager.process_mode('logout', username)
                     self.plugin_manager.process_mode('safe', username)
 
@@ -190,6 +203,12 @@ class CommandRunner(object):
                         json.dumps(json_data['message'])))
                     message = json.dumps(json_data['message'])
                     self.messenger.send_direct_message(message)
+
+                elif str(json_data['event']) == 'unregister':
+                    self.logger.info('Unregistering..')
+                    unregister_message = self.message_manager.unregister_msg()
+                    if unregister_message is not None:
+                        self.messenger.send_direct_message(unregister_message)
 
                 elif str(json_data['event']) == 'load':
                     plugin_name = str(json_data['plugins'])
