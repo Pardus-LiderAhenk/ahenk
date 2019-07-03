@@ -76,6 +76,7 @@ class CommandRunner(object):
                         ip = json_data['ip']
 
                     self.logger.info('login event is handled for user: {0}'.format(username))
+                    Util.execute("systemctl restart sssd.service")
                     login_message = self.message_manager.login_msg(username,ip)
                     self.messenger.send_direct_message(login_message)
 
