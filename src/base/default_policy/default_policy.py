@@ -53,44 +53,26 @@ class DefaultPolicy:
     ## disabled update package notify for user
     def disable_update_package_notify(self, username):
 
-        app_name_for_blocking = "pk-update-icon"
+        xfce4_notify_template_path = "/usr/share/ahenk/base/default_policy/config-files/xfce4-notifyd.xml"
+
         fileName = "/home/{0}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-notifyd.xml".format(username)
 
         if not self.util.is_exist(fileName):
+            ## if configuration file does not exist will be create  /home/{username}/.config/xfce4/xfconf/xfce-perchannel-xml/
             self.logger.info("Configuration file does not exist")
+            self.util.create_directory("/home/{0}/.config/xfce4/xfconf/xfce-perchannel-xml/".format(username))
+            self.logger.info("Created directory /home/{0}/.config/xfce4/xfconf/xfce-perchannel-xml/".format(username))
+            self.util.copy_file(xfce4_notify_template_path, "/home/{0}/.config/xfce4/xfconf/xfce-perchannel-xml/".format(username))
+            self.logger.info("Copy xfce4-notifyd.xml template file")
+            gid = self.util.file_group("/home/{0}".format(username))
+            cmd = "chown -R {0}:{1} /home/{0}/.config".format(username, gid)
+            self.util.execute(cmd)
+            self.logger.info("Set permissons for /home/{0}.config directory".format(username))
+
+            self.notifyd_xml_parser(username)
         else:
-            tree = ET.parse(fileName)
-            root = tree.getroot()
-
-            element = root.find("./property/[@name='applications']")
-            if element is None:
-                self.logger.info("applications element could not be found.")
-            else:
-                element = root.find("./property/property[@name='muted_applications']")
-                if element is None:
-                    self.logger.info("muted_applications element could not be found.")
-                    self.logger.info("adding muted_applications element to applications tag.")
-                    element = root.find("./property/[@name='applications']")
-                    new_element = ET.SubElement(element, 'property')
-                    new_element.attrib["name"] = 'muted_applications'
-                    new_element.attrib["type"] = 'array'
-                    tree.write(fileName)
-                else:
-                    self.logger.info("muted_applications tag exists.")
-
-                self.logger.info("checking if '" + app_name_for_blocking + "' exists in muted_applications tag.")
-                element = root.find(
-                    "./property/property[@name='muted_applications']/value[@value='{0}']".format(app_name_for_blocking))
-                if element is None:
-                    self.logger.info("'" + app_name_for_blocking + "' is not found in muted_applications element.")
-                    self.logger.info("'" + app_name_for_blocking + "' will be added to muted_applications tag.")
-                    element = root.find("./property/property[@name='muted_applications']")
-                    new_element = ET.SubElement(element, 'value')
-                    new_element.attrib["type"] = 'string'
-                    new_element.attrib["value"] = app_name_for_blocking
-                    tree.write(fileName)
-                else:
-                    self.logger.info("'" + app_name_for_blocking + "' is already added to muted_applications tag.")
+            self.logger.info("Configuration file exist")
+            self.notifyd_xml_parser(username)
 
         pk_update_icon_file = "/etc/xdg/autostart/pk-update-icon.desktop"
         if self.util.is_exist(pk_update_icon_file):
@@ -103,3 +85,39 @@ class DefaultPolicy:
             self.logger.info("File not found")
 
         self.logger.info("Disable notifications if there is a package update notification for user: " + username)
+
+    def notifyd_xml_parser(self, username):
+
+        fileName = "/home/{0}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-notifyd.xml".format(username)
+        tree = ET.parse(fileName)
+        root = tree.getroot()
+        app_name_for_blocking = "pk-update-icon"
+        element = root.find("./property/[@name='applications']")
+        if element is None:
+            self.logger.info("applications element could not be found.")
+        else:
+            element = root.find("./property/property[@name='muted_applications']")
+            if element is None:
+                self.logger.info("muted_applications element could not be found.")
+                self.logger.info("adding muted_applications element to applications tag.")
+                element = root.find("./property/[@name='applications']")
+                new_element = ET.SubElement(element, 'property')
+                new_element.attrib["name"] = 'muted_applications'
+                new_element.attrib["type"] = 'array'
+                tree.write(fileName)
+            else:
+                self.logger.info("muted_applications tag exists.")
+
+            self.logger.info("checking if '" + app_name_for_blocking + "' exists in muted_applications tag.")
+            element = root.find(
+                "./property/property[@name='muted_applications']/value[@value='{0}']".format(app_name_for_blocking))
+            if element is None:
+                self.logger.info("'" + app_name_for_blocking + "' is not found in muted_applications element.")
+                self.logger.info("'" + app_name_for_blocking + "' will be added to muted_applications tag.")
+                element = root.find("./property/property[@name='muted_applications']")
+                new_element = ET.SubElement(element, 'value')
+                new_element.attrib["type"] = 'string'
+                new_element.attrib["value"] = app_name_for_blocking
+                tree.write(fileName)
+            else:
+                self.logger.info("'" + app_name_for_blocking + "' is already added to muted_applications tag.")

@@ -230,8 +230,9 @@ class Util:
     def file_group(full_path):
         try:
             st = os.stat(full_path)
-            gid = st.st_uid
-            return grp.getgrgid(gid)[0]
+            gid = st.st_gid
+            # return grp.getgrgid(gid)[0]
+            return gid
         except:
             raise
 
