@@ -13,6 +13,7 @@ from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.util.util import Util
+from base.default_policy.default_policy import DefaultPolicy
 
 
 class CommandRunner(object):
@@ -25,6 +26,7 @@ class CommandRunner(object):
         self.conf_manager = scope.get_configuration_manager()
         self.db_service = scope.get_db_service()
         self.execute_manager = scope.get_execution_manager()
+        self.default_policy = DefaultPolicy()
 
     def check_last_login(self):
         last_login_tmstmp = self.db_service.select_one_result('session', 'timestamp')
@@ -83,37 +85,11 @@ class CommandRunner(object):
                     agreement = Agreement()
                     agreement_choice = None
 
-                    self.logger.info("if mozilla profile is not created run firefox to create profile for user: " + username)
-                    if not Util.is_exist("/home/" + username + "/.mozilla/"):
-                        self.logger.info("firefox profile does not exist. Check autostart file.")
-                        if not Util.is_exist("/home/" + username + "/.config/autostart/"):
-                            self.logger.info(".config/autostart folder does not exist. Creating folder.")
-                            Util.create_directory("/home/" + username + "/.config/autostart/")
-                        else:
-                            self.logger.info(".config/autostart folder exists.")
-                            self.logger.info(
-                                "Checking if firefox-esr-autostart-for-profile.desktop autorun file exists.")
+                    ## Default policy for users
 
-                        if not Util.is_exist(
-                                "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop"):
-                            self.logger.info(
-                                "firefox-esr-autostart-for-profile.desktop autorun file does not exists. Creating file.")
-                            Util.create_file(
-                                "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop")
-                            content = "[Desktop Entry]\n\n" \
-                                      "Type=Application\n\n" \
-                                      "Exec=firefox-esr www.liderahenk.org"
-                            Util.write_file(
-                                "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop",
-                                content)
-                            self.logger.info(
-                                "Autorun config is written to firefox-esr-autostart-for-profile.desktop.")
-                        else:
-                            self.logger.info("firefox-esr-autostart-for-profile.desktop exists")
-                    else:
-                        self.logger.info(".mozilla firefox profile path exists. Delete autorun file.")
-                        Util.delete_file(
-                            "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop")
+                    self.logger.info("Applying default policies for user {0}".format(username))
+                    self.default_policy.default_firefox_policy(username)
+                    self.default_policy.disable_update_package_notify(username)
 
                     if agreement.check_agreement(username) is not True and System.Ahenk.agreement() == '1':
                         self.logger.debug('User {0} has not accepted agreement.'.format(username))
