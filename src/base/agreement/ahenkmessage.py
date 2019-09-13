@@ -1,5 +1,6 @@
 import sys
 from easygui import multpasswordbox, msgbox
+import os
 
 def ask(message, title, host):
 
@@ -40,6 +41,8 @@ if __name__ == '__main__':
             message=sys.argv[1]
             title=sys.argv[2]
             host=sys.argv[3]
+            display = sys.argv[4]
+            os.environ["DISPLAY"] = display
             ask(message,title, host)
         except Exception as e:
             print(str(e))

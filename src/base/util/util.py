@@ -343,10 +343,8 @@ class Util:
         try:
 
             if username is not None:
-                command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"{3}\" \"{4}\"\''.format(display, username,
-                                                                                                  ask_path,
-                                                                                                  message,
-                                                                                                  title)
+                command = 'su - {0} -c \'python3 {1} \"{2}\" \"{3}\" \"{4}\"\''.format(username, ask_path, message,
+                                                                                       title, display)
                 result_code, p_out, p_err = Util.execute(command)
 
                 if p_out.strip() == 'Y':
@@ -361,7 +359,7 @@ class Util:
         except Exception as e :
             print("Error when showing message " + str(e))
 
-            return None;
+            return None
 
 
 
@@ -373,14 +371,13 @@ class Util:
         display_number = ":0"
 
         if host is None:
-            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number, login_user_name,
-                                                                                        ask_path, message, title)
+            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name,
+                                                                                        ask_path, message, title, display_number)
         else:
-            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \'{5}\' \"'.format(display_number,
-                                                                                                        login_user_name,
+            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \'{5}\' \"'.format(login_user_name,
                                                                                                         ask_path,
                                                                                                         message, title,
-                                                                                                        host)
+                                                                                                        host, display_number)
         result_code, p_out, p_err = Util.execute(command)
 
         pout = str(p_out).replace('\n', '')
