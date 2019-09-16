@@ -389,11 +389,7 @@ class Util:
 
         ask_path = Util.get_ask_path_file()+ 'unregistrationmessage.py'
 
-        command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number,
-                                                                                                        login_user_name,
-                                                                                                        ask_path,
-                                                                                                        message, title
-                                                                                                        )
+        command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name, ask_path, message, title, display_number)
         result_code, p_out, p_err = Util.execute(command)
 
         pout = str(p_out).replace('\n', '')
