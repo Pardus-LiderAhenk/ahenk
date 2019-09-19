@@ -9,6 +9,7 @@ from base.scope import Scope
 from base.util.util import Util
 import xml.etree.ElementTree as ET
 
+
 class DefaultPolicy:
     def __init__(self):
         scope = Scope().get_instance()
@@ -17,6 +18,27 @@ class DefaultPolicy:
 
     ## default firefox policy for user
     def default_firefox_policy(self, username):
+        exec_command = None
+        firefox_path = None
+
+        if self.util.is_exist("/usr/lib/firefox-esr/"):
+            firefox_path = "/usr/lib/firefox-esr/"
+            exec_command = "firefox-esr"
+
+        elif self.util.is_exist('/opt/firefox-esr/'):
+            firefox_path = "/opt/firefox-esr/"
+            exec_command = "firefox-esr"
+
+        elif self.util.is_exist('/usr/lib/iceweasel/'):
+            firefox_path = "/usr/lib/iceweasel/"
+            exec_command = "iceweasel"
+
+        elif self.util.is_exist('/opt/firefox/'):
+            firefox_path = "/opt/firefox/"
+            exec_command = "firefox"
+
+        else:
+            self.logger.error('Firefox installation path not found')
 
         self.logger.info("if mozilla profile is not created run firefox to create profile for user: " + username)
         if not Util.is_exist("/home/" + username + "/.mozilla/"):
@@ -27,28 +49,30 @@ class DefaultPolicy:
             else:
                 self.logger.info(".config/autostart folder exists.")
                 self.logger.info(
-                    "Checking if firefox-esr-autostart-for-profile.desktop autorun file exists.")
+                    "Checking if {0}-autostart-for-profile.desktop autorun file exists.".format(exec_command))
 
             if not Util.is_exist(
-                    "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop"):
+                    "/home/" + username + "/.config/autostart/{0}-autostart-for-profile.desktop".format(exec_command)):
                 self.logger.info(
-                    "firefox-esr-autostart-for-profile.desktop autorun file does not exists. Creating file.")
+                    "{0}-autostart-for-profile.desktop autorun file does not exists. Creating file.".format(
+                        exec_command))
                 Util.create_file(
-                    "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop")
+                    "/home/" + username + "/.config/autostart/{0}-autostart-for-profile.desktop".format(exec_command))
                 content = "[Desktop Entry]\n\n" \
                           "Type=Application\n\n" \
-                          "Exec=firefox-esr www.liderahenk.org"
+                          "Exec={0}{1} www.liderahenk.org".format(firefox_path, exec_command)
                 Util.write_file(
-                    "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop",
+                    "/home/" + username + "/.config/autostart/{0}-autostart-for-profile.desktop".format(exec_command),
                     content)
                 self.logger.info(
-                    "Autorun config is written to firefox-esr-autostart-for-profile.desktop.")
+                    "Autorun config is written to {0}-autostart-for-profile.desktop.".format(exec_command))
             else:
-                self.logger.info("firefox-esr-autostart-for-profile.desktop exists")
+                self.logger.info("{0}-autostart-for-profile.desktop exists".format(exec_command))
         else:
             self.logger.info(".mozilla firefox profile path exists. Delete autorun file.")
             Util.delete_file(
-                "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop")
+                "/home/" + username + "/.config/autostart/{0}-autostart-for-profile.desktop".format(exec_command))
+
 
     ## disabled update package notify for user
     def disable_update_package_notify(self, username):
