@@ -99,7 +99,15 @@ class Messenger(ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
-            self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
+            j = json.loads(str(msg['body']))
+            i = json.loads(str(j['task']))
+            plugin_name = i['plugin']['name']
+            if not plugin_name == "manage-root":
+                self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
+            else:
+                parameter_map = i['parameterMap']
+                parameter_map.pop("RootPassword")
+                self.logger.info("---------->Received message: {}".format(str(parameter_map)))
             try:
                 j = json.loads(str(msg['body']))
                 message_type = j['type']
