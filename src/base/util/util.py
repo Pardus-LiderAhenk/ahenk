@@ -406,7 +406,7 @@ class Util:
 
     @staticmethod
     def get_username_display():
-        result_code, p_out, p_err = Util.execute("who | awk '{print $1, $5}' | sed 's/(//' | sed 's/)//'", result=True)
+        result_code, p_out, p_err = Util.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
 
         result = []
         lines = str(p_out).split('\n')
@@ -417,5 +417,6 @@ class Util:
 
         params = str(result[0]).split(' ')
         display_number = params[1]
+        display_number = ":"+str(display_number)
         return display_number
 
