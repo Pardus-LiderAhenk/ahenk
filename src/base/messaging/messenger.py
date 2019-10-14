@@ -99,18 +99,24 @@ class Messenger(ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
-            j = json.loads(str(msg['body']))
-            i = json.loads(str(j['task']))
-            plugin_name = i['plugin']['name']
-            if not plugin_name == "manage-root":
-                self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
-            else:
-                parameter_map = i['parameterMap']
-                parameter_map.pop("RootPassword")
-                self.logger.info("---------->Received message: {}".format(str(parameter_map)))
             try:
                 j = json.loads(str(msg['body']))
                 message_type = j['type']
+                self.logger.debug("Get message type: "+str(message_type))
+
+                if j['type'] == "EXECUTE_POLICY":
+                    self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
+
+                if j['type'] == "EXECUTE_TASK":
+                    i = json.loads(str(j['task']))
+                    plugin_name = i['plugin']['name']
+                    if plugin_name == "manage-root":
+                        parameter_map = i['parameterMap']
+                        parameter_map.pop("RootPassword")
+                        self.logger.info("---------->Received message: {}".format(str(parameter_map)))
+                    else:
+                        self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
+
                 self.event_manger.fireEvent(message_type, str(msg['body']))
                 self.logger.debug('Fired event is: {0}'.format(message_type))
             except Exception as e:
