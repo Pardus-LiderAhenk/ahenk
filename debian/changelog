@@ -1,3 +1,130 @@
+ahenk (1.0.0-8) unstable; urgency=medium
+
+  [ Gökhan Gurbetoğlu ]
+  * Chronological order of roadmap
+
+  [ Tuncay ÇOLAK ]
+  * added method to delete local users after registration ahenk
+  * added method to disabled local users after registration ahenk
+  * registration with hostname
+
+  [ Cihangir Akturk ]
+  * Use std library whenever possible
+
+  [ Tuncay ÇOLAK ]
+  * changed local user name and home directory name when registration agent
+  * changed local user name and home directory name when registration agent
+  * bugfix
+
+  [ Ömer ÇAKMAK ]
+  * receiverjid and agreement default values changed
+
+  [ root ]
+  * Method for getting device language and getting computer model for showing Ahenk informations on Lider Console are added to core.
+
+  [ hasankara ]
+  * Method for getting device language and getting computer model for showing Ahenk informations on Lider Console are added to core.
+  * tab is removed
+
+  [ Tuncay ÇOLAK ]
+  * killall process of local user
+
+  [ hasankara ]
+  * Update registration.py
+  * missing header locale is added to util.py
+
+  [ Tuncay ÇOLAK ]
+  * enabled local user when unregistration agent
+
+  [ edip ]
+  * Ahenk Registration for user authorization..
+  * registarition bugfix
+  * register and unregister from user gui
+  * register bugfix
+
+  [ Edip YILDIZ ]
+  * Update util.py
+
+  [ edip ]
+  * disable user change
+  * disable user
+  * disable user config set
+  * bugfix
+  * registration attemp
+  * bugfix
+  * sdf
+  * bugfix
+  * unregistariton message fixed
+  * unregister bugfix
+  * unregister message for user display
+  * unregister show message fixed
+  * lider messages changed
+  * unregister
+  * ldap config check user and server
+  * registrtion db change user table for session
+  * polkit issues
+  * registration for cache
+  * check message file
+  * registration add util methods
+  * adding config for cache
+  * pam config change for agent id
+  * pam ldap login and cancel operations are moved to registration module
+
+  [ Tuncay ÇOLAK ]
+  * script executable ldap-login.sh
+
+  [ edip ]
+  * add user info for registiration process
+
+  [ Hasan Kara ]
+  * SSSD config and installation python files are copied under registration
+
+  [ edip ]
+  * registrarion for sssd
+
+  [ Hasan Kara ]
+  * firefox autostart is added if profile is not created for user.
+
+  [ edip ]
+  * change log
+
+  [ hasankara ]
+  * sssd bug has been solved for clients which has language turkish
+
+  [ Tuncay ÇOLAK ]
+  * add user mode changed to 0700 in file /etc/adduser.conf
+  * sssd configuraton for ldap login
+
+  [ Hasan Kara ]
+  * sudo role refresh time is set to 1 sec
+
+  [ Tuncay ÇOLAK ]
+  * added polkit file
+
+  [ Hasan Kara ]
+  * restarting sssd service is added to login method
+  * sssd ldap full and smart refresh times has been edited
+  * sssd ldap_sudo_search_base has been made dynamic
+
+  [ Tuncay ÇOLAK ]
+  * added default policy for users
+  * added xfce4-notifyd.xml template file and set owner and group user's .config file
+  * set display to messsages.py
+  * set offline_credentials_expiration time and set display unregister ui
+  * send display parameter to unregister_message
+  * added get user display number methode
+  * created autostart file for firefox, firefox-esr and iceweasel when user first login
+  * root password removed from Receşved message
+  * bugfix: get display number
+  * bugfix: logging set on message type
+  * added debian folder
+  * added debian folder
+  * updated changelog file
+  * added dep network-inventory plugin
+  * synced to development branch
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Mon, 14 Oct 2019 21:00:19 +0300
+
 ahenk (1.0.0-7) unstable; urgency=medium
 
   [ Ömer Çakmak ]
