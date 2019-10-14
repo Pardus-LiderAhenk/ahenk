@@ -16,8 +16,8 @@ from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 import re
 import os
-from base.registration.execute_cancel_ldap_login import ExecuteCancelLDAPLogin
-from base.registration.execute_ldap_login import ExecuteLDAPLogin
+from base.registration.execute_cancel_sssd_authentication import ExecuteCancelSSSDAuthentication
+from base.registration.execute_sssd_authentication import ExecuteSSSDAuthentication
 
 class Registration:
     def __init__(self):
@@ -35,8 +35,8 @@ class Registration:
         self.event_manager.register_event('REGISTRATION_SUCCESS', self.registration_success)
         self.event_manager.register_event('REGISTRATION_ERROR', self.registration_error)
 
-        self.ldap_login_cancel = ExecuteCancelLDAPLogin()
-        self.ldap_login = ExecuteLDAPLogin()
+        self.ldap_login_cancel = ExecuteCancelSSSDAuthentication()
+        self.ldap_login = ExecuteSSSDAuthentication()
 
         if self.is_registered():
             self.logger.debug('Ahenk already registered')
@@ -96,7 +96,7 @@ class Registration:
             self.install_and_config_ldap(reg_reply)
 
         except Exception as e:
-            self.logger.error('Registartion error. Error Message: {0}.'.format(str(e)))
+            self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
             print(e)
             raise
 
@@ -128,9 +128,9 @@ class Registration:
         #admin_password = self.user_password # same user get from server
         admin_password = self.db_service.select_one_result('registration', 'password', ' registered=1')
         if server_address != '' and dn != '' and  version != '' and admin_dn != '' and admin_password != '':
-            self.logger.info("PAM LDAP configuration process starting....")
-            self.ldap_login.login(server_address,dn,version,admin_dn,admin_password)
-            self.logger.info("PAM LDAP configuration process starting....")
+            self.logger.info("SSSD configuration process starting....")
+            self.ldap_login.authenticate(server_address, dn, admin_dn, admin_password)
+            self.logger.info("SSSD configuration process starting....")
         else :
             raise Exception(
                 'LDAP Ayarları yapılırken hata oluştu. Lütfen ağ bağlantınızı kontrol ediniz. Deponuzun güncel olduğundan emin olunuz.')
@@ -396,6 +396,19 @@ class Registration:
         content = Util.read_file('/etc/passwd')
         kill_all_process = 'killall -KILL -u {}'
         change_permisson = "chmod -R 700 {}"
+
+        add_user_conf_file = "/etc/adduser.conf"
+        file_dir_mode = open(add_user_conf_file, 'r')
+        file_data = file_dir_mode.read()
+        file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
+        file_dir_mode.close()
+
+        file_dir_mode = open(add_user_conf_file, 'w')
+        file_dir_mode.write(file_data)
+        file_dir_mode.close()
+
+        self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
+
         for p in pwd.getpwall():
             self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
             if not sysx.shell_is_interactive(p.pw_shell):
