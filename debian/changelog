@@ -1,3 +1,14 @@
+ahenk (1.0.0-9) unstable; urgency=medium
+
+  * added debian folder
+  * added debian folder
+  * updated changelog file
+  * added dep network-inventory plugin
+  * updated changelog file
+  * synced to development branch
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Tue, 15 Oct 2019 10:37:55 +0300
+
 ahenk (1.0.0-8) unstable; urgency=medium
 
   [ Gökhan Gurbetoğlu ]
