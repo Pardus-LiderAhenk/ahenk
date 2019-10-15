@@ -23,6 +23,7 @@ class ExecuteSSSDAuthentication:
             sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd.conf"
             sssd_config_folder_path = "/etc/sssd"
             sssd_config_file_path = "/etc/sssd/sssd.conf"
+            sssd_language_conf = "/etc/default/sssd"
 
             common_session_conf_path = "/etc/pam.d/common-session"
 
@@ -47,6 +48,7 @@ class ExecuteSSSDAuthentication:
             file_data = file_data.replace("###ldap_search_base###", "ldap_search_base = " + dn)
             file_data = file_data.replace("###ldap_user_search_base###", "ldap_user_search_base = " + dn)
             file_data = file_data.replace("###ldap_group_search_base###", "ldap_group_search_base = " + dn)
+            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Roles," + dn)
 
             file_sssd.close()
             file_sssd = open(sssd_config_file_path, 'w')
@@ -72,6 +74,22 @@ class ExecuteSSSDAuthentication:
             file_common_session = open(common_session_conf_path, 'w')
             file_common_session.write(file_data)
             file_common_session.close()
+
+            # configure sssd for language environment
+            file_default_sssd = open(sssd_language_conf, 'r')
+            file_data = file_default_sssd.read()
+
+            if "LC_ALL=\"tr_CY.UTF-8\"" not in file_data :
+                file_data = file_data + "\n" + "LC_ALL=\"tr_CY.UTF-8\""
+                self.logger.info("/etc/default/sssd is configured")
+
+            file_default_sssd.close()
+            file_default_sssd = open(sssd_language_conf, 'w')
+            file_default_sssd.write(file_data)
+            file_default_sssd.close()
+
+            self.logger.info("Restarting sssd service.")
+            self.util.execute("systemctl restart sssd.service")
 
             # Configure nsswitch.conf
             file_ns_switch = open("/etc/nsswitch.conf", 'r')
@@ -139,7 +157,7 @@ class ExecuteSSSDAuthentication:
                 self.logger.info("lightdm.conf has been configured.")
 
             self.util.execute("systemctl restart nscd.service")
-            self.util.execute("pam-auth-update --force")
+            # self.util.execute("pam-auth-update --force")
             self.logger.info("LDAP Login operation has been completed.")
 
             self.logger.info("LDAP Login işlemi başarı ile sağlandı.")
@@ -148,3 +166,4 @@ class ExecuteSSSDAuthentication:
             self.logger.error(str(e))
             self.logger.info("LDAP Login işlemi esnasında hata oluştu.")
             return False
+

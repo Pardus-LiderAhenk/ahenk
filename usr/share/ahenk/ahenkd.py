@@ -159,7 +159,7 @@ class AhenkDaemon(BaseDaemon):
             #        self.registration_failed()
 
             if registration.is_registered() is False:
-                print("Registation attemp")
+                print("Registration attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
                 registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password)
@@ -260,7 +260,7 @@ class AhenkDaemon(BaseDaemon):
                 conf_manager.set('MACHINE', 'user_disabled', '1')
 
                 with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
-                    self.logger.info('oepning config file ')
+                    self.logger.info('opening config file ')
                     conf_manager.write(configfile)
 
                 user_disabled = conf_manager.get("MACHINE", "user_disabled")

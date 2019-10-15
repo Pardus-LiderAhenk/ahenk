@@ -230,8 +230,9 @@ class Util:
     def file_group(full_path):
         try:
             st = os.stat(full_path)
-            gid = st.st_uid
-            return grp.getgrgid(gid)[0]
+            gid = st.st_gid
+            # return grp.getgrgid(gid)[0]
+            return gid
         except:
             raise
 
@@ -337,15 +338,20 @@ class Util:
             Util.execute('export DISPLAY={0}; su - {1} -c \'{2}\''.format(display, user, inner_command))
 
     @staticmethod
-    def show_message(username,display=':0',message='', title=''):
+    def show_message(username, display, message='', title=''):
         ask_path = Util.get_ask_path_file()+ 'confirm.py'
+
+        Scope.get_instance().get_logger().debug('DISPLAYYYY --------->>>>>>>>: ' + str(display))
+
+        if display is None:
+            display_number = Util.get_username_display()
+        else:
+            display_number = display
         try:
 
             if username is not None:
-                command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"{3}\" \"{4}\"\''.format(display, username,
-                                                                                                  ask_path,
-                                                                                                  message,
-                                                                                                  title)
+                command = 'su - {0} -c \'python3 {1} \"{2}\" \"{3}\" \"{4}\"\''.format(username, ask_path, message,
+                                                                                       title, display_number)
                 result_code, p_out, p_err = Util.execute(command)
 
                 if p_out.strip() == 'Y':
@@ -360,7 +366,7 @@ class Util:
         except Exception as e :
             print("Error when showing message " + str(e))
 
-            return None;
+            return None
 
 
 
@@ -369,17 +375,17 @@ class Util:
 
         ask_path = Util.get_ask_path_file()+ 'ahenkmessage.py'
 
-        display_number = ":0"
+        # display_number = ":0"
+        display_number = Util.get_username_display()
 
         if host is None:
-            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number, login_user_name,
-                                                                                        ask_path, message, title)
+            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name,
+                                                                                        ask_path, message, title, display_number)
         else:
-            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \'{5}\' \"'.format(display_number,
-                                                                                                        login_user_name,
+            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \'{5}\' \"'.format(login_user_name,
                                                                                                         ask_path,
                                                                                                         message, title,
-                                                                                                        host)
+                                                                                                        host, display_number)
         result_code, p_out, p_err = Util.execute(command)
 
         pout = str(p_out).replace('\n', '')
@@ -391,14 +397,26 @@ class Util:
 
         ask_path = Util.get_ask_path_file()+ 'unregistrationmessage.py'
 
-        command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number,
-                                                                                                        login_user_name,
-                                                                                                        ask_path,
-                                                                                                        message, title
-                                                                                                        )
+        command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name, ask_path, message, title, display_number)
         result_code, p_out, p_err = Util.execute(command)
 
         pout = str(p_out).replace('\n', '')
 
         return pout
+
+    @staticmethod
+    def get_username_display():
+        result_code, p_out, p_err = Util.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
+
+        result = []
+        lines = str(p_out).split('\n')
+        for line in lines:
+            arr = line.split(' ')
+            if len(arr) > 1 and str(arr[1]).isnumeric() is True:
+                result.append(line)
+
+        params = str(result[0]).split(' ')
+        display_number = params[1]
+        display_number = ":"+str(display_number)
+        return display_number
 
