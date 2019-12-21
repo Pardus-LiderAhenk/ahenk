@@ -1,3 +1,4 @@
+import os
 import sys
 from easygui import multpasswordbox, msgbox
 
@@ -12,17 +13,17 @@ def ask(message, title):
         title=title, fields=(field_names))
 
     if field_values is None:
-        return print('N');
+        return print('N')
 
-    is_fieldvalue_empty = False;
+    is_fieldvalue_empty = False
 
     for value in field_values:
         if value == '':
-            is_fieldvalue_empty = True;
+            is_fieldvalue_empty = True
 
     if is_fieldvalue_empty:
         msgbox("Lütfen zorunlu alanları giriniz.", ok_button="Tamam")
-        return print('Z');
+        return print('Z')
 
     print(field_values[0], field_values[1])
 
@@ -32,6 +33,8 @@ if __name__ == '__main__':
         try:
             message=sys.argv[1]
             title=sys.argv[2]
+            display = sys.argv[3]
+            os.environ["DISPLAY"] = display
             ask(message,title)
         except Exception as e:
             print(str(e))

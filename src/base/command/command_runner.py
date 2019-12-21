@@ -13,6 +13,7 @@ from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.util.util import Util
+from base.default_policy.default_policy import DefaultPolicy
 
 
 class CommandRunner(object):
@@ -25,6 +26,7 @@ class CommandRunner(object):
         self.conf_manager = scope.get_configuration_manager()
         self.db_service = scope.get_db_service()
         self.execute_manager = scope.get_execution_manager()
+        self.default_policy = DefaultPolicy()
 
     def check_last_login(self):
         last_login_tmstmp = self.db_service.select_one_result('session', 'timestamp')
@@ -35,6 +37,16 @@ class CommandRunner(object):
             return False
         else:
             return True
+
+    def delete_polkit_user(self):
+        content = "[Configuration] \nAdminIdentities=unix-user:root"
+        ahenk_policy_file = "/etc/polkit-1/localauthority.conf.d/99-ahenk-policy.conf"
+        if not Util.is_exist(ahenk_policy_file):
+            self.logger.info('Ahenk polkit file not found')
+        else:
+            Util.delete_file(ahenk_policy_file)
+            Util.write_file(ahenk_policy_file, content)
+            self.logger.info('Root added ahenk polkit file')
 
     def run_command_from_fifo(self, num, stack):
         """ docstring"""
@@ -66,43 +78,18 @@ class CommandRunner(object):
                         ip = json_data['ip']
 
                     self.logger.info('login event is handled for user: {0}'.format(username))
+                    Util.execute("systemctl restart sssd.service")
                     login_message = self.message_manager.login_msg(username,ip)
                     self.messenger.send_direct_message(login_message)
 
                     agreement = Agreement()
                     agreement_choice = None
 
-                    self.logger.info("if mozilla profile is not created run firefox to create profile for user: " + username)
-                    if not Util.is_exist("/home/" + username + "/.mozilla/"):
-                        self.logger.info("firefox profile does not exist. Check autostart file.")
-                        if not Util.is_exist("/home/" + username + "/.config/autostart/"):
-                            self.logger.info(".config/autostart folder does not exist. Creating folder.")
-                            Util.create_directory("/home/" + username + "/.config/autostart/")
-                        else:
-                            self.logger.info(".config/autostart folder exists.")
-                            self.logger.info(
-                                "Checking if firefox-esr-autostart-for-profile.desktop autorun file exists.")
+                    ## Default policy for users
 
-                        if not Util.is_exist(
-                                "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop"):
-                            self.logger.info(
-                                "firefox-esr-autostart-for-profile.desktop autorun file does not exists. Creating file.")
-                            Util.create_file(
-                                "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop")
-                            content = "[Desktop Entry]\n\n" \
-                                      "Type=Application\n\n" \
-                                      "Exec=firefox-esr www.liderahenk.org"
-                            Util.write_file(
-                                "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop",
-                                content)
-                            self.logger.info(
-                                "Autorun config is written to firefox-esr-autostart-for-profile.desktop.")
-                        else:
-                            self.logger.info("firefox-esr-autostart-for-profile.desktop exists")
-                    else:
-                        self.logger.info(".mozilla firefox profile path exists. Delete autorun file.")
-                        Util.delete_file(
-                            "/home/" + username + "/.config/autostart/firefox-esr-autostart-for-profile.desktop")
+                    self.logger.info("Applying default policies for user {0}".format(username))
+                    self.default_policy.default_firefox_policy(username)
+                    self.default_policy.disable_update_package_notify(username)
 
                     if agreement.check_agreement(username) is not True and System.Ahenk.agreement() == '1':
                         self.logger.debug('User {0} has not accepted agreement.'.format(username))
@@ -182,6 +169,9 @@ class CommandRunner(object):
                     logout_message = self.message_manager.logout_msg(username,ip)
                     self.messenger.send_direct_message(logout_message)
 
+                    self.logger.info('Ahenk polkit file deleting..')
+                    self.delete_polkit_user()
+
                     self.plugin_manager.process_mode('logout', username)
                     self.plugin_manager.process_mode('safe', username)
 
@@ -190,6 +180,12 @@ class CommandRunner(object):
                         json.dumps(json_data['message'])))
                     message = json.dumps(json_data['message'])
                     self.messenger.send_direct_message(message)
+
+                elif str(json_data['event']) == 'unregister':
+                    self.logger.info('Unregistering..')
+                    unregister_message = self.message_manager.unregister_msg()
+                    if unregister_message is not None:
+                        self.messenger.send_direct_message(unregister_message)
 
                 elif str(json_data['event']) == 'load':
                     plugin_name = str(json_data['plugins'])
