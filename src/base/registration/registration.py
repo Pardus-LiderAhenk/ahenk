@@ -18,6 +18,7 @@ import re
 import os
 from base.registration.execute_cancel_sssd_authentication import ExecuteCancelSSSDAuthentication
 from base.registration.execute_sssd_authentication import ExecuteSSSDAuthentication
+from base.registration.execute_sssd_ad_authentication import ExecuteSSSDAdAuthentication
 
 class Registration:
     def __init__(self):
@@ -37,6 +38,9 @@ class Registration:
 
         self.ldap_login_cancel = ExecuteCancelSSSDAuthentication()
         self.ldap_login = ExecuteSSSDAuthentication()
+        self.ad_login = ExecuteSSSDAdAuthentication()
+
+        self.directory_server = None
 
         if self.is_registered():
             self.logger.debug('Ahenk already registered')
@@ -54,7 +58,7 @@ class Registration:
         self.user_name = username
         self.user_password= password
 
-        if(username is None and password is None and self.host is None):
+        if(username is None and password is None and self.host is None ):
 
             self.host = self.conf_manager.get("CONNECTION", "host")
 
@@ -70,9 +74,12 @@ class Registration:
                 self.host = user_registration_info[0]
                 self.user_name = user_registration_info[1]
                 self.user_password = user_registration_info[2]
+                self.directory_server = user_registration_info[3]
+
             else:
                 self.user_name = user_registration_info[0]
                 self.user_password = user_registration_info[1]
+                self.directory_server = user_registration_info[2]
 
         #anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(user_name,user_password), self.host,self.servicename)
         #anon_messenger.connect_to_server()
@@ -89,11 +96,18 @@ class Registration:
     def registration_success(self, reg_reply):
         self.logger.info('Registration update starting')
         try:
-            dn = str(reg_reply['agentDn'])
-            self.logger.info('Current dn:' + dn)
-            self.logger.info('updating host name and service')
-            self.update_registration_attrs(dn)
-            self.install_and_config_ldap(reg_reply)
+            if self.directory_server == "LDAP":
+                dn = str(reg_reply['agentDn'])
+                self.logger.info('Current dn:' + dn)
+                self.logger.info('updating host name and service')
+                self.update_registration_attrs(dn)
+                self.install_and_config_ldap(reg_reply)
+            else:
+                dn = str(reg_reply['agentDn'])
+                self.logger.info('Current dn:' + dn)
+                self.logger.info('updating host name and service')
+                self.update_registration_attrs(dn)
+                self.install_and_config_ad(reg_reply)
 
         except Exception as e:
             self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
@@ -127,13 +141,23 @@ class Registration:
         admin_dn = str(reg_reply['ldapUserDn']) # get user full dn from server.. password same
         #admin_password = self.user_password # same user get from server
         admin_password = self.db_service.select_one_result('registration', 'password', ' registered=1')
+        self.ldap_login.authenticate(server_address, dn, admin_dn, admin_password)
+
         if server_address != '' and dn != '' and  version != '' and admin_dn != '' and admin_password != '':
             self.logger.info("SSSD configuration process starting....")
-            self.ldap_login.authenticate(server_address, dn, admin_dn, admin_password)
             self.logger.info("SSSD configuration process starting....")
         else :
             raise Exception(
                 'LDAP Ayarları yapılırken hata oluştu. Lütfen ağ bağlantınızı kontrol ediniz. Deponuzun güncel olduğundan emin olunuz.')
+
+    def install_and_config_ad(self, reg_reply):
+        self.logger.info('AD install process starting')
+
+        self.ad_login.authenticate(domain_name, host_name, ip_address, password)
+
+        if domain_name != '' and host_name != '' and ip_address != '' and password != '' and admin_password != '':
+            self.logger.info("SSSD configuration process starting....")
+            self.logger.info("SSSD configuration process starting....")
 
     def registration_error(self, reg_reply):
        self.re_register()
