@@ -38,7 +38,7 @@ class ExecuteSSSDAuthentication:
             self.logger.info("{0} config file is copied under {1}".format(sssd_config_template_path, sssd_config_folder_path))
 
             # Configure sssd.conf
-            file_sssd = open(sssd_config_file_path, 'r')
+            file_sssd = open (sssd_config_file_path, 'r')
             file_data = file_sssd.read()
 
             file_data = file_data.replace("###ldap_pwdlockout_dn###", "ldap_pwdlockout_dn = " + ldap_pwdlockout_dn)
