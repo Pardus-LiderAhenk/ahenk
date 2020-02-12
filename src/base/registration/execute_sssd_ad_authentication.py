@@ -83,7 +83,8 @@ class ExecuteSSSDAdAuthentication:
 
 
         # Execute the script that required for "samba-common" and "krb5"
-        (result_code, p_out, p_err) = self.util.execute("/bin/bash /usr/share/ahenk/base/registration/scripts/ad.sh")
+        (result_code, p_out, p_err) = self.util.execute("/bin/bash /usr/share/ahenk/base/registration/scripts/ad.sh {0} {1}".format(domain_name.upper(),host_name))
+
         if(result_code == 0):
             self.logger.info("Script başarılı bir  şekilde çalıştırıldı.")
         else:

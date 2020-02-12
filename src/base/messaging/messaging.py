@@ -114,7 +114,7 @@ class Messaging(object):
         self.logger.debug('Get Policies message was created')
         return json_data
 
-    def registration_msg(self, userName= None, userPassword=None):
+    def registration_msg(self, userName= None, userPassword=None, directoryServer=None):
         data = dict()
         data['type'] = 'REGISTER'
         data['from'] = self.db_service.select_one_result('registration', 'jid', ' 1=1')
@@ -133,9 +133,13 @@ class Messaging(object):
         if userPassword is not None:
             data["userPassword"] = str(userPassword)
 
+        if directoryServer is not None:
+            data["directoryServer"] = str(directoryServer)
+
         data['timestamp'] = self.db_service.select_one_result('registration', 'timestamp', ' 1=1')
         json_data = json.dumps(data)
         self.logger.debug('Registration message was created')
+        self.logger.info('Registration message was created. Data content: '+ json_data)
         return json_data
 
     def ldap_registration_msg(self):
