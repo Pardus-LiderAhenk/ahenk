@@ -159,12 +159,13 @@ class Registration:
         host_name = str(reg_reply['adHostName'])
         ip_address = str(reg_reply['adIpAddress'])
         password = str(reg_reply['adAdminPassword'])
+        ad_username = str(reg_reply['adAdminUserName'])
 
         if domain_name is None or host_name is None or  ip_address is None  or password is None :
             self.logger.error("Registration params is null")
             return
 
-        self.ad_login.authenticate(domain_name, host_name, ip_address, password)
+        self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username)
 
     def registration_error(self, reg_reply):
        self.re_register()

@@ -18,7 +18,7 @@ class ExecuteSSSDAdAuthentication:
         # self.password = "Pp123456"
 
 
-    def authenticate(self, domain_name, host_name, ip_address, password):
+    def authenticate(self, domain_name, host_name, ip_address, password, ad_username):
         # Configure /etc/dhcp/dhclient.conf
         dhclient_conf_path = "/etc/dhcp/dhclient.conf"
         dhc_conf = self.util.read_file_by_line(dhclient_conf_path, "r")
@@ -119,7 +119,7 @@ class ExecuteSSSDAdAuthentication:
         else:
             self.logger.error("Realm Discover komutu başarısız : " + str(p_err))
 
-        (result_code, p_out, p_err) = self.util.execute("echo \"{0}\" | realm join {1}".format(password, domain_name.upper()))
+        (result_code, p_out, p_err) = self.util.execute("echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username, domain_name.upper()))
         if (result_code == 0):
             self.logger.info("Realm Join komutu başarılı")
         else:
