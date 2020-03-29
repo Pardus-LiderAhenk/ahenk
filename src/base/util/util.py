@@ -138,10 +138,20 @@ class Util:
 
     @staticmethod
     def change_owner(full_path, user_name=None, group_name=None):
-        try:
+""        try:
             shutil.chown(full_path, user_name, group_name)
         except:
             raise
+
+    @staticmethod
+    def get_executable_path(app_name):
+        path = None
+        try:
+            path = shutil.which(app_name)
+        except:
+            raise
+        finally:
+            return path
 
     @staticmethod
     def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True, as_user=None, ip=None):
@@ -187,7 +197,7 @@ class Util:
             command.append(script_path)
         else:
             raise Exception('[Util] Script is required')
-        if parameters is not None:    
+        if parameters is not None:
             for p in parameters:
                 command.append(p)
 
