@@ -138,7 +138,7 @@ class Util:
 
     @staticmethod
     def change_owner(full_path, user_name=None, group_name=None):
-""        try:
+        try:
             shutil.chown(full_path, user_name, group_name)
         except:
             raise
