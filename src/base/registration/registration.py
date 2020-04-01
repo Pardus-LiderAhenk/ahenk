@@ -31,6 +31,7 @@ class Registration:
         self.db_service = scope.get_db_service()
         self.util = Util()
         self.servicename='im.liderahenk.org'
+        self.local_user_disable = None
 
         #self.event_manager.register_event('REGISTRATION_RESPONSE', self.registration_process)
         self.event_manager.register_event('REGISTRATION_SUCCESS', self.registration_success)
@@ -96,6 +97,7 @@ class Registration:
     def registration_success(self, reg_reply):
 
         try:
+            self.local_user_disable = reg_reply['local_user_disable']
             if self.directory_server == "LDAP": # LDAP registration
                 self.logger.info('LDAP Registration update starting')
                 dn = str(reg_reply['agentDn'])
@@ -403,55 +405,68 @@ class Registration:
             print('Error while running clean command. Error Message {0}'.format(str(e)))
 
     def enable_local_users(self):
-        passwd_cmd = 'passwd -u {}'
-        change_home = 'usermod -m -d {0} {1}'
-        change_username = 'usermod -l {0} {1}'
-        content = self.util.read_file('/etc/passwd')
-        for p in pwd.getpwall():
-            if not sysx.shell_is_interactive(p.pw_shell):
-                continue
-            if p.pw_uid == 0:
-                continue
-            if p.pw_name in content:
-                new_home_dir = p.pw_dir.rstrip('-local/') + '/'
-                new_username = p.pw_name.rstrip('-local')
-                self.util.execute(passwd_cmd.format(p.pw_name))
-                self.util.execute(change_username.format(new_username, p.pw_name))
-                self.util.execute(change_home.format(new_home_dir, new_username))
-                self.logger.debug("User: '{0}' will be enabled and changed username and home directory of username".format(p.pw_name))
 
+        if self.conf_manager.has_section('MACHINE'):
+            user_disabled = self.conf_manager.get("MACHINE", "user_disabled")
+            self.logger.info('User disabled value=' + str(user_disabled))
+            if user_disabled == '1':
+                passwd_cmd = 'passwd -u {}'
+                change_home = 'usermod -m -d {0} {1}'
+                change_username = 'usermod -l {0} {1}'
+                content = self.util.read_file('/etc/passwd')
+                for p in pwd.getpwall():
+                    if not sysx.shell_is_interactive(p.pw_shell):
+                        continue
+                    if p.pw_uid == 0:
+                        continue
+                    if p.pw_name in content:
+                        new_home_dir = p.pw_dir.rstrip('-local/') + '/'
+                        new_username = p.pw_name.rstrip('-local')
+                        self.util.execute(passwd_cmd.format(p.pw_name))
+                        self.util.execute(change_username.format(new_username, p.pw_name))
+                        self.util.execute(change_home.format(new_home_dir, new_username))
+                        self.logger.debug("User: '{0}' will be enabled and changed username and home directory of username".format(p.pw_name))
+            else:
+                self.logger.info('Local users already enabled')
 
     def disable_local_users(self):
-        passwd_cmd = 'passwd -l {}'
-        change_home = 'usermod -m -d {0} {1}'
-        change_username = 'usermod -l {0} {1}'
-        content = Util.read_file('/etc/passwd')
-        kill_all_process = 'killall -KILL -u {}'
-        change_permisson = "chmod -R 700 {}"
 
-        add_user_conf_file = "/etc/adduser.conf"
-        file_dir_mode = open(add_user_conf_file, 'r')
-        file_data = file_dir_mode.read()
-        file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
-        file_dir_mode.close()
+        if self.local_user_disable is True:
+            passwd_cmd = 'passwd -l {}'
+            change_home = 'usermod -m -d {0} {1}'
+            change_username = 'usermod -l {0} {1}'
+            content = Util.read_file('/etc/passwd')
+            kill_all_process = 'killall -KILL -u {}'
+            change_permisson = "chmod -R 700 {}"
 
-        file_dir_mode = open(add_user_conf_file, 'w')
-        file_dir_mode.write(file_data)
-        file_dir_mode.close()
+            add_user_conf_file = "/etc/adduser.conf"
+            file_dir_mode = open(add_user_conf_file, 'r')
+            file_data = file_dir_mode.read()
+            file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
+            file_dir_mode.close()
 
-        self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
+            file_dir_mode = open(add_user_conf_file, 'w')
+            file_dir_mode.write(file_data)
+            file_dir_mode.close()
 
-        for p in pwd.getpwall():
-            self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
-            if not sysx.shell_is_interactive(p.pw_shell):
-                continue
-            if p.pw_uid == 0:
-                continue
-            if p.pw_name in content:
-                new_home_dir = p.pw_dir.rstrip('/') + '-local/'
-                new_username = p.pw_name+'-local'
-                Util.execute(kill_all_process.format(p.pw_name))
-                Util.execute(passwd_cmd.format(p.pw_name))
-                Util.execute(change_username.format(new_username, p.pw_name))
-                Util.execute(change_home.format(new_home_dir, new_username))
-                Util.execute(change_permisson.format(new_home_dir))#!/usr/bin/python3
+            self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
+
+            for p in pwd.getpwall():
+                self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
+                if not sysx.shell_is_interactive(p.pw_shell):
+                    continue
+                if p.pw_uid == 0:
+                    continue
+                if p.pw_name in content:
+                    new_home_dir = p.pw_dir.rstrip('/') + '-local/'
+                    new_username = p.pw_name+'-local'
+                    Util.execute(kill_all_process.format(p.pw_name))
+                    Util.execute(passwd_cmd.format(p.pw_name))
+                    Util.execute(change_username.format(new_username, p.pw_name))
+                    Util.execute(change_home.format(new_home_dir, new_username))
+                    Util.execute(change_permisson.format(new_home_dir))
+
+            return True
+        else:
+            self.logger.info("Local user not disabled")
+            return False
