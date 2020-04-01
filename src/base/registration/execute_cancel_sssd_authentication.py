@@ -80,12 +80,6 @@ class ExecuteCancelSSSDAuthentication:
         file_common_session.write(file_data)
         file_common_session.close()
 
-        # Configure lightdm.service
-        pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
-        if self.util.is_exist(pardus_xfce_path):
-            self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
-            self.util.delete_file(pardus_xfce_path)
-            self.util.execute("systemctl restart nscd.service")
-
+        self.util.execute("systemctl restart nscd.service")
         self.logger.info("LDAP Login iptal etme işlemi başarı ile sağlandı.")
 

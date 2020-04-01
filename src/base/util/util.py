@@ -430,3 +430,17 @@ class Util:
         display_number = ":"+str(display_number)
         return display_number
 
+    @staticmethod
+    def get_desktop_env():
+        xfce4_session = "/usr/bin/xfce4-session"
+        gnome_session = "/usr/bin/gnome-session"
+        desktop_env = None
+        result_code, p_out, p_err = Util.execute("ls {}".format(gnome_session))
+        if result_code == 0:
+            desktop_env = "gnome"
+        result_code, p_out, p_err = Util.execute("ls {}".format(xfce4_session))
+        if result_code == 0:
+            desktop_env = "xfce"
+
+        return desktop_env
+

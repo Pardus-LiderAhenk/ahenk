@@ -253,20 +253,20 @@ class AhenkDaemon(BaseDaemon):
         if conf_manager.has_section('MACHINE'):
             user_disabled = conf_manager.get("MACHINE", "user_disabled")
             self.logger.info('User disabled value=' + str(user_disabled))
-            if user_disabled == '0':
+            if user_disabled == 'true':
                 self.logger.info('local user disabling')
-                local_user_disable = Scope.get_instance().get_registration().disable_local_users()
-                if local_user_disable is True:
-                    conf_manager.set('MACHINE', 'user_disabled', '1')
+                Scope.get_instance().get_registration().disable_local_users()
+                conf_manager.set('MACHINE', 'user_disabled', 'disabled')
 
-                    with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
-                        self.logger.info('opening config file ')
-                        conf_manager.write(configfile)
+                with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
+                    self.logger.info('opening config file ')
+                    conf_manager.write(configfile)
 
-                    user_disabled = conf_manager.get("MACHINE", "user_disabled")
-                    self.logger.info('User succesfully disabled value=' + str(user_disabled))
+                user_disabled = conf_manager.get("MACHINE", "user_disabled")
+                self.logger.info('User succesfully disabled value=' + str(user_disabled))
+
             else:
-                self.logger.info('users already disabled')
+                self.logger.info('local users will not be disabled because local_user_paramater is FALSE')
 
     def run(self):
         """ docstring"""

@@ -97,22 +97,51 @@ class Registration:
     def registration_success(self, reg_reply):
 
         try:
-            self.local_user_disable = reg_reply['local_user_disable']
-            if self.directory_server == "LDAP": # LDAP registration
-                self.logger.info('LDAP Registration update starting')
-                dn = str(reg_reply['agentDn'])
-                self.logger.info('Current dn:' + dn)
-                self.logger.info('updating host name and service')
-                self.update_registration_attrs(dn)
-                self.install_and_config_ldap(reg_reply)
-            else:                       # AD registration
-                self.logger.info('AD Registration update starting')
-                dn = str(reg_reply['agentDn'])
-                self.logger.info('Current dn:' + dn)
-                self.logger.info('updating host name and service')
-                self.update_registration_attrs(dn)
-                self.install_and_config_ad(reg_reply)
+            self.local_user_disable = reg_reply['disableLocalUser']
+            if self.local_user_disable is True:
+                self.conf_manager.set('MACHINE', 'user_disabled', 'true')
+            else:
+                self.conf_manager.set('MACHINE', 'user_disabled', 'false')
 
+            self.logger.info('LDAP Registration update starting')
+            dn = str(reg_reply['agentDn'])
+            self.logger.info('Current dn:' + dn)
+            self.logger.info('updating host name and service')
+            self.update_registration_attrs(dn)
+
+            # lightdm configuration by desktop env is XFCE
+            self.desktop_env = self.util.get_desktop_env()
+            self.logger.info("Get desktop environment is {0}".format(self.desktop_env))
+            if self.desktop_env == "xfce":
+                # Configure lightdm.service
+                # check if 99-pardus-xfce.conf exists if not create
+                pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
+                if not self.util.is_exist(pardus_xfce_path):
+                    self.logger.info("99-pardus-xfce.conf does not exist.")
+                    self.util.create_file(pardus_xfce_path)
+
+                    file_lightdm = open(pardus_xfce_path, 'a')
+                    file_lightdm.write("[Seat:*]\n")
+                    file_lightdm.write("greeter-hide-users=true")
+                    file_lightdm.close()
+                    self.logger.info("lightdm has been configured.")
+                else:
+                    self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
+                    self.util.delete_file(pardus_xfce_path)
+                    self.util.create_file(pardus_xfce_path)
+
+                    file_lightdm = open(pardus_xfce_path, 'a')
+                    file_lightdm.write("[Seat:*]")
+                    file_lightdm.write("greeter-hide-users=true")
+                    file_lightdm.close()
+                    self.logger.info("lightdm.conf has been configured.")
+
+            # LDAP registration
+            if self.directory_server == "LDAP":
+                self.install_and_config_ldap(reg_reply)
+            # AD registration
+            else:
+                self.install_and_config_ad(reg_reply)
 
         except Exception as e:
             self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
@@ -283,12 +312,26 @@ class Registration:
             self.logger.info('Ahenk conf cleaned')
             self.logger.info('Ahenk conf cleaning from db')
             self.unregister()
-            self.ldap_login_cancel.cancel();
+            self.ldap_login_cancel.cancel()
             self.logger.info('Cleaning ahenk conf..')
             self.clean()
             self.logger.info('Ahenk conf cleaned from db')
-            self.logger.info('Enable Users')
-            self.enable_local_users()
+
+            if self.conf_manager.has_section('MACHINE'):
+                user_disabled = self.conf_manager.get("MACHINE", "user_disabled")
+                self.logger.info('User disabled value=' + str(user_disabled))
+                if user_disabled != 'false':
+                    self.logger.info('Enable Users')
+                    self.enable_local_users()
+                else:
+                    self.logger.info('Local users already enabled')
+            # İf desktop env is XFCE configured lightdm.service
+            if self.util.get_desktop_env() == "xfce":
+                pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
+                if self.util.is_exist(pardus_xfce_path):
+                    self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
+                    self.util.delete_file(pardus_xfce_path)
+
             Util.shutdown()
         except Exception as e:
             self.logger.error("Error while running purge_and_unregister process.. Error Message  " + str(e))
@@ -394,7 +437,7 @@ class Registration:
 
             config.set('CONNECTION', 'uid', '')
             config.set('CONNECTION', 'password', '')
-            config.set('MACHINE', 'user_disabled', '0')
+            config.set('MACHINE', 'user_disabled', 'false')
 
             with open(System.Ahenk.config_path(), 'w') as file:
                 config.write(file)
@@ -405,68 +448,55 @@ class Registration:
             print('Error while running clean command. Error Message {0}'.format(str(e)))
 
     def enable_local_users(self):
+        passwd_cmd = 'passwd -u {}'
+        change_home = 'usermod -m -d {0} {1}'
+        change_username = 'usermod -l {0} {1}'
+        content = self.util.read_file('/etc/passwd')
+        for p in pwd.getpwall():
+            if not sysx.shell_is_interactive(p.pw_shell):
+                continue
+            if p.pw_uid == 0:
+                continue
+            if p.pw_name in content:
+                new_home_dir = p.pw_dir.rstrip('-local/') + '/'
+                new_username = p.pw_name.rstrip('-local')
+                self.util.execute(passwd_cmd.format(p.pw_name))
+                self.util.execute(change_username.format(new_username, p.pw_name))
+                self.util.execute(change_home.format(new_home_dir, new_username))
+                self.logger.debug("User: '{0}' will be enabled and changed username and home directory of username".format(p.pw_name))
 
-        if self.conf_manager.has_section('MACHINE'):
-            user_disabled = self.conf_manager.get("MACHINE", "user_disabled")
-            self.logger.info('User disabled value=' + str(user_disabled))
-            if user_disabled == '1':
-                passwd_cmd = 'passwd -u {}'
-                change_home = 'usermod -m -d {0} {1}'
-                change_username = 'usermod -l {0} {1}'
-                content = self.util.read_file('/etc/passwd')
-                for p in pwd.getpwall():
-                    if not sysx.shell_is_interactive(p.pw_shell):
-                        continue
-                    if p.pw_uid == 0:
-                        continue
-                    if p.pw_name in content:
-                        new_home_dir = p.pw_dir.rstrip('-local/') + '/'
-                        new_username = p.pw_name.rstrip('-local')
-                        self.util.execute(passwd_cmd.format(p.pw_name))
-                        self.util.execute(change_username.format(new_username, p.pw_name))
-                        self.util.execute(change_home.format(new_home_dir, new_username))
-                        self.logger.debug("User: '{0}' will be enabled and changed username and home directory of username".format(p.pw_name))
-            else:
-                self.logger.info('Local users already enabled')
 
     def disable_local_users(self):
+        passwd_cmd = 'passwd -l {}'
+        change_home = 'usermod -m -d {0} {1}'
+        change_username = 'usermod -l {0} {1}'
+        content = Util.read_file('/etc/passwd')
+        kill_all_process = 'killall -KILL -u {}'
+        change_permisson = "chmod -R 700 {}"
 
-        if self.local_user_disable is True:
-            passwd_cmd = 'passwd -l {}'
-            change_home = 'usermod -m -d {0} {1}'
-            change_username = 'usermod -l {0} {1}'
-            content = Util.read_file('/etc/passwd')
-            kill_all_process = 'killall -KILL -u {}'
-            change_permisson = "chmod -R 700 {}"
+        add_user_conf_file = "/etc/adduser.conf"
+        file_dir_mode = open(add_user_conf_file, 'r')
+        file_data = file_dir_mode.read()
+        file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
+        file_dir_mode.close()
 
-            add_user_conf_file = "/etc/adduser.conf"
-            file_dir_mode = open(add_user_conf_file, 'r')
-            file_data = file_dir_mode.read()
-            file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
-            file_dir_mode.close()
+        file_dir_mode = open(add_user_conf_file, 'w')
+        file_dir_mode.write(file_data)
+        file_dir_mode.close()
 
-            file_dir_mode = open(add_user_conf_file, 'w')
-            file_dir_mode.write(file_data)
-            file_dir_mode.close()
+        self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
 
-            self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
-
-            for p in pwd.getpwall():
-                self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
-                if not sysx.shell_is_interactive(p.pw_shell):
-                    continue
-                if p.pw_uid == 0:
-                    continue
-                if p.pw_name in content:
-                    new_home_dir = p.pw_dir.rstrip('/') + '-local/'
-                    new_username = p.pw_name+'-local'
-                    Util.execute(kill_all_process.format(p.pw_name))
-                    Util.execute(passwd_cmd.format(p.pw_name))
-                    Util.execute(change_username.format(new_username, p.pw_name))
-                    Util.execute(change_home.format(new_home_dir, new_username))
-                    Util.execute(change_permisson.format(new_home_dir))
-
-            return True
-        else:
-            self.logger.info("Local user not disabled")
-            return False
+        for p in pwd.getpwall():
+            self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
+            if not sysx.shell_is_interactive(p.pw_shell):
+                continue
+            if p.pw_uid == 0:
+                continue
+            if p.pw_name in content:
+                new_home_dir = p.pw_dir.rstrip('/') + '-local/'
+                new_username = p.pw_name+'-local'
+                Util.execute(kill_all_process.format(p.pw_name))
+                Util.execute(passwd_cmd.format(p.pw_name))
+                Util.execute(change_username.format(new_username, p.pw_name))
+                Util.execute(change_home.format(new_home_dir, new_username))
+                Util.execute(change_permisson.format(new_home_dir))
