@@ -31,28 +31,28 @@ class LDAPLogin(AbstractPlugin):
             admin_password = self.data['admin-password']
             disabled_local_user = self.data['disableLocalUser']
 
-            self.config.read(self.ahenk_conf_path)
-            if disabled_local_user is True:
-                self.registration.disable_local_users()
-                config = configparser.ConfigParser()
-                config.read(self.ahenk_conf_path)
-                config.set('MACHINE', 'user_disabled', 'disabled')
-
-                with open(self.ahenk_conf_path, 'w') as configfile:
-                    self.logger.info('Opening config file ')
-                    config.write(configfile)
-                configfile.close()
-
-                self.logger.info('User disabled value Disabled')
-            else:
-                self.logger.info("local users will not be disabled because local_user parameter is FALSE")
-
             execution_result = self.sssd_authentication.authenticate(server_address, dn, admin_dn, admin_password)
             if execution_result is False:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='LDAP kullanıcısı ile oturum açma ayarlanırken hata oluştu.: SSSD Paketleri indirilemedi.',
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
+                self.config.read(self.ahenk_conf_path)
+                if disabled_local_user is True:
+                    self.registration.disable_local_users()
+                    config = configparser.ConfigParser()
+                    config.read(self.ahenk_conf_path)
+                    config.set('MACHINE', 'user_disabled', 'disabled')
+
+                    with open(self.ahenk_conf_path, 'w') as configfile:
+                        self.logger.info('Opening config file ')
+                        config.write(configfile)
+                    configfile.close()
+
+                    self.logger.info('User disabled value Disabled')
+                else:
+                    self.logger.info("local users will not be disabled because local_user parameter is FALSE")
+                self.shutdown()
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                              message='LDAP kullanıcısı ile oturum açma başarı ile sağlandı.',
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
