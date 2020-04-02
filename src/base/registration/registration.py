@@ -19,6 +19,7 @@ import os
 from base.registration.execute_cancel_sssd_authentication import ExecuteCancelSSSDAuthentication
 from base.registration.execute_sssd_authentication import ExecuteSSSDAuthentication
 from base.registration.execute_sssd_ad_authentication import ExecuteSSSDAdAuthentication
+from base.registration.execute_cancel_sssd_ad_authentication import ExecuteCancelSSSDAdAuthentication
 
 class Registration:
     def __init__(self):
@@ -38,6 +39,7 @@ class Registration:
         self.event_manager.register_event('REGISTRATION_ERROR', self.registration_error)
 
         self.ldap_login_cancel = ExecuteCancelSSSDAuthentication()
+        self.ad_login_cancel = ExecuteCancelSSSDAdAuthentication()
         self.ldap_login = ExecuteSSSDAuthentication()
         self.ad_login = ExecuteSSSDAdAuthentication()
 
@@ -312,7 +314,16 @@ class Registration:
             self.logger.info('Ahenk conf cleaned')
             self.logger.info('Ahenk conf cleaning from db')
             self.unregister()
-            self.ldap_login_cancel.cancel()
+
+            directory_type = "LDAP"
+            if self.util.is_exist("/etc/ahenk/ad_info"):
+                directory_type = "AD"
+
+            if directory_type == "LDAP":
+                self.ldap_login_cancel.cancel()
+            else:
+                self.ad_login_cancel.cancel()
+
             self.logger.info('Cleaning ahenk conf..')
             self.clean()
             self.logger.info('Ahenk conf cleaned from db')

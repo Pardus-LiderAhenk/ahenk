@@ -24,11 +24,11 @@ class ExecuteCancelSSSDAuthentication:
         pattern = re.compile(r'\s+')
 
         # Configure nsswitch.conf
-        file_ns_switch = open("/etc/nsswitch.conf", 'r')
-        file_data = file_ns_switch.read()
-
-        # cleared file data from spaces, tabs and newlines
-        text = pattern.sub('', file_data)
+        # file_ns_switch = open("/etc/nsswitch.conf", 'r')
+        # file_data = file_ns_switch.read()
+        #
+        # # cleared file data from spaces, tabs and newlines
+        # text = pattern.sub('', file_data)
 
         # did_configuration_change = False
         # if "passwd:compatsss" in text:
@@ -60,10 +60,10 @@ class ExecuteCancelSSSDAuthentication:
         # else:
         #     self.logger.info("nsswitch.conf has already been configured")
 
-        file_ns_switch.close()
-        file_ns_switch = open("/etc/nsswitch.conf", 'w')
-        file_ns_switch.write(file_data)
-        file_ns_switch.close()
+        # file_ns_switch.close()
+        # file_ns_switch = open("/etc/nsswitch.conf", 'w')
+        # file_ns_switch.write(file_data)
+        # file_ns_switch.close()
 
         common_session_conf_path = "/etc/pam.d/common-session"
 
