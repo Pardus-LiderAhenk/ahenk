@@ -34,7 +34,6 @@ Depends: ${misc:Depends},
          rsyslog-relp,
          quota,
          quotatool,
-         iptables-persistent,
          ahenk-register
 Replaces: libpam-runtime
 Description: The client side of the Lider Ahenk Project
