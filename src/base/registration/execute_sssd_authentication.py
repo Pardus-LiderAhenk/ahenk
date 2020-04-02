@@ -99,16 +99,28 @@ class ExecuteSSSDAuthentication:
             text = pattern.sub('', file_data)
 
             is_configuration_done_before = False
-            if "passwd:compatsss" not in text:
+            if "passwd:compatsss" not in text and "passwd:compat" in text:
                 file_data = file_data.replace("passwd:         compat", "passwd:         compat sss")
                 is_configuration_done_before = True
 
-            if "group:compatsss" not in text:
+            if "passwd:filessystemdsss" not in text and "passwd:filessystemd" in text:
+                file_data = file_data.replace("passwd:         files systemd", "passwd:         files systemd sss")
+                is_configuration_done_before = True
+
+            if "group:compatsss" not in text and "group:compat" in text:
                 file_data = file_data.replace("group:          compat", "group:          compat sss")
                 is_configuration_done_before = True
 
-            if "shadow:compatsss" not in text:
+            if "group:filessystemdsss" not in text and "group:filessystemd" in text:
+                file_data = file_data.replace("group:          files systemd", "group:          files systemd sss")
+                is_configuration_done_before = True
+
+            if "shadow:compatsss" not in text and "shadow:compat" in text:
                 file_data = file_data.replace("shadow:         compat", "shadow:         compat sss")
+                is_configuration_done_before = True
+
+            if "shadow:filessss" not in text and "shadow:files" in text:
+                file_data = file_data.replace("shadow:         files", "shadow:         files sss")
                 is_configuration_done_before = True
 
             if "services:dbfilessss" not in text:
@@ -119,9 +131,14 @@ class ExecuteSSSDAuthentication:
                 file_data = file_data.replace("netgroup:       nis", "netgroup:       nis sss")
                 is_configuration_done_before = True
 
-            if "sudoers:filessss" not in text:
+            if "sudoers:filessss" not in text and "sudoers:files" in text:
                 file_data = file_data.replace("sudoers:        files", "sudoers:        files sss")
                 is_configuration_done_before = True
+            elif "sudoers:filessss" in text:
+                is_configuration_done_before = False
+            else:
+                file_data = file_data + "sudoers:        files sss"
+
 
             if is_configuration_done_before:
                 self.logger.info("nsswitch.conf configuration has been completed")

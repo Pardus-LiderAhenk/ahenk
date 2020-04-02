@@ -30,35 +30,35 @@ class ExecuteCancelSSSDAuthentication:
         # cleared file data from spaces, tabs and newlines
         text = pattern.sub('', file_data)
 
-        did_configuration_change = False
-        if "passwd:compatsss" in text:
-            file_data = file_data.replace("passwd:         compat sss", "passwd:         compat")
-            did_configuration_change = True
-
-        if "group:compatsss" in text:
-            file_data = file_data.replace("group:          compat sss", "group:          compat")
-            did_configuration_change = True
-
-        if "shadow:compatsss" in text:
-            file_data = file_data.replace("shadow:         compat sss", "shadow:         compat")
-            did_configuration_change = True
-
-        if "services:dbfilessss" in text:
-            file_data = file_data.replace("services:       db files sss", "services:       db files")
-            did_configuration_change = True
-
-        if "netgroup:nissss" in text:
-            file_data = file_data.replace("netgroup:       nis sss", "netgroup:       nis")
-            did_configuration_change = True
-
-        if "sudoers:filessss" in text:
-            file_data = file_data.replace("sudoers:        files sss", "")
-            did_configuration_change = True
-
-        if did_configuration_change:
-            self.logger.info("nsswitch.conf configuration has been configured")
-        else:
-            self.logger.info("nsswitch.conf has already been configured")
+        # did_configuration_change = False
+        # if "passwd:compatsss" in text:
+        #     file_data = file_data.replace("passwd:         compat sss", "passwd:         compat")
+        #     did_configuration_change = True
+        #
+        # if "group:compatsss" in text:
+        #     file_data = file_data.replace("group:          compat sss", "group:          compat")
+        #     did_configuration_change = True
+        #
+        # if "shadow:compatsss" in text:
+        #     file_data = file_data.replace("shadow:         compat sss", "shadow:         compat")
+        #     did_configuration_change = True
+        #
+        # if "services:dbfilessss" in text:
+        #     file_data = file_data.replace("services:       db files sss", "services:       db files")
+        #     did_configuration_change = True
+        #
+        # if "netgroup:nissss" in text:
+        #     file_data = file_data.replace("netgroup:       nis sss", "netgroup:       nis")
+        #     did_configuration_change = True
+        #
+        # if "sudoers:filessss" in text:
+        #     file_data = file_data.replace("sudoers:        files sss", "")
+        #     did_configuration_change = True
+        #
+        # if did_configuration_change:
+        #     self.logger.info("nsswitch.conf configuration has been configured")
+        # else:
+        #     self.logger.info("nsswitch.conf has already been configured")
 
         file_ns_switch.close()
         file_ns_switch = open("/etc/nsswitch.conf", 'w')
