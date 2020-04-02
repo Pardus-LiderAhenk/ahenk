@@ -210,27 +210,6 @@ class ExecuteSSSDAdAuthentication:
         file_default_sssd.write(file_data)
         file_default_sssd.close()
 
-        pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
-        if not self.util.is_exist(pardus_xfce_path):
-            self.logger.info("99-pardus-xfce.conf does not exist.")
-            self.util.create_file(pardus_xfce_path)
-
-            file_lightdm = open(pardus_xfce_path, 'a')
-            file_lightdm.write("[Seat:*]\n")
-            file_lightdm.write("greeter-hide-users=true")
-            file_lightdm.close()
-            self.logger.info("lightdm has been configured.")
-        else:
-            self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
-            self.util.delete_file(pardus_xfce_path)
-            self.util.create_file(pardus_xfce_path)
-
-            file_lightdm = open(pardus_xfce_path, 'a')
-            file_lightdm.write("[Seat:*]")
-            file_lightdm.write("greeter-hide-users=true")
-            file_lightdm.close()
-            self.logger.info("lightdm.conf has been configured.")
-
         self.util.execute("systemctl restart nscd.service")
         # self.util.execute("pam-auth-update --force")
         self.logger.info("AD Login operation has been completed.")
