@@ -1,14 +1,15 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Author: Hasan Kara <h.kara27@gmail.com>
+# Author: Tuncay ÇOLAK<tuncay.colak@tubitak.gov.tr>
+
+# Active Directory authentication task
 
 import configparser
 from base.plugin.abstract_plugin import AbstractPlugin
-from base.registration.execute_ldap_login import ExecuteLDAPLogin
-from base.registration.execute_sssd_authentication import ExecuteSSSDAuthentication
+from base.registration.execute_sssd_ad_authentication import ExecuteSSSDAdAuthentication
 from base.registration.registration import Registration
 
-class LDAPLogin(AbstractPlugin):
+class ADLogin(AbstractPlugin):
 
     def __init__(self, data, context):
         super(AbstractPlugin, self).__init__()
@@ -16,19 +17,19 @@ class LDAPLogin(AbstractPlugin):
         self.context = context
         self.logger = self.get_logger()
         self.message_code = self.get_message_code()
-        self.ldap_login = ExecuteLDAPLogin()
-        self.sssd_authentication = ExecuteSSSDAuthentication()
-        self.config = configparser.ConfigParser()
+        self.ad_authentication = ExecuteSSSDAdAuthentication()
         self.registration = Registration()
+        self.config = configparser.ConfigParser()
         self.ahenk_conf_path = "/etc/ahenk/ahenk.conf"
 
     def handle_task(self):
         try:
-            server_address = self.data['server-address']
-            dn = self.data['dn']
-            # version = self.data['version']
-            admin_dn = self.data['admin-dn']
-            admin_password = self.data['admin-password']
+            domain_name = self.data['domain_name']
+            hostname = self.data['hostname']
+            ip_address = self.data['ip_address']
+            ad_username = self.data['ad_username']
+            admin_password = self.data['admin_password']
+            ad_port = self.data['ad_port']
             disabled_local_user = self.data['disableLocalUser']
 
             self.config.read(self.ahenk_conf_path)
@@ -44,24 +45,25 @@ class LDAPLogin(AbstractPlugin):
                 configfile.close()
 
                 self.logger.info('User disabled value Disabled')
+
             else:
                 self.logger.info("local users will not be disabled because local_user parameter is FALSE")
 
-            execution_result = self.sssd_authentication.authenticate(server_address, dn, admin_dn, admin_password)
+            execution_result = self.ad_authentication.authenticate(domain_name, hostname, ip_address, admin_password, ad_username)
             if execution_result is False:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                             message='LDAP kullanıcısı ile oturum açma ayarlanırken hata oluştu.: SSSD Paketleri indirilemedi.',
+                                             message='Active Directory kullanıcısı ile oturum açma ayarlanırken hata oluştu.: Gerekli Paketleri indirilemedi.',
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                             message='LDAP kullanıcısı ile oturum açma başarı ile sağlandı.',
+                                             message='Active Directory kullanıcısı ile oturum açma başarı ile sağlandı.',
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
 
         except Exception as e:
             self.logger.error(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='LDAP kullanıcısı ile oturum açma ayarlanırken hata oluştu.: {0}'.format(str(e)))
+                                         message='Active Directory kullanıcısı ile oturum açma ayarlanırken hata oluştu.: {0}'.format(str(e)))
 
 def handle_task(task, context):
-    plugin = LDAPLogin(task, context)
+    plugin = ADLogin(task, context)
     plugin.handle_task()

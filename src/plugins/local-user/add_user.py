@@ -43,12 +43,8 @@ class AddUser(AbstractPlugin):
 
     def handle_task(self):
         try:
-            result_code, p_out, p_err = self.execute("ls {}".format(self.gnome_session))
-            if result_code == 0:
-                self.desktop_env = "gnome"
-            result_code, p_out, p_err = self.execute("ls {}".format(self.xfce4_session))
-            if result_code == 0:
-                self.desktop_env = "xfce"
+            self.desktop_env = self.get_desktop_env()
+            self.logger.info("Get desktop environment is {0}".format(self.desktop_env))
 
             if not self.is_exist(self.home):
                 self.create_directory(self.home)

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-
 def info():
     inf = dict()
     inf['name'] = 'local-user'

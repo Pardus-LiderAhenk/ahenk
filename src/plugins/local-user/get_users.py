@@ -34,12 +34,8 @@ class GetUsers(AbstractPlugin):
             lines = p_out.split('\n')
             lines.pop()
 
-            result_code, p_out, p_err = self.execute("ls {}".format(self.gnome_session))
-            if result_code == 0:
-                self.desktop_env = "gnome"
-            result_code, p_out, p_err = self.execute("ls {}".format(self.xfce4_session))
-            if result_code == 0:
-                self.desktop_env = "xfce"
+            self.desktop_env = self.get_desktop_env()
+            self.logger.info("Get desktop environment is {0}".format(self.desktop_env))
 
             for line in lines:
                 detail = line.split(':')
