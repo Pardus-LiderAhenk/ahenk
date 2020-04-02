@@ -19,6 +19,27 @@ class ExecuteSSSDAdAuthentication:
 
 
     def authenticate(self, domain_name, host_name, ip_address, password, ad_username):
+
+        # Create and Configure ad_info file
+        (result_code, p_out, p_err) = self.util.create_file("/etc/ahenk/ad_info")
+        if (result_code == 0):
+            self.logger.info("AD INFO başarılı bir şekilde oluşturuldu")
+            # Configure ad_info for deregisteration info
+            default_ad_info_path = "/etc/ahenk/ad_info"
+            file_default_ad_info = open(default_ad_info_path, 'r')
+            file_data = file_default_ad_info.read()
+
+            file_data = file_data + ("{}".format(ip_address)) + "\n" + ("{}".format(host_name)) + "\n" + (
+                "{}".format(domain_name)) + "\n" + ("{}".format(ad_username))
+            self.logger.info("/etc/ahenk/ad_info bilgiler girildi.")
+            file_default_ad_info.close()
+            file_default_ad_info = open(default_ad_info_path, 'w')
+            file_default_ad_info.write(file_data)
+            file_default_ad_info.close()
+        else:
+            self.logger.error("ad_info oluşturma komutu başarısız : " + str(p_err))
+
+        self.logger.info("Authenticate starting....")
         # Configure /etc/dhcp/dhclient.conf
         dhclient_conf_path = "/etc/dhcp/dhclient.conf"
         dhc_conf = self.util.read_file_by_line(dhclient_conf_path, "r")
@@ -156,6 +177,10 @@ class ExecuteSSSDAdAuthentication:
         file_sssd.write(file_data)
         file_sssd.close()
 
+
+
+
+
         # Arrangement of chmod as 600 for sssd.conf
         (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
         if(result_code == 0):
@@ -185,18 +210,31 @@ class ExecuteSSSDAdAuthentication:
         file_default_sssd.write(file_data)
         file_default_sssd.close()
 
-        # # Configure krb5.conf template
-        # krb5_config_file_path = "/etc/krb5.conf"
-        # file_krb5 = open(krb5_config_file_path, 'r')
-        # file_data = file_krb5.read()
-        #
-        # file_data = file_data.replace("###realm###", "{}".format(self.domain_name.upper()))
-        # file_data = file_data.replace("###admin_server###", "admin_server = {}".format(self.host_name))
-        # file_data = file_data.replace("###kdc###", "kdc = " + "{}".format(self.host_name))
-        # file_data = file_data.replace("###own_domain_realm###", ".{0} = {1}".format(self.domain_name, domain_name.upper()))
-        #
-        # file_krb5.close()
-        # file_krb5 = open(krb5_config_file_path, 'w')
-        # file_krb5.write(file_data)
-        # file_krb5.close()
-        #
+        pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
+        if not self.util.is_exist(pardus_xfce_path):
+            self.logger.info("99-pardus-xfce.conf does not exist.")
+            self.util.create_file(pardus_xfce_path)
+
+            file_lightdm = open(pardus_xfce_path, 'a')
+            file_lightdm.write("[Seat:*]\n")
+            file_lightdm.write("greeter-hide-users=true")
+            file_lightdm.close()
+            self.logger.info("lightdm has been configured.")
+        else:
+            self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
+            self.util.delete_file(pardus_xfce_path)
+            self.util.create_file(pardus_xfce_path)
+
+            file_lightdm = open(pardus_xfce_path, 'a')
+            file_lightdm.write("[Seat:*]")
+            file_lightdm.write("greeter-hide-users=true")
+            file_lightdm.close()
+            self.logger.info("lightdm.conf has been configured.")
+
+        self.util.execute("systemctl restart nscd.service")
+        # self.util.execute("pam-auth-update --force")
+        self.logger.info("AD Login operation has been completed.")
+
+        self.logger.info("AD Login işlemi başarı ile sağlandı.")
+        return True
+
