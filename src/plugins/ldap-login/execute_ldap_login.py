@@ -37,12 +37,13 @@ class LDAPLogin(AbstractPlugin):
                                              message='LDAP kullanıcısı ile oturum açma ayarlanırken hata oluştu.: SSSD Paketleri indirilemedi.',
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
+                # if get disabled_local_user TRUE set user_disabled in ahenk.conf. disabled local users then client reboot
                 self.config.read(self.ahenk_conf_path)
                 if disabled_local_user is True:
-                    self.registration.disable_local_users()
+                    # self.registration.disable_local_users()
                     config = configparser.ConfigParser()
                     config.read(self.ahenk_conf_path)
-                    config.set('MACHINE', 'user_disabled', 'disabled')
+                    config.set('MACHINE', 'user_disabled', 'true')
 
                     with open(self.ahenk_conf_path, 'w') as configfile:
                         self.logger.info('Opening config file ')
@@ -53,8 +54,9 @@ class LDAPLogin(AbstractPlugin):
                 else:
                     self.logger.info("local users will not be disabled because local_user parameter is FALSE")
                 self.shutdown()
+
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                             message='LDAP kullanıcısı ile oturum açma başarı ile sağlandı.',
+                                             message='LDAP kullanıcısı ile oturum açma başarı ile sağlandı ve istemci yeniden başlatılıyor.',
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
 
         except Exception as e:

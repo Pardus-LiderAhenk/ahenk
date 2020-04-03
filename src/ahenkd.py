@@ -245,8 +245,8 @@ class AhenkDaemon(BaseDaemon):
         self.register_user_name=username
         self.register_user_password=password
 
+    # if user_disabled is when ahenk service restarted TRUE disabled local users
     def disable_local_users(self):
-
         self.logger.info('Local users disable action start..')
         conf_manager = Scope.get_instance().get_configuration_manager()
 

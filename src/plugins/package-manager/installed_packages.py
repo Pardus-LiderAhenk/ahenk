@@ -22,7 +22,7 @@ class InstalledPackages(AbstractPlugin):
         try:
             self.logger.debug('Executing command for package list.')
             self.execute(
-                'dpkg-query -f=\'${{Status}},${{binary:Package}},${{Version}}\n\' -W \'*\' | grep \'install ok installed\' | sed \'s/install ok installed/i/\' | sed \'s/unknown ok not-installed/u/\' | sed \'s/deinstall ok config-files/u/\' | grep -v ahenk > {0}'.format(
+                'dpkg-query -f=\'${{Status}},${{binary:Package}},${{Version}}\n\' -W \'*\' | grep \'install ok installed\' | sed \'s/install ok installed/i/\' | sed \'s/unknown ok not-installed/u/\' | sed \'s/deinstall ok config-files/u/\' > {0}'.format(
                     self.file_path))
             self.logger.debug('Command executed.')
 
