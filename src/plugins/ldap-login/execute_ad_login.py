@@ -32,8 +32,6 @@ class ADLogin(AbstractPlugin):
             ad_port = self.data['ad_port']
             disabled_local_user = self.data['disableLocalUser']
 
-
-
             execution_result = self.ad_authentication.authenticate(domain_name, hostname, ip_address, admin_password, ad_username)
             if execution_result is False:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
