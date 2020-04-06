@@ -1,3 +1,9 @@
+ahenk (1.1.0-1) unstable; urgency=medium
+
+  * Update changelog for 1.0.0-10 release
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Mon, 06 Apr 2020 22:37:22 +0300
+
 ahenk (1.0.0-10) unstable; urgency=medium
 
   * updated ahenk conf
