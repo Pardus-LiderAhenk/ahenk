@@ -159,10 +159,10 @@ class AhenkDaemon(BaseDaemon):
             #        self.registration_failed()
 
             if registration.is_registered() is False:
-                print("Registation attemp")
+                print("Registration attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
-                registration.registration_request()
+                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password)
 
                 #if max_attempt_number < 0:
                 #    self.logger.warning('Number of Attempting for registration is over')
@@ -240,28 +240,33 @@ class AhenkDaemon(BaseDaemon):
         Util.create_file(System.Ahenk.fifo_file())
         Util.set_permission(System.Ahenk.fifo_file(), '600')
 
-    def disable_local_users(self):
+    def set_register_user(self, hostName, username, password):
+        self.register_hostname=hostName
+        self.register_user_name=username
+        self.register_user_password=password
 
+    # if user_disabled is when ahenk service restarted TRUE disabled local users
+    def disable_local_users(self):
         self.logger.info('Local users disable action start..')
         conf_manager = Scope.get_instance().get_configuration_manager()
 
         if conf_manager.has_section('MACHINE'):
             user_disabled = conf_manager.get("MACHINE", "user_disabled")
             self.logger.info('User disabled value=' + str(user_disabled))
-            if user_disabled == '0':
+            if user_disabled == 'true':
                 self.logger.info('local user disabling')
                 Scope.get_instance().get_registration().disable_local_users()
-
-                conf_manager.set('MACHINE', 'user_disabled', '1')
+                conf_manager.set('MACHINE', 'user_disabled', 'disabled')
 
                 with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
-                    self.logger.info('oepning config file ')
+                    self.logger.info('opening config file ')
                     conf_manager.write(configfile)
 
                 user_disabled = conf_manager.get("MACHINE", "user_disabled")
                 self.logger.info('User succesfully disabled value=' + str(user_disabled))
+
             else:
-                self.logger.info('users already disabled')
+                self.logger.info('local users will not be disabled because local_user_paramater is FALSE')
 
     def run(self):
         """ docstring"""
@@ -310,7 +315,7 @@ class AhenkDaemon(BaseDaemon):
 
         self.check_registration()
 
-        #self.is_registered()
+        self.is_registered()
 
         self.disable_local_users()
 
@@ -322,7 +327,8 @@ class AhenkDaemon(BaseDaemon):
         self.init_signal_listener()
         self.logger.info('Signals listeners was set')
 
-        Agreement().agreement_contract_update()
+        # Agreement().agreement_contract_update()
+
         global_scope.put_custom_map('ahenk_daemon', ahenk_daemon)
         self.init_message_response_queue()
 
@@ -343,6 +349,7 @@ if __name__ == '__main__':
     ahenk_daemon = AhenkDaemon(System.Ahenk.pid_path())
     try:
         if len(sys.argv) == 2 and (sys.argv[1] in ('start', 'stop', 'restart', 'status')):
+            ahenk_daemon.set_register_user(None, None, None)
             if sys.argv[1] == 'start':
                 if System.Ahenk.is_running() is True:
                     print('There is already running Ahenk service. It will be killed.[{0}]'.format(
@@ -368,6 +375,14 @@ if __name__ == '__main__':
             else:
                 print('Unknown command. Usage : %s start|stop|restart|status|clean' % sys.argv[0])
                 sys.exit(2)
+        elif len(sys.argv) > 2 and (sys.argv[1] in ('register')):
+            params = sys.argv[1]
+            hostName = sys.argv[2]
+            userName = sys.argv[3]
+            password = sys.argv[4]
+            ahenk_daemon.set_register_user(hostName,userName,password)
+            ahenk_daemon.run()
+
         else:
             result = Commander().set_event(sys.argv)
             if result is None:

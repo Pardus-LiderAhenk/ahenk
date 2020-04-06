@@ -1,0 +1,30 @@
+#!/bin/bash
+
+function error_exit() {
+  log "$1:$2 failed, exit status $?"
+  exit 1
+}
+
+trap 'error_exit "${BASH_SOURCE}" "${LINENO}"' ERR
+
+LOG=/var/log/pam_script.log
+
+function log() {
+  logger --priority auth.info --tag "$0" "$@"
+  echo "$(date) $0: $@" >> $LOG
+}
+
+if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
+  if ([ -n $PAM_SERVICE ] && [[ $PAM_SERVICE == *"dm"  ]]) || ([ -n $PAM_TTY ] && [[ $PAM_TTY == ":"* ]]); then
+    SERVICE="none"
+    if [ -n $PAM_SERVICE ]; then
+      SERVICE="$PAM_SERVICE"
+    fi
+    TTY_DISPLAY="none"
+    if [ -n $PAM_TTY ]; then
+      TTY_DISPLAY="$PAM_TTY"
+    fi
+    log "login: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY"
+    sudo python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY
+  fi
+fi

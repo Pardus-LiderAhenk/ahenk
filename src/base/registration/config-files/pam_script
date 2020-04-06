@@ -1,0 +1,12 @@
+Name: Ahenk PAM scripts
+Default: yes
+Priority: 257
+Auth-Type: Primary
+Auth:
+       optional                      pam_script.so
+Account-Type: Primary
+Account:
+       optional                      pam_script.so
+Session-Type: Additional
+Session:
+       optional                        pam_script.so

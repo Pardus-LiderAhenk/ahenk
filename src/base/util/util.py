@@ -17,8 +17,14 @@ from base.scope import Scope
 
 
 class Util:
+
+
     def __init__(self):
         super().__init__()
+
+    @staticmethod
+    def get_ask_path_file():
+        return '/usr/share/ahenk/base/agreement/'
 
     @staticmethod
     def close_session(username):
@@ -26,7 +32,6 @@ class Util:
 
     @staticmethod
     def shutdown():
-        print("shutting down")
         Util.execute('reboot')
 
     @staticmethod
@@ -139,6 +144,16 @@ class Util:
             raise
 
     @staticmethod
+    def get_executable_path(app_name):
+        path = None
+        try:
+            path = shutil.which(app_name)
+        except:
+            raise
+        finally:
+            return path
+
+    @staticmethod
     def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True, as_user=None, ip=None):
 
         try:
@@ -182,7 +197,7 @@ class Util:
             command.append(script_path)
         else:
             raise Exception('[Util] Script is required')
-        if parameters is not None:    
+        if parameters is not None:
             for p in parameters:
                 command.append(p)
 
@@ -225,8 +240,9 @@ class Util:
     def file_group(full_path):
         try:
             st = os.stat(full_path)
-            gid = st.st_uid
-            return grp.getgrgid(gid)[0]
+            gid = st.st_gid
+            # return grp.getgrgid(gid)[0]
+            return gid
         except:
             raise
 
@@ -332,15 +348,20 @@ class Util:
             Util.execute('export DISPLAY={0}; su - {1} -c \'{2}\''.format(display, user, inner_command))
 
     @staticmethod
-    def show_message(username,display=':0',message='', title=''):
-        ask_path = '/usr/share/ahenk/base/agreement/confirm.py'
+    def show_message(username, display, message='', title=''):
+        ask_path = Util.get_ask_path_file()+ 'confirm.py'
+
+        Scope.get_instance().get_logger().debug('DISPLAYYYY --------->>>>>>>>: ' + str(display))
+
+        if display is None:
+            display_number = Util.get_username_display()
+        else:
+            display_number = display
         try:
 
             if username is not None:
-                command = 'export DISPLAY={0};su - {1} -c \'python3 {2} \"{3}\" \"{4}\"\''.format(display, username,
-                                                                                                  ask_path,
-                                                                                                  message,
-                                                                                                  title)
+                command = 'su - {0} -c \'python3 {1} \"{2}\" \"{3}\" \"{4}\"\''.format(username, ask_path, message,
+                                                                                       title, display_number)
                 result_code, p_out, p_err = Util.execute(command)
 
                 if p_out.strip() == 'Y':
@@ -355,22 +376,26 @@ class Util:
         except Exception as e :
             print("Error when showing message " + str(e))
 
-            return None;
+            return None
+
+
 
     @staticmethod
     def show_registration_message(login_user_name,message,title,host=None):
-        ask_path = '/usr/share/ahenk/base/agreement/ahenkmessage.py'
-        display_number = ":0"
+
+        ask_path = Util.get_ask_path_file()+ 'ahenkmessage.py'
+
+        # display_number = ":0"
+        display_number = Util.get_username_display()
 
         if host is None:
-            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number, login_user_name,
-                                                                                        ask_path, message, title)
+            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name,
+                                                                                        ask_path, message, title, display_number)
         else:
-            command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \'{5}\' \"'.format(display_number,
-                                                                                                        login_user_name,
+            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \'{5}\' \"'.format(login_user_name,
                                                                                                         ask_path,
                                                                                                         message, title,
-                                                                                                        host)
+                                                                                                        host, display_number)
         result_code, p_out, p_err = Util.execute(command)
 
         pout = str(p_out).replace('\n', '')
@@ -380,16 +405,42 @@ class Util:
     @staticmethod
     def show_unregistration_message(login_user_name,display_number,message,title):
 
-        ask_path = '/usr/share/ahenk/base/agreement/unregistrationmessage.py'
+        ask_path = Util.get_ask_path_file()+ 'unregistrationmessage.py'
 
-        command = 'export DISPLAY={0}; su - {1} -c \"python3 {2} \'{3}\' \'{4}\' \"'.format(display_number,
-                                                                                                        login_user_name,
-                                                                                                        ask_path,
-                                                                                                        message, title
-                                                                                                        )
+        command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name, ask_path, message, title, display_number)
         result_code, p_out, p_err = Util.execute(command)
 
         pout = str(p_out).replace('\n', '')
 
         return pout
+
+    @staticmethod
+    def get_username_display():
+        result_code, p_out, p_err = Util.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
+
+        result = []
+        lines = str(p_out).split('\n')
+        for line in lines:
+            arr = line.split(' ')
+            if len(arr) > 1 and str(arr[1]).isnumeric() is True:
+                result.append(line)
+
+        params = str(result[0]).split(' ')
+        display_number = params[1]
+        display_number = ":"+str(display_number)
+        return display_number
+
+    @staticmethod
+    def get_desktop_env():
+        xfce4_session = "/usr/bin/xfce4-session"
+        gnome_session = "/usr/bin/gnome-session"
+        desktop_env = None
+        result_code, p_out, p_err = Util.execute("ls {}".format(gnome_session))
+        if result_code == 0:
+            desktop_env = "gnome"
+        result_code, p_out, p_err = Util.execute("ls {}".format(xfce4_session))
+        if result_code == 0:
+            desktop_env = "xfce"
+
+        return desktop_env
 
