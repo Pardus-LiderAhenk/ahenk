@@ -23,6 +23,7 @@ class ExecuteSSSDAuthentication:
             sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd.conf"
             sssd_config_folder_path = "/etc/sssd"
             sssd_config_file_path = "/etc/sssd/sssd.conf"
+            sssd_language_conf = "/etc/default/sssd"
 
             common_session_conf_path = "/etc/pam.d/common-session"
 
@@ -37,7 +38,7 @@ class ExecuteSSSDAuthentication:
             self.logger.info("{0} config file is copied under {1}".format(sssd_config_template_path, sssd_config_folder_path))
 
             # Configure sssd.conf
-            file_sssd = open(sssd_config_file_path, 'r')
+            file_sssd = open (sssd_config_file_path, 'r')
             file_data = file_sssd.read()
 
             file_data = file_data.replace("###ldap_pwdlockout_dn###", "ldap_pwdlockout_dn = " + ldap_pwdlockout_dn)
@@ -47,6 +48,7 @@ class ExecuteSSSDAuthentication:
             file_data = file_data.replace("###ldap_search_base###", "ldap_search_base = " + dn)
             file_data = file_data.replace("###ldap_user_search_base###", "ldap_user_search_base = " + dn)
             file_data = file_data.replace("###ldap_group_search_base###", "ldap_group_search_base = " + dn)
+            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Roles," + dn)
 
             file_sssd.close()
             file_sssd = open(sssd_config_file_path, 'w')
@@ -73,6 +75,22 @@ class ExecuteSSSDAuthentication:
             file_common_session.write(file_data)
             file_common_session.close()
 
+            # configure sssd for language environment
+            file_default_sssd = open(sssd_language_conf, 'r')
+            file_data = file_default_sssd.read()
+
+            if "LC_ALL=\"tr_CY.UTF-8\"" not in file_data :
+                file_data = file_data + "\n" + "LC_ALL=\"tr_CY.UTF-8\""
+                self.logger.info("/etc/default/sssd is configured")
+
+            file_default_sssd.close()
+            file_default_sssd = open(sssd_language_conf, 'w')
+            file_default_sssd.write(file_data)
+            file_default_sssd.close()
+
+            self.logger.info("Restarting sssd service.")
+            self.util.execute("systemctl restart sssd.service")
+
             # Configure nsswitch.conf
             file_ns_switch = open("/etc/nsswitch.conf", 'r')
             file_data = file_ns_switch.read()
@@ -81,16 +99,28 @@ class ExecuteSSSDAuthentication:
             text = pattern.sub('', file_data)
 
             is_configuration_done_before = False
-            if "passwd:compatsss" not in text:
+            if "passwd:compatsss" not in text and "passwd:compat" in text:
                 file_data = file_data.replace("passwd:         compat", "passwd:         compat sss")
                 is_configuration_done_before = True
 
-            if "group:compatsss" not in text:
+            if "passwd:filessystemdsss" not in text and "passwd:filessystemd" in text:
+                file_data = file_data.replace("passwd:         files systemd", "passwd:         files systemd sss")
+                is_configuration_done_before = True
+
+            if "group:compatsss" not in text and "group:compat" in text:
                 file_data = file_data.replace("group:          compat", "group:          compat sss")
                 is_configuration_done_before = True
 
-            if "shadow:compatsss" not in text:
+            if "group:filessystemdsss" not in text and "group:filessystemd" in text:
+                file_data = file_data.replace("group:          files systemd", "group:          files systemd sss")
+                is_configuration_done_before = True
+
+            if "shadow:compatsss" not in text and "shadow:compat" in text:
                 file_data = file_data.replace("shadow:         compat", "shadow:         compat sss")
+                is_configuration_done_before = True
+
+            if "shadow:filessss" not in text and "shadow:files" in text:
+                file_data = file_data.replace("shadow:         files", "shadow:         files sss")
                 is_configuration_done_before = True
 
             if "services:dbfilessss" not in text:
@@ -101,9 +131,14 @@ class ExecuteSSSDAuthentication:
                 file_data = file_data.replace("netgroup:       nis", "netgroup:       nis sss")
                 is_configuration_done_before = True
 
-            if "sudoers:filessss" not in text:
+            if "sudoers:filessss" not in text and "sudoers:files" in text:
                 file_data = file_data.replace("sudoers:        files", "sudoers:        files sss")
                 is_configuration_done_before = True
+            elif "sudoers:filessss" in text:
+                is_configuration_done_before = False
+            else:
+                file_data = file_data + "sudoers:        files sss"
+
 
             if is_configuration_done_before:
                 self.logger.info("nsswitch.conf configuration has been completed")
@@ -115,31 +150,8 @@ class ExecuteSSSDAuthentication:
             file_ns_switch.write(file_data)
             file_ns_switch.close()
 
-            # Configure lightdm.service
-            # check if 99-pardus-xfce.conf exists if not create
-            pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
-            if not self.util.is_exist(pardus_xfce_path):
-                self.logger.info("99-pardus-xfce.conf does not exist.")
-                self.util.create_file(pardus_xfce_path)
-
-                file_lightdm = open(pardus_xfce_path, 'a')
-                file_lightdm.write("[Seat:*]\n")
-                file_lightdm.write("greeter-hide-users=true")
-                file_lightdm.close()
-                self.logger.info("lightdm has been configured.")
-            else:
-                self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
-                self.util.delete_file(pardus_xfce_path)
-                self.util.create_file(pardus_xfce_path)
-
-                file_lightdm = open(pardus_xfce_path, 'a')
-                file_lightdm.write("[Seat:*]")
-                file_lightdm.write("greeter-hide-users=true")
-                file_lightdm.close()
-                self.logger.info("lightdm.conf has been configured.")
-
             self.util.execute("systemctl restart nscd.service")
-            self.util.execute("pam-auth-update --force")
+            # self.util.execute("pam-auth-update --force")
             self.logger.info("LDAP Login operation has been completed.")
 
             self.logger.info("LDAP Login işlemi başarı ile sağlandı.")
@@ -148,3 +160,4 @@ class ExecuteSSSDAuthentication:
             self.logger.error(str(e))
             self.logger.info("LDAP Login işlemi esnasında hata oluştu.")
             return False
+

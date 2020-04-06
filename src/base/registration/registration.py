@@ -16,8 +16,10 @@ from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 import re
 import os
-from base.registration.execute_cancel_ldap_login import ExecuteCancelLDAPLogin
-from base.registration.execute_ldap_login import ExecuteLDAPLogin
+from base.registration.execute_cancel_sssd_authentication import ExecuteCancelSSSDAuthentication
+from base.registration.execute_sssd_authentication import ExecuteSSSDAuthentication
+from base.registration.execute_sssd_ad_authentication import ExecuteSSSDAdAuthentication
+from base.registration.execute_cancel_sssd_ad_authentication import ExecuteCancelSSSDAdAuthentication
 
 class Registration:
     def __init__(self):
@@ -30,13 +32,18 @@ class Registration:
         self.db_service = scope.get_db_service()
         self.util = Util()
         self.servicename='im.liderahenk.org'
+        self.local_user_disable = None
 
         #self.event_manager.register_event('REGISTRATION_RESPONSE', self.registration_process)
         self.event_manager.register_event('REGISTRATION_SUCCESS', self.registration_success)
         self.event_manager.register_event('REGISTRATION_ERROR', self.registration_error)
 
-        self.ldap_login_cancel = ExecuteCancelLDAPLogin()
-        self.ldap_login = ExecuteLDAPLogin()
+        self.ldap_login_cancel = ExecuteCancelSSSDAuthentication()
+        self.ad_login_cancel = ExecuteCancelSSSDAdAuthentication()
+        self.ldap_login = ExecuteSSSDAuthentication()
+        self.ad_login = ExecuteSSSDAdAuthentication()
+
+        self.directory_server = None
 
         if self.is_registered():
             self.logger.debug('Ahenk already registered')
@@ -54,7 +61,7 @@ class Registration:
         self.user_name = username
         self.user_password= password
 
-        if(username is None and password is None and self.host is None):
+        if(username is None and password is None and self.host is None ):
 
             self.host = self.conf_manager.get("CONNECTION", "host")
 
@@ -70,16 +77,19 @@ class Registration:
                 self.host = user_registration_info[0]
                 self.user_name = user_registration_info[1]
                 self.user_password = user_registration_info[2]
+                self.directory_server = user_registration_info[3]
+
             else:
                 self.user_name = user_registration_info[0]
                 self.user_password = user_registration_info[1]
+                self.directory_server = user_registration_info[2]
 
         #anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(user_name,user_password), self.host,self.servicename)
         #anon_messenger.connect_to_server()
 
         self.logger.debug('Requesting registration')
         SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,checker_func=self.is_registered, kwargs=None))
-        anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(self.user_name,self.user_password), self.host,self.servicename)
+        anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(self.user_name,self.user_password,self.directory_server), self.host,self.servicename)
         anon_messenger.connect_to_server()
 
     def ldap_registration_request(self):
@@ -87,16 +97,56 @@ class Registration:
         self.messenger.send_Direct_message(self.message_manager.ldap_registration_msg())
 
     def registration_success(self, reg_reply):
-        self.logger.info('Registration update starting')
+
         try:
+            self.local_user_disable = reg_reply['disableLocalUser']
+            if self.local_user_disable is True:
+                self.conf_manager.set('MACHINE', 'user_disabled', 'true')
+            else:
+                self.conf_manager.set('MACHINE', 'user_disabled', 'false')
+
+            self.logger.info('LDAP Registration update starting')
             dn = str(reg_reply['agentDn'])
             self.logger.info('Current dn:' + dn)
             self.logger.info('updating host name and service')
             self.update_registration_attrs(dn)
-            self.install_and_config_ldap(reg_reply)
+
+            # lightdm configuration by desktop env is XFCE
+            self.desktop_env = self.util.get_desktop_env()
+            self.logger.info("Get desktop environment is {0}".format(self.desktop_env))
+            if self.desktop_env == "xfce":
+                # Configure lightdm.service
+                # check if 99-pardus-xfce.conf exists if not create
+                pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
+                if not self.util.is_exist(pardus_xfce_path):
+                    self.logger.info("99-pardus-xfce.conf does not exist.")
+                    self.util.create_file(pardus_xfce_path)
+
+                    file_lightdm = open(pardus_xfce_path, 'a')
+                    file_lightdm.write("[Seat:*]\n")
+                    file_lightdm.write("greeter-hide-users=true")
+                    file_lightdm.close()
+                    self.logger.info("lightdm has been configured.")
+                else:
+                    self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
+                    self.util.delete_file(pardus_xfce_path)
+                    self.util.create_file(pardus_xfce_path)
+
+                    file_lightdm = open(pardus_xfce_path, 'a')
+                    file_lightdm.write("[Seat:*]")
+                    file_lightdm.write("greeter-hide-users=true")
+                    file_lightdm.close()
+                    self.logger.info("lightdm.conf has been configured.")
+
+            # LDAP registration
+            if self.directory_server == "LDAP":
+                self.install_and_config_ldap(reg_reply)
+            # AD registration
+            else:
+                self.install_and_config_ad(reg_reply)
 
         except Exception as e:
-            self.logger.error('Registartion error. Error Message: {0}.'.format(str(e)))
+            self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
             print(e)
             raise
 
@@ -127,13 +177,28 @@ class Registration:
         admin_dn = str(reg_reply['ldapUserDn']) # get user full dn from server.. password same
         #admin_password = self.user_password # same user get from server
         admin_password = self.db_service.select_one_result('registration', 'password', ' registered=1')
+        self.ldap_login.authenticate(server_address, dn, admin_dn, admin_password)
+
         if server_address != '' and dn != '' and  version != '' and admin_dn != '' and admin_password != '':
-            self.logger.info("PAM LDAP configuration process starting....")
-            self.ldap_login.login(server_address,dn,version,admin_dn,admin_password)
-            self.logger.info("PAM LDAP configuration process starting....")
+            self.logger.info("SSSD configuration process starting....")
+            self.logger.info("SSSD configuration process starting....")
         else :
             raise Exception(
                 'LDAP Ayarları yapılırken hata oluştu. Lütfen ağ bağlantınızı kontrol ediniz. Deponuzun güncel olduğundan emin olunuz.')
+
+    def install_and_config_ad(self, reg_reply):
+        self.logger.info('AD install process starting')
+        domain_name = str(reg_reply['adDomainName'])
+        host_name = str(reg_reply['adHostName'])
+        ip_address = str(reg_reply['adIpAddress'])
+        password = str(reg_reply['adAdminPassword'])
+        ad_username = str(reg_reply['adAdminUserName'])
+
+        if domain_name is None or host_name is None or  ip_address is None  or password is None :
+            self.logger.error("Registration params is null")
+            return
+
+        self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username)
 
     def registration_error(self, reg_reply):
        self.re_register()
@@ -249,12 +314,35 @@ class Registration:
             self.logger.info('Ahenk conf cleaned')
             self.logger.info('Ahenk conf cleaning from db')
             self.unregister()
-            self.ldap_login_cancel.cancel();
+
+            directory_type = "LDAP"
+            if self.util.is_exist("/etc/ahenk/ad_info"):
+                directory_type = "AD"
+
+            if directory_type == "LDAP":
+                self.ldap_login_cancel.cancel()
+            else:
+                self.ad_login_cancel.cancel()
+
             self.logger.info('Cleaning ahenk conf..')
             self.clean()
             self.logger.info('Ahenk conf cleaned from db')
-            self.logger.info('Enable Users')
-            self.enable_local_users()
+
+            if self.conf_manager.has_section('MACHINE'):
+                user_disabled = self.conf_manager.get("MACHINE", "user_disabled")
+                self.logger.info('User disabled value=' + str(user_disabled))
+                if user_disabled != 'false':
+                    self.logger.info('Enable Users')
+                    self.enable_local_users()
+                else:
+                    self.logger.info('Local users already enabled')
+            # İf desktop env is XFCE configured lightdm.service
+            if self.util.get_desktop_env() == "xfce":
+                pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
+                if self.util.is_exist(pardus_xfce_path):
+                    self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
+                    self.util.delete_file(pardus_xfce_path)
+
             Util.shutdown()
         except Exception as e:
             self.logger.error("Error while running purge_and_unregister process.. Error Message  " + str(e))
@@ -360,7 +448,7 @@ class Registration:
 
             config.set('CONNECTION', 'uid', '')
             config.set('CONNECTION', 'password', '')
-            config.set('MACHINE', 'user_disabled', '0')
+            config.set('MACHINE', 'user_disabled', 'false')
 
             with open(System.Ahenk.config_path(), 'w') as file:
                 config.write(file)
@@ -396,6 +484,19 @@ class Registration:
         content = Util.read_file('/etc/passwd')
         kill_all_process = 'killall -KILL -u {}'
         change_permisson = "chmod -R 700 {}"
+
+        add_user_conf_file = "/etc/adduser.conf"
+        file_dir_mode = open(add_user_conf_file, 'r')
+        file_data = file_dir_mode.read()
+        file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
+        file_dir_mode.close()
+
+        file_dir_mode = open(add_user_conf_file, 'w')
+        file_dir_mode.write(file_data)
+        file_dir_mode.close()
+
+        self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
+
         for p in pwd.getpwall():
             self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
             if not sysx.shell_is_interactive(p.pw_shell):

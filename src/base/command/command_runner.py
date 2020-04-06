@@ -13,6 +13,7 @@ from base.system.system import System
 from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.util.util import Util
+from base.default_policy.default_policy import DefaultPolicy
 
 
 class CommandRunner(object):
@@ -25,6 +26,7 @@ class CommandRunner(object):
         self.conf_manager = scope.get_configuration_manager()
         self.db_service = scope.get_db_service()
         self.execute_manager = scope.get_execution_manager()
+        self.default_policy = DefaultPolicy()
 
     def check_last_login(self):
         last_login_tmstmp = self.db_service.select_one_result('session', 'timestamp')
@@ -71,17 +73,23 @@ class CommandRunner(object):
                     display = json_data['display']
                     desktop = json_data['desktop']
 
-
                     ip = None
                     if 'ip' in json_data:
                         ip = json_data['ip']
 
                     self.logger.info('login event is handled for user: {0}'.format(username))
+                    Util.execute("systemctl restart sssd.service")
                     login_message = self.message_manager.login_msg(username,ip)
                     self.messenger.send_direct_message(login_message)
 
                     agreement = Agreement()
                     agreement_choice = None
+
+                    ## Default policy for users
+
+                    self.logger.info("Applying default policies for user {0}".format(username))
+                    self.default_policy.default_firefox_policy(username)
+                    self.default_policy.disable_update_package_notify(username)
 
                     if agreement.check_agreement(username) is not True and System.Ahenk.agreement() == '1':
                         self.logger.debug('User {0} has not accepted agreement.'.format(username))
@@ -162,7 +170,7 @@ class CommandRunner(object):
                     self.messenger.send_direct_message(logout_message)
 
                     self.logger.info('Ahenk polkit file deleting..')
-                    self.delete_polkit_user();
+                    self.delete_polkit_user()
 
                     self.plugin_manager.process_mode('logout', username)
                     self.plugin_manager.process_mode('safe', username)
@@ -172,7 +180,6 @@ class CommandRunner(object):
                         json.dumps(json_data['message'])))
                     message = json.dumps(json_data['message'])
                     self.messenger.send_direct_message(message)
-
 
                 elif str(json_data['event']) == 'unregister':
                     self.logger.info('Unregistering..')

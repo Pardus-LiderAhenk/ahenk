@@ -159,7 +159,7 @@ class AhenkDaemon(BaseDaemon):
             #        self.registration_failed()
 
             if registration.is_registered() is False:
-                print("Registation attemp")
+                print("Registration attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
                 registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password)
@@ -245,28 +245,28 @@ class AhenkDaemon(BaseDaemon):
         self.register_user_name=username
         self.register_user_password=password
 
+    # if user_disabled is when ahenk service restarted TRUE disabled local users
     def disable_local_users(self):
-
         self.logger.info('Local users disable action start..')
         conf_manager = Scope.get_instance().get_configuration_manager()
 
         if conf_manager.has_section('MACHINE'):
             user_disabled = conf_manager.get("MACHINE", "user_disabled")
             self.logger.info('User disabled value=' + str(user_disabled))
-            if user_disabled == '0':
+            if user_disabled == 'true':
                 self.logger.info('local user disabling')
                 Scope.get_instance().get_registration().disable_local_users()
-
-                conf_manager.set('MACHINE', 'user_disabled', '1')
+                conf_manager.set('MACHINE', 'user_disabled', 'disabled')
 
                 with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
-                    self.logger.info('oepning config file ')
+                    self.logger.info('opening config file ')
                     conf_manager.write(configfile)
 
                 user_disabled = conf_manager.get("MACHINE", "user_disabled")
                 self.logger.info('User succesfully disabled value=' + str(user_disabled))
+
             else:
-                self.logger.info('users already disabled')
+                self.logger.info('local users will not be disabled because local_user_paramater is FALSE')
 
     def run(self):
         """ docstring"""
