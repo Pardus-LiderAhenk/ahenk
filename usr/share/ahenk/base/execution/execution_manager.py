@@ -411,9 +411,9 @@ class ExecutionManager(object):
             self.logger.info('Registration is failed. User not authorized')
             Util.show_message(user_name,display,'Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
                    'Kullanıcı Yetkilendirme Hatası')
-        else :
+        else:
             Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
-            if Util.show_message(user_name, display, "Değişikliklerin etkili olması için sistemi yeniden başlatmanız gerekmektedir.", "") :
+            if Util.show_message(user_name, display, "Değişikliklerin etkili olması için sistem yeniden başlatılacaktır. Lütfen bekleyiniz...", "") :
                 registration= Scope.get_instance().get_registration()
                 registration.purge_and_unregister()
 

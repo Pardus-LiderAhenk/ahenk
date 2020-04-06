@@ -95,8 +95,8 @@ class AnonymousMessenger(ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
-            self.logger.debug('---------->Received message: {0}'.format(str(msg['body'])))
-            self.logger.debug('Reading registration reply')
+            self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
+            self.logger.info('Reading registration reply')
             j = json.loads(str(msg['body']))
             message_type = j['type']
             status = str(j['status']).lower()

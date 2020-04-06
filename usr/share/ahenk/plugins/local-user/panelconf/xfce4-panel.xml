@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<channel name="xfce4-panel" version="1.0">
+  <property name="configver" type="empty"/>
+  <property name="panels" type="empty">
+    <property name="panel-1" type="empty">
+      <property name="position" type="empty"/>
+      <property name="position-locked" type="empty"/>
+      <property name="size" type="empty"/>
+      <property name="length" type="empty"/>
+      <property name="plugin-ids" type="empty"/>
+    </property>
+  </property>
+  <property name="plugins" type="empty">
+    <property name="plugin-1" type="empty">
+      <property name="names-visible" type="array">
+        <value type="string" value="networkmanager applet"/>
+        <value type="string" value="xfce4-power-manager"/>
+        <value type="string" value="google-chrome-stable"/>
+        <value type="string" value="software updates"/>
+        <value type="string" value="thunar"/>
+      </property>
+      <property name="show-frame" type="empty"/>
+      <property name="size-max" type="empty"/>
+    </property>
+    <property name="plugin-3" type="empty"/>
+    <property name="plugin-4" type="empty">
+      <property name="appearance" type="empty"/>
+      <property name="items" type="empty"/>
+      <property name="ask-confirmation" type="empty"/>
+    </property>
+    <property name="plugin-7" type="empty">
+      <property name="expand" type="empty"/>
+      <property name="style" type="empty"/>
+    </property>
+    <property name="plugin-8" type="empty"/>
+    <property name="plugin-5" type="empty">
+      <property name="enable-keyboard-shortcuts" type="empty"/>
+    </property>
+    <property name="plugin-2" type="empty"/>
+    <property name="plugin-13" type="empty"/>
+  </property>
+</channel>
