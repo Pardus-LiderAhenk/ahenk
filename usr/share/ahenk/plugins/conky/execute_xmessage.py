@@ -26,12 +26,16 @@ class RunXMessageCommand(AbstractPlugin):
 
     def execute_xmessage(self, message):
 
-        users = self.Sessions.user_name();
+        users = self.Sessions.user_name()
         self.logger.debug('[XMessage] users : ' + str(users))
+        desktop_env = self.get_desktop_env()
+        self.logger.info("Get desktop environment is {0}".format(desktop_env))
 
         for user in users:
             user_display = self.Sessions.display(user)
             user_ip = self.Sessions.userip(user)
+            if desktop_env == "gnome":
+                user_display = self.get_username_display_gnome(user)
 
             if user_display is None:
                 self.logger.debug('[XMessage] executing for display none for user  ' + str(user))

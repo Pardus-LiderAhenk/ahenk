@@ -431,6 +431,24 @@ class Util:
         return display_number
 
     @staticmethod
+    def get_username_display_gnome(user):
+        result_code, p_out, p_err = Util.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
+        display_number = None
+        result = []
+        lines = str(p_out).split('\n')
+        for line in lines:
+            arr = line.split(' ')
+            if len(arr) > 1 and str(arr[1]).isnumeric() is True:
+                result.append(line)
+        for res in result:
+            arr = res.split(" ")
+            username = arr[0]
+            if username == user:
+                display_number = ":" + arr[1]
+                # print("--->>> dis no: " + str(display_number))
+        return display_number
+
+    @staticmethod
     def get_desktop_env():
         xfce4_session = "/usr/bin/xfce4-session"
         gnome_session = "/usr/bin/gnome-session"
