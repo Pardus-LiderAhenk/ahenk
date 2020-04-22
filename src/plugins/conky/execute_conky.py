@@ -102,16 +102,21 @@ class RunConkyCommand(AbstractPlugin):
             self.create_file(self.conky_config_global_autorun_file)
             self.write_file(self.conky_config_global_autorun_file, self.conky_autorun_content)
 
-        users=self.Sessions.user_name()
+        users = self.Sessions.user_name()
+        desktop_env = self.get_desktop_env()
+        self.logger.info("Get desktop environment is {0}".format(desktop_env))
 
         for user in users:
             user_display = self.Sessions.display(user)
+            if desktop_env == "gnome":
+                user_display = self.get_username_display_gnome(user)
+
             if user_display is None:
                 self.logger.debug('[Conky] executing for display none for user  '+ str(user))
                 self.execute('conky -q', result=False)
-            else :
+            else:
                 self.logger.debug('[Conky] user display ' + str(user_display) +' user '+ str(user))
-                conky_cmd= 'su ' + str(user) + ' -c ' + ' "conky --display=' + str(user_display) + ' " '
+                conky_cmd = 'su ' + str(user) + ' -c ' + ' "conky --display=' + str(user_display) + ' " '
                 self.logger.debug('[Conky] executing command:  ' + str(conky_cmd))
                 self.execute(conky_cmd, result=False)
 

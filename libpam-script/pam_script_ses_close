@@ -15,7 +15,7 @@ function log() {
 }
 
 if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
-  if ([ -n $PAM_SERVICE ] && [[ $PAM_SERVICE == *"dm"  ]]) || ([ -n $PAM_TTY ] && [[ $PAM_TTY == ":"* ]]); then
+  if ([ -n $PAM_SERVICE ] && [[ ( $PAM_SERVICE == *"dm" || $PAM_SERVICE == "gdm"* )]]) || ([ -n $PAM_TTY ] && [[ $PAM_TTY == ":"* ]]); then
     SERVICE="none"
     if [ -n $PAM_SERVICE ]; then
       SERVICE="$PAM_SERVICE"
