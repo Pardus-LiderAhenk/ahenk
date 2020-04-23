@@ -29,7 +29,11 @@ class LDAPLogin(AbstractPlugin):
             # version = self.data['version']
             admin_dn = self.data['admin-dn']
             admin_password = self.data['admin-password']
-            disabled_local_user = self.data['disableLocalUser']
+
+            if admin_password is None:
+                self.config.read(self.ahenk_conf_path)
+                if self.config.has_section('CONNECTION'):
+                    admin_password = self.config.get("CONNECTION", "password")
 
             execution_result = self.sssd_authentication.authenticate(server_address, dn, admin_dn, admin_password)
             if execution_result is False:
@@ -38,21 +42,23 @@ class LDAPLogin(AbstractPlugin):
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
                 # if get disabled_local_user TRUE set user_disabled in ahenk.conf. disabled local users then client reboot
-                self.config.read(self.ahenk_conf_path)
-                if disabled_local_user is True:
-                    # self.registration.disable_local_users()
-                    config = configparser.ConfigParser()
-                    config.read(self.ahenk_conf_path)
-                    config.set('MACHINE', 'user_disabled', 'true')
+                if self.has_attr_json(self.data, 'disableLocalUser') is True:
+                    disabled_local_user = self.data['disableLocalUser']
+                    self.config.read(self.ahenk_conf_path)
+                    if disabled_local_user is True:
+                        # self.registration.disable_local_users()
+                        config = configparser.ConfigParser()
+                        config.read(self.ahenk_conf_path)
+                        config.set('MACHINE', 'user_disabled', 'true')
 
-                    with open(self.ahenk_conf_path, 'w') as configfile:
-                        self.logger.info('Opening config file ')
-                        config.write(configfile)
-                    configfile.close()
+                        with open(self.ahenk_conf_path, 'w') as configfile:
+                            self.logger.info('Opening config file ')
+                            config.write(configfile)
+                        configfile.close()
 
-                    self.logger.info('User disabled value Disabled')
-                else:
-                    self.logger.info("local users will not be disabled because local_user parameter is FALSE")
+                        self.logger.info('User disabled value Disabled')
+                    else:
+                        self.logger.info("local users will not be disabled because local_user parameter is FALSE")
                 self.shutdown()
 
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,

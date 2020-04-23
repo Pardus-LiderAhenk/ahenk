@@ -30,7 +30,6 @@ class ADLogin(AbstractPlugin):
             ad_username = self.data['ad_username']
             admin_password = self.data['admin_password']
             ad_port = self.data['ad_port']
-            disabled_local_user = self.data['disableLocalUser']
 
             execution_result = self.ad_authentication.authenticate(domain_name, hostname, ip_address, admin_password, ad_username)
             if execution_result is False:
@@ -39,21 +38,23 @@ class ADLogin(AbstractPlugin):
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
             else:
                 # if get disabled_local_user TRUE set user_disabled in ahenk.conf. disabled local users then client reboot
-                self.config.read(self.ahenk_conf_path)
-                if disabled_local_user is True:
-                    # self.registration.disable_local_users()
-                    config = configparser.ConfigParser()
-                    config.read(self.ahenk_conf_path)
-                    config.set('MACHINE', 'user_disabled', 'true')
+                if self.has_attr_json(self.data, 'disableLocalUser') is True:
+                    disabled_local_user = self.data['disableLocalUser']
+                    self.config.read(self.ahenk_conf_path)
+                    if disabled_local_user is True:
+                        # self.registration.disable_local_users()
+                        config = configparser.ConfigParser()
+                        config.read(self.ahenk_conf_path)
+                        config.set('MACHINE', 'user_disabled', 'true')
 
-                    with open(self.ahenk_conf_path, 'w') as configfile:
-                        self.logger.info('Opening config file ')
-                        config.write(configfile)
-                    configfile.close()
-                    self.logger.info('User disabled value Disabled')
+                        with open(self.ahenk_conf_path, 'w') as configfile:
+                            self.logger.info('Opening config file ')
+                            config.write(configfile)
+                        configfile.close()
+                        self.logger.info('User disabled value Disabled')
 
-                else:
-                    self.logger.info("local users will not be disabled because local_user parameter is FALSE")
+                    else:
+                        self.logger.info("local users will not be disabled because local_user parameter is FALSE")
                 self.shutdown()
 
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
