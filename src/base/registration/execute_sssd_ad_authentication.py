@@ -14,7 +14,7 @@ class ExecuteSSSDAdAuthentication:
     def authenticate(self, domain_name, host_name, ip_address, password, ad_username):
         try:
             # Create and Configure ad_info file
-            (result_code, p_out, p_err) = self.util.create_file("/etc/ahenk/ad_info")
+            (result_code, p_out, p_err) = self.util.execute("touch /etc/ahenk/ad_info")
             if (result_code == 0):
                 self.logger.info("AD INFO başarılı bir şekilde oluşturuldu")
                 # Configure ad_info for deregisteration info
