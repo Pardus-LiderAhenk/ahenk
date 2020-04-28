@@ -30,6 +30,9 @@ class LDAPLogin(AbstractPlugin):
             admin_dn = self.data['admin-dn']
             admin_password = self.data['admin-password']
 
+            if admin_dn is None:
+                admin_dn = self.Ahenk.dn()
+
             if admin_password is None:
                 self.config.read(self.ahenk_conf_path)
                 if self.config.has_section('CONNECTION'):
