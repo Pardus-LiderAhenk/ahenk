@@ -147,15 +147,19 @@ class Registration:
                     self.logger.info("Pardus-gnome.conf exists.")
                     file_gmd3 = open(pardus_gnome_path,'r')
                     file_data = file_gmd3.read()
+                    if "# disable-user-list=true" in file_data:
+                        self.logger.info("gdm.conf has been found.")
+                        file_data = file_data.replace("# disable-user-list=true", "disable-user-list=true")
+                        file_gdm3.close()
+                        file_gdm3 = open(pardus_gnome_path, 'w')
+                        file_gdm3.write(file_data)
+                        file_gdm3.close()
 
-                    file_data = file_data.replace("# disable-user-list=true", "disable-user-list=true")
+                        self.logger.info("gdm.conf has been configured.")
+                    else:
+                        self.logger.error("disable local user can not found")
 
-                    file_gdm3.close()
-                    file_gdm3 = open(pardus_gnome_path, 'w')
-                    file_gdm3.write(file_data)
-                    file_gdm3.close()
 
-                    self.logger.info("gdm.conf has been configured.")
 
             # LDAP registration
             if self.directory_server == "LDAP":
@@ -361,6 +365,25 @@ class Registration:
                 if self.util.is_exist(pardus_xfce_path):
                     self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
                     self.util.delete_file(pardus_xfce_path)
+
+            if self.desktop_env == "gnome":
+                pardus_gnome_path = "/etc/gdm3/greeter.dconf-default"
+                if not self.util.is_exist(pardus_gnome_path):
+                    self.logger.info("Pardus-gnome.conf does not exist.")
+
+                else:
+                    self.logger.info("Pardus-gnome.conf exists.")
+                    file_gmd3 = open(pardus_gnome_path,'r')
+                    file_data = file_gmd3.read()
+
+                    file_data = file_data.replace("disable-user-list=true", "# disable-user-list=true")
+
+                    file_gdm3.close()
+                    file_gdm3 = open(pardus_gnome_path, 'w')
+                    file_gdm3.write(file_data)
+                    file_gdm3.close()
+
+                    self.logger.info("gdm.conf has been configured.")
 
             Util.shutdown()
         except Exception as e:
