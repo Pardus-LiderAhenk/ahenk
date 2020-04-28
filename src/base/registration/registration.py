@@ -138,6 +138,25 @@ class Registration:
                     file_lightdm.close()
                     self.logger.info("lightdm.conf has been configured.")
 
+            if self.desktop_env == "gnome":
+                pardus_gnome_path = "/etc/gdm3/greeter.dconf-default"
+                if not self.util.is_exist(pardus_gnome_path):
+                    self.logger.info("Pardus-gnome.conf does not exist.")
+
+                else:
+                    self.logger.info("Pardus-gnome.conf exists.")
+                    file_gmd3 = open(pardus_gnome_path,'r')
+                    file_data = file_gmd3.read()
+
+                    file_data = file_data.replace("# disable-user-list=true", "disable-user-list=true")
+
+                    file_gdm3.close()
+                    file_gdm3 = open(pardus_gnome_path, 'w')
+                    file_gdm3.write(file_data)
+                    file_gdm3.close()
+
+                    self.logger.info("gdm.conf has been configured.")
+
             # LDAP registration
             if self.directory_server == "LDAP":
                 self.install_and_config_ldap(reg_reply)
