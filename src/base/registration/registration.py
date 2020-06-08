@@ -366,22 +366,23 @@ class Registration:
                     self.util.delete_file(pardus_xfce_path)
 
             if self.desktop_env == "gnome":
-                pardus_gnome_path = "/etc/gdm3/greeter.dconf-default"
+                pardus_gnome_path = "/etc/gdm3/greeter.dconf-defaults"
                 if not self.util.is_exist(pardus_gnome_path):
-                    self.logger.info("Pardus-gnome.conf does not exist.")
+                    self.logger.info("Gnome conf doesn't exist")
 
                 else:
-                    self.logger.info("Pardus-gnome.conf exists.")
-                    file_gmd3 = open(pardus_gnome_path,'r')
-                    file_data = file_gmd3.read()
+                    reading_file = open(pardus_gnome_path, "r")
 
-                    file_data = file_data.replace("disable-user-list=true", "# disable-user-list=true")
+                    new_file_content = ""
+                    for line in reading_file:
+                        stripped_line = line.strip()
+                        new_line = stripped_line.replace("disable-user-list=true", "# disable-user-list=true")
+                        new_file_content += new_line + "\n"
+                    reading_file.close()
 
-                    file_gdm3.close()
-                    file_gdm3 = open(pardus_gnome_path, 'w')
-                    file_gdm3.write(file_data)
-                    file_gdm3.close()
-
+                    writing_file = open(pardus_gnome_path, "w")
+                    writing_file.write(new_file_content)
+                    writing_file.close()
                     self.logger.info("gdm.conf has been configured.")
 
             Util.shutdown()
