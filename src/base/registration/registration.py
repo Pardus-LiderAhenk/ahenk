@@ -365,7 +365,7 @@ class Registration:
                     self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
                     self.util.delete_file(pardus_xfce_path)
 
-            if self.desktop_env == "gnome":
+            if self.util.get_desktop_env() == "gnome":
                 pardus_gnome_path = "/etc/gdm3/greeter.dconf-defaults"
                 if not self.util.is_exist(pardus_gnome_path):
                     self.logger.info("Gnome conf doesn't exist")
