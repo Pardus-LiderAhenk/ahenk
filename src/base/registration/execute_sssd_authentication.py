@@ -15,7 +15,7 @@ class ExecuteSSSDAuthentication:
 
     def authenticate(self, server_address, dn, admin_dn, admin_password):
         try:
-            ldap_pwdlockout_dn = "ou=Policies" + "," + dn
+            ldap_pwdlockout_dn = "ou=PasswordPolicies" + "," + dn
 
             # pattern for clearing file data from spaces, tabs and newlines
             pattern = re.compile(r'\s+')
