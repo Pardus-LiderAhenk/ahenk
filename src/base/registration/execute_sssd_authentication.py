@@ -15,7 +15,7 @@ class ExecuteSSSDAuthentication:
 
     def authenticate(self, server_address, dn, admin_dn, admin_password):
         try:
-            ldap_pwdlockout_dn = "cn=DefaultPolicy,ou=PasswordPolicies" + "," + dn
+            ldap_pwdlockout_dn = "ou=PasswordPolicies" + "," + dn
 
             # pattern for clearing file data from spaces, tabs and newlines
             pattern = re.compile(r'\s+')
@@ -48,7 +48,7 @@ class ExecuteSSSDAuthentication:
             file_data = file_data.replace("###ldap_search_base###", "ldap_search_base = " + dn)
             file_data = file_data.replace("###ldap_user_search_base###", "ldap_user_search_base = " + dn)
             file_data = file_data.replace("###ldap_group_search_base###", "ldap_group_search_base = " + dn)
-            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Roles," + dn)
+            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Role,ou=Groups" + dn)
 
             file_sssd.close()
             file_sssd = open(sssd_config_file_path, 'w')
