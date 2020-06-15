@@ -1,3 +1,14 @@
+ahenk (1.1.0-3) unstable; urgency=medium
+
+  [ hasankara ]
+  * update to roles dn
+
+  [ Tuncay ÇOLAK ]
+  * synced to development branch
+  * Update changelog for 1.1.0-2 release
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Mon, 15 Jun 2020 16:14:53 +0300
+
 ahenk (1.1.0-2) unstable; urgency=medium
 
   [ hasankara ]
