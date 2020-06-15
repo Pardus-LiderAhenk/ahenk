@@ -58,6 +58,16 @@ class ExecuteSSSDAuthentication:
             # Install libpam-sss sssd-common for sssd authentication
             (result_code, p_out, p_err) = self.util.execute("sudo apt install libpam-sss sssd-common -y")
 
+
+
+
+            (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
+            if (result_code == 0):
+                self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
+            else:
+                self.logger.error("Chmod komutu başarısız : " + str(p_err))
+
+
             if result_code != 0:
                 self.logger.error("SSSD packages couldn't be downloaded.")
                 return False
@@ -66,8 +76,8 @@ class ExecuteSSSDAuthentication:
             file_common_session = open(common_session_conf_path, 'r')
             file_data = file_common_session.read()
 
-            if "session optional pam_mkhomedir.so skel=/etc/skel umask=077" not in file_data :
-                file_data = file_data + "\n" + "session optional pam_mkhomedir.so skel=/etc/skel umask=077"
+            if "session optional        pam_mkhomedir.so skel=/etc/skel umask=077" not in file_data :
+                file_data = file_data + "\n" + "session optional        pam_mkhomedir.so skel=/etc/skel umask=077"
                 self.logger.info("common-session is configured")
 
             file_common_session.close()
