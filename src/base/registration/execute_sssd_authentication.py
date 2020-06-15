@@ -59,18 +59,15 @@ class ExecuteSSSDAuthentication:
             (result_code, p_out, p_err) = self.util.execute("sudo apt install libpam-sss sssd-common -y")
 
 
-
+            if result_code != 0:
+                self.logger.error("SSSD packages couldn't be downloaded.")
+                return False
 
             (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
             if (result_code == 0):
                 self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
             else:
                 self.logger.error("Chmod komutu başarısız : " + str(p_err))
-
-
-            if result_code != 0:
-                self.logger.error("SSSD packages couldn't be downloaded.")
-                return False
 
             # configure common-session for creating home directories for ldap users
             file_common_session = open(common_session_conf_path, 'r')
