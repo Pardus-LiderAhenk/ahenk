@@ -289,6 +289,7 @@ usr/share/ahenk/plugins/login-manager/scripts/check.py
 usr/share/ahenk/plugins/login-manager/scripts
 usr/share/ahenk/plugins/login-manager/manage.py
 usr/share/ahenk/plugins/login-manager/shutdown.py
+usr/share/ahenk/plugins/login-manager/machine_restart.py
 usr/share/ahenk/plugins/login-manager
 usr/share/ahenk/plugins
 usr/share/ahenk/api/service/ps_util.py
