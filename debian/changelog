@@ -1,3 +1,19 @@
+ahenk (1.1.0-2) unstable; urgency=medium
+
+  [ hasankara ]
+  * Update execute_sssd_authentication.py
+  * Policies name has been changed
+
+  [ Agah Öz ]
+  * sssd switch
+  * sssd switch mecanism
+
+  [ Tuncay ÇOLAK ]
+  * added depend openssh-server
+  * synced to development branch
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Mon, 15 Jun 2020 12:03:54 +0300
+
 ahenk (1.1.0-1) unstable; urgency=medium
 
   * Update changelog for 1.0.0-10 release
