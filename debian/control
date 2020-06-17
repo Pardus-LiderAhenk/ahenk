@@ -34,7 +34,8 @@ Depends: ${misc:Depends},
          rsyslog-relp,
          quota,
          quotatool,
-         ahenk-register
+         ahenk-register,
+         openssh-server
 Replaces: libpam-runtime
 Description: The client side of the Lider Ahenk Project
  Lider Ahenk is an open source project which provides solutions

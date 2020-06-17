@@ -48,7 +48,7 @@ class ExecuteSSSDAuthentication:
             file_data = file_data.replace("###ldap_search_base###", "ldap_search_base = " + dn)
             file_data = file_data.replace("###ldap_user_search_base###", "ldap_user_search_base = " + dn)
             file_data = file_data.replace("###ldap_group_search_base###", "ldap_group_search_base = " + dn)
-            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Role,ou=Groups" + dn)
+            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Role,ou=Groups," + dn)
 
             file_sssd.close()
             file_sssd = open(sssd_config_file_path, 'w')
