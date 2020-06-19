@@ -105,6 +105,15 @@ class Messaging(object):
                                                                'type = \'U\' and name = \'' + username + '\'')
         machine_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
 
+        user_policy_list = self.db_service.select('policy', ['id', 'version', 'name', 'policy_id', 'assign_date'],
+                                                  ' type=\'U\' and name=\'' + username + '\'')
+        # to add policy_id and policy_version
+        user_policy_hash_list = dict()
+        if len(user_policy_list) > 0:
+            for i in range(len(user_policy_list)):
+                user_policy_hash_list[str(user_policy_list[i][3])] = [user_policy_list[i][1], user_policy_list[i][4]]
+        data['policyList'] = user_policy_hash_list
+
         data['userPolicyVersion'] = user_policy_number
         data['agentPolicyVersion'] = machine_policy_number
 

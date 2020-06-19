@@ -8,8 +8,7 @@ from base.model.plugin_bean import PluginBean
 
 class ProfileBean(object):
     """docstring for Profile"""
-
-    def __init__(self, p_id=None, create_date=None, label=None, description=None, overridable=None, active=None, deleted=None, profile_data=None, modify_date=None, plugin=None, username=None):
+    def __init__(self, p_id=None, create_date=None, label=None, description=None, overridable=None, active=None, deleted=None, profile_data=None, modify_date=None, policy_id=None, plugin=None, username=None):
         self.id = p_id
         self.create_date = create_date
         self.modify_date = modify_date
@@ -19,6 +18,7 @@ class ProfileBean(object):
         self.active = active
         self.deleted = deleted
         self.profile_data = profile_data
+        self.policy_id = policy_id
         self.plugin = plugin
         self.username = username
 
@@ -47,7 +47,7 @@ class ProfileBean(object):
         self.label = label
 
     def get_description(self):
-        return self.modify_date
+        return self.description
 
     def set_description(self, description):
         self.description = description
@@ -75,6 +75,12 @@ class ProfileBean(object):
 
     def set_profile_data(self, profile_data):
         self.profile_data = profile_data
+
+    def get_policy_id(self):
+        return self.policy_id
+
+    def set_policy_id(self, policy_id):
+        self.policy_id = policy_id
 
     def get_plugin(self):
         return self.plugin
