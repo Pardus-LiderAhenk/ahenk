@@ -50,7 +50,7 @@ class Registration:
         else:
             self.register(True)
 
-    def registration_request(self, hostname,username,password):
+    def registration_request(self, hostname,username,password,directoryserver):
 
         self.logger.debug('Requesting registration')
         # SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,checker_func=self.is_registered, kwargs=None))
@@ -60,9 +60,11 @@ class Registration:
         self.host = hostname
         self.user_name = username
         self.user_password= password
+        self.directory_server = directoryserver
+        self.showUserNotify = False;
 
         if(username is None and password is None and self.host is None ):
-
+            self.showUserNotify = True;
             self.host = self.conf_manager.get("CONNECTION", "host")
 
             user_name= os.getlogin()
@@ -490,6 +492,7 @@ class Registration:
 
             config.set('CONNECTION', 'uid', '')
             config.set('CONNECTION', 'password', '')
+            config.set('CONNECTION', 'host', '')
             config.set('MACHINE', 'user_disabled', 'false')
 
             with open(System.Ahenk.config_path(), 'w') as file:

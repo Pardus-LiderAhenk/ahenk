@@ -181,9 +181,21 @@ class CommandRunner(object):
                     message = json.dumps(json_data['message'])
                     self.messenger.send_direct_message(message)
 
-                elif str(json_data['event']) == 'unregister':
+                elif str(json_data['event']) == 'unregister' and len(json_data)==1:
                     self.logger.info('Unregistering..')
+                    self.execute_manager.set_unregister_credential_params(None, None)
                     unregister_message = self.message_manager.unregister_msg()
+                    if unregister_message is not None:
+                        self.messenger.send_direct_message(unregister_message)
+
+                elif str(json_data['event']) == 'unregister' and len(json_data)==3:
+                    self.logger.info('Unregistering..')
+                    usernameForCheck = json_data['userName']
+                    passwordForCheck = json_data['password']
+                    ## send user credential info to execution manager for hide user notify when remote unregister
+                    self.execute_manager.set_unregister_credential_params(usernameForCheck,usernameForCheck)
+                    self.logger.info('Unregistering by username+'+str(usernameForCheck))
+                    unregister_message = self.message_manager.unregister_msg(usernameForCheck,passwordForCheck)
                     if unregister_message is not None:
                         self.messenger.send_direct_message(unregister_message)
 

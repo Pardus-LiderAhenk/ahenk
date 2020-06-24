@@ -73,9 +73,13 @@ class Commander(object):
                 data['event'] = 'remove'
                 data['plugins'] = params[3]
 
-            elif len(params) > 1 and params[1] == 'unregister':
+            elif len(params) == 2 and params[1] == 'unregister':
                 data['event'] = params[1]
 
+            elif len(params) == 4 and params[1] == 'unregister':
+                data['event'] = params[1]
+                data['userName'] = params[2]
+                data['password'] = params[3]
 
             elif len(params) > 5 and params[1] == 'send':
                 data['event'] = params[1]

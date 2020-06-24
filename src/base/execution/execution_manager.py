@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-
+import os
 import json
 import time
 import datetime
@@ -18,6 +18,7 @@ from base.scheduler.custom.schedule_job import ScheduleTaskJob
 from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
+
 from easygui import *
 
 
@@ -404,17 +405,27 @@ class ExecutionManager(object):
     def unregister(self, msg):
         j = json.loads(msg)
         status = str(j['status']).lower()
-
-        user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
-        display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
-
+        # user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
+        # display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
         if 'not_authorized' == str(status):
-            self.logger.info('Registration is failed. User not authorized')
-            Util.show_message(user_name,display,'Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
-                   'Kullanıcı Yetkilendirme Hatası')
+            self.logger.info('UnRegistration is failed. User not authorized')
+            if self.unregister_user_name is None:
+                user_name = os.getlogin()
+                display = Util.get_username_display()
+                Util.show_message(user_name, display,
+                                  'Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
+                                  'Kullanıcı Yetkilendirme Hatası')
         else:
-            Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
-            if Util.show_message(user_name, display, "Değişikliklerin etkili olması için sistem yeniden başlatılacaktır. Lütfen bekleyiniz...", "") :
+            if self.unregister_user_name is None:
+                user_name = os.getlogin()
+                display = Util.get_username_display()
+                Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
+                if Util.show_message(user_name, display,
+                                     "Değişikliklerin etkili olması için sistem yeniden başlatılacaktır. Lütfen bekleyiniz...",
+                                     ""):
+                    registration = Scope.get_instance().get_registration()
+                    registration.purge_and_unregister()
+            else:
                 registration = Scope.get_instance().get_registration()
                 registration.purge_and_unregister()
 
@@ -557,3 +568,7 @@ class ExecutionManager(object):
             Util.delete_file(ahenk_policy_file)
             Util.create_file(ahenk_policy_file)
             Util.write_file(ahenk_policy_file, content)
+
+    def set_unregister_credential_params(self, user_name=None, passwd=None):
+        self.unregister_user_name=user_name
+        self.unregister_passwd=passwd

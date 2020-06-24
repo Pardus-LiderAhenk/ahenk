@@ -147,7 +147,7 @@ class AhenkDaemon(BaseDaemon):
     def check_registration(self):
         """ docstring"""
         # max_attempt_number = int(System.Hardware.Network.interface_size()) * 3
-        max_attempt_number = 1
+        max_attempt_number = 4
         # self.logger.debug()
         # logger = Scope.getInstance().getLogger()
         registration = Scope.get_instance().get_registration()
@@ -158,12 +158,15 @@ class AhenkDaemon(BaseDaemon):
             #    if registration.registration_request() == False:
             #        self.registration_failed()
 
-            if registration.is_registered() is False:
+            while registration.is_registered() is False:
                 print("Registration attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
-                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password)
-
+                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password,self.register_directory_server)
+                if max_attempt_number < 0:
+                    self.logger.warning('Number of Attempting for registration is over')
+                    Util.execute("/etc/init.d/ahenk stop")
+                    break
                 #if max_attempt_number < 0:
                 #    self.logger.warning('Number of Attempting for registration is over')
                 #    self.registration_failed()
@@ -240,10 +243,11 @@ class AhenkDaemon(BaseDaemon):
         Util.create_file(System.Ahenk.fifo_file())
         Util.set_permission(System.Ahenk.fifo_file(), '600')
 
-    def set_register_user(self, hostName, username, password):
+    def set_register_user(self, hostName, username, password,directoryServer):
         self.register_hostname=hostName
         self.register_user_name=username
         self.register_user_password=password
+        self.register_directory_server = directoryServer
 
     # if user_disabled is when ahenk service restarted TRUE disabled local users
     def disable_local_users(self):
@@ -349,7 +353,7 @@ if __name__ == '__main__':
     ahenk_daemon = AhenkDaemon(System.Ahenk.pid_path())
     try:
         if len(sys.argv) == 2 and (sys.argv[1] in ('start', 'stop', 'restart', 'status')):
-            ahenk_daemon.set_register_user(None, None, None)
+            ahenk_daemon.set_register_user(None, None, None, None)
             if sys.argv[1] == 'start':
                 if System.Ahenk.is_running() is True:
                     print('There is already running Ahenk service. It will be killed.[{0}]'.format(
@@ -375,12 +379,13 @@ if __name__ == '__main__':
             else:
                 print('Unknown command. Usage : %s start|stop|restart|status|clean' % sys.argv[0])
                 sys.exit(2)
-        elif len(sys.argv) > 2 and (sys.argv[1] in ('register')):
+        elif len(sys.argv) > 2 and (sys.argv[1] in ('start')):
             params = sys.argv[1]
             hostName = sys.argv[2]
             userName = sys.argv[3]
             password = sys.argv[4]
-            ahenk_daemon.set_register_user(hostName,userName,password)
+            directoryServer = sys.argv[5]
+            ahenk_daemon.set_register_user(hostName,userName,password,directoryServer)
             ahenk_daemon.run()
 
         else:
