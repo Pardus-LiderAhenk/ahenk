@@ -74,8 +74,8 @@ class ExecuteCancelSSSDAdAuthentication:
             file_common_session = open(common_session_conf_path, 'r')
             file_data = file_common_session.read()
 
-            if "session optional pam_mkhomedir.so skel=/etc/skel umask=077" in file_data:
-                file_data = file_data.replace("session optional pam_mkhomedir.so skel=/etc/skel umask=077", " ")
+            if "session optional        pam_mkhomedir.so skel=/etc/skel umask=077" in file_data:
+                file_data = file_data.replace("session optional        pam_mkhomedir.so skel=/etc/skel umask=077", " ")
                 self.logger.info("common-session is configured")
             else:
                 self.logger.error("common session is not configured")
@@ -108,14 +108,6 @@ class ExecuteCancelSSSDAdAuthentication:
             else:
                 self.logger.error("ad_info file not found")
 
-            # Configure lightdm.service
-            pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
-            if self.util.is_exist(pardus_xfce_path):
-                self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
-                self.util.delete_file(pardus_xfce_path)
-                self.util.execute("systemctl restart nscd.service")
-            else:
-                self.logger.info("99-pardus-xfce.conf not found")
 
             self.logger.info("AD Login iptal etme işlemi başarı ile sağlandı.")
             return True

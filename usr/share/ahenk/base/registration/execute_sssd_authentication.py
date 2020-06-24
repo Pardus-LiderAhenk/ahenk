@@ -15,7 +15,7 @@ class ExecuteSSSDAuthentication:
 
     def authenticate(self, server_address, dn, admin_dn, admin_password):
         try:
-            ldap_pwdlockout_dn = "cn=DefaultPolicy,ou=PasswordPolicies" + "," + dn
+            ldap_pwdlockout_dn = "ou=PasswordPolicies" + "," + dn
 
             # pattern for clearing file data from spaces, tabs and newlines
             pattern = re.compile(r'\s+')
@@ -48,7 +48,7 @@ class ExecuteSSSDAuthentication:
             file_data = file_data.replace("###ldap_search_base###", "ldap_search_base = " + dn)
             file_data = file_data.replace("###ldap_user_search_base###", "ldap_user_search_base = " + dn)
             file_data = file_data.replace("###ldap_group_search_base###", "ldap_group_search_base = " + dn)
-            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Roles," + dn)
+            file_data = file_data.replace("###ldap_sudo_search_base###", "ldap_sudo_search_base = ou=Role,ou=Groups," + dn)
 
             file_sssd.close()
             file_sssd = open(sssd_config_file_path, 'w')
@@ -58,16 +58,23 @@ class ExecuteSSSDAuthentication:
             # Install libpam-sss sssd-common for sssd authentication
             (result_code, p_out, p_err) = self.util.execute("sudo apt install libpam-sss sssd-common -y")
 
+
             if result_code != 0:
                 self.logger.error("SSSD packages couldn't be downloaded.")
                 return False
+
+            (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
+            if (result_code == 0):
+                self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
+            else:
+                self.logger.error("Chmod komutu başarısız : " + str(p_err))
 
             # configure common-session for creating home directories for ldap users
             file_common_session = open(common_session_conf_path, 'r')
             file_data = file_common_session.read()
 
-            if "session optional pam_mkhomedir.so skel=/etc/skel umask=077" not in file_data :
-                file_data = file_data + "\n" + "session optional pam_mkhomedir.so skel=/etc/skel umask=077"
+            if "session optional        pam_mkhomedir.so skel=/etc/skel umask=077" not in file_data :
+                file_data = file_data + "\n" + "session optional        pam_mkhomedir.so skel=/etc/skel umask=077"
                 self.logger.info("common-session is configured")
 
             file_common_session.close()

@@ -71,8 +71,8 @@ class ExecuteCancelSSSDAuthentication:
         file_common_session = open(common_session_conf_path, 'r')
         file_data = file_common_session.read()
 
-        if "session optional pam_mkhomedir.so skel=/etc/skel umask=077" in file_data:
-            file_data = file_data.replace("session optional pam_mkhomedir.so skel=/etc/skel umask=077", "")
+        if "session optional        pam_mkhomedir.so skel=/etc/skel umask=077" in file_data:
+            file_data = file_data.replace("session optional        pam_mkhomedir.so skel=/etc/skel umask=077", "")
             self.logger.info("common-session is configured")
 
         file_common_session.close()

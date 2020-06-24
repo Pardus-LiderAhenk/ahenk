@@ -50,7 +50,7 @@ class Registration:
         else:
             self.register(True)
 
-    def registration_request(self, hostname,username,password):
+    def registration_request(self, hostname,username,password,directoryserver):
 
         self.logger.debug('Requesting registration')
         # SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,checker_func=self.is_registered, kwargs=None))
@@ -60,9 +60,11 @@ class Registration:
         self.host = hostname
         self.user_name = username
         self.user_password= password
+        self.directory_server = directoryserver
+        self.showUserNotify = False;
 
         if(username is None and password is None and self.host is None ):
-
+            self.showUserNotify = True;
             self.host = self.conf_manager.get("CONNECTION", "host")
 
             user_name= os.getlogin()
@@ -137,6 +139,28 @@ class Registration:
                     file_lightdm.write("greeter-hide-users=true")
                     file_lightdm.close()
                     self.logger.info("lightdm.conf has been configured.")
+
+            if self.desktop_env == "gnome":
+                pardus_gnome_path = "/etc/gdm3/greeter.dconf-defaults"
+                if not self.util.is_exist(pardus_gnome_path):
+                    self.logger.info("Gnome conf doesn't exist")
+
+                else:
+                    reading_file = open(pardus_gnome_path, "r")
+
+                    new_file_content = ""
+                    for line in reading_file:
+                        stripped_line = line.strip()
+                        new_line = stripped_line.replace("# disable-user-list=true", "disable-user-list=true")
+                        new_file_content += new_line + "\n"
+                    reading_file.close()
+
+                    writing_file = open(pardus_gnome_path, "w")
+                    writing_file.write(new_file_content)
+                    writing_file.close()
+                    self.logger.info("gdm.conf has been configured.")
+
+
 
             # LDAP registration
             if self.directory_server == "LDAP":
@@ -343,6 +367,26 @@ class Registration:
                     self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
                     self.util.delete_file(pardus_xfce_path)
 
+            if self.util.get_desktop_env() == "gnome":
+                pardus_gnome_path = "/etc/gdm3/greeter.dconf-defaults"
+                if not self.util.is_exist(pardus_gnome_path):
+                    self.logger.info("Gnome conf doesn't exist")
+
+                else:
+                    reading_file = open(pardus_gnome_path, "r")
+
+                    new_file_content = ""
+                    for line in reading_file:
+                        stripped_line = line.strip()
+                        new_line = stripped_line.replace("disable-user-list=true", "# disable-user-list=true")
+                        new_file_content += new_line + "\n"
+                    reading_file.close()
+
+                    writing_file = open(pardus_gnome_path, "w")
+                    writing_file.write(new_file_content)
+                    writing_file.close()
+                    self.logger.info("gdm.conf has been configured.")
+
             Util.shutdown()
         except Exception as e:
             self.logger.error("Error while running purge_and_unregister process.. Error Message  " + str(e))
@@ -448,6 +492,7 @@ class Registration:
 
             config.set('CONNECTION', 'uid', '')
             config.set('CONNECTION', 'password', '')
+            config.set('CONNECTION', 'host', '')
             config.set('MACHINE', 'user_disabled', 'false')
 
             with open(System.Ahenk.config_path(), 'w') as file:

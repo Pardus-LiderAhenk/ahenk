@@ -32,11 +32,12 @@ class AhenkDbService(object):
                                      'parameter_map BLOB', 'deleted INTEGER', 'plugin TEXT', 'cron_expr TEXT',
                                      'file_server TEXT'])
         self.check_and_create_table('policy',
-                                    ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'type TEXT', 'version TEXT', 'name TEXT',
-                                     'execution_id TEXT','expiration_date TEXT'])
+                                    ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'policy_id INTEGER',
+                                     'type TEXT', 'version TEXT', 'name TEXT',
+                                     'execution_id TEXT', 'expiration_date TEXT', 'assign_date TEXT'])
         self.check_and_create_table('profile', ['id INTEGER', 'create_date TEXT', 'label TEXT', 'description TEXT',
                                                 'overridable INTEGER', 'active TEXT', 'deleted TEXT',
-                                                'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT'])
+                                                'profile_data TEXT', 'modify_date TEXT', 'plugin TEXT', 'policy_id INTEGER'])
         self.check_and_create_table('plugin',
                                     ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'active TEXT', 'create_date TEXT',
                                      'deleted TEXT', 'description TEXT', 'machine_oriented TEXT', 'modify_date TEXT',

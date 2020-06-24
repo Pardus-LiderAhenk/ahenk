@@ -105,6 +105,15 @@ class Messaging(object):
                                                                'type = \'U\' and name = \'' + username + '\'')
         machine_policy_number = self.db_service.select_one_result('policy', 'version', 'type = \'A\'')
 
+        user_policy_list = self.db_service.select('policy', ['id', 'version', 'name', 'policy_id', 'assign_date'],
+                                                  ' type=\'U\' and name=\'' + username + '\'')
+        # to add policy_id and policy_version
+        user_policy_hash_list = dict()
+        if len(user_policy_list) > 0:
+            for i in range(len(user_policy_list)):
+                user_policy_hash_list[str(user_policy_list[i][3])] = [user_policy_list[i][1], user_policy_list[i][4]]
+        data['policyList'] = user_policy_hash_list
+
         data['userPolicyVersion'] = user_policy_number
         data['agentPolicyVersion'] = machine_policy_number
 
@@ -155,30 +164,29 @@ class Messaging(object):
         self.logger.debug('LDAP Registration message was created')
         return json_data
 
-    def unregister_msg(self):
-
-        user_name = self.db_service.select_one_result('session', 'username')
-        display = self.db_service.select_one_result('session', 'display')
-
-        self.logger.debug('User : ' + str(user_name))
-
-        pout = Util.show_unregistration_message(user_name,display,
-                                              'Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen DEVAM EDEN İŞLEMLERİNİZİ sonlandırdığınıza emin olunuz !',
-                                              'ETKI ALANINDAN ÇIKARMA')
-
-        self.logger.debug('pout : ' + str(pout))
-
-        field_values = pout.split(' ')
-
-        user_registration_info = list(field_values)
-
+    def unregister_msg(self,usernameForCheck,passwordForCheck):
         data = dict()
         data['type'] = 'UNREGISTER'
         data['from'] = str(self.conf_manager.get('CONNECTION', 'uid'))
         data['password'] = str(self.conf_manager.get('CONNECTION', 'password'))
-
-        data['userName'] = user_registration_info[0];
-        data['userPassword'] = user_registration_info[1];
+        # unregistration from commandline..
+        if(usernameForCheck==None and passwordForCheck==None):
+            #user_name = self.db_service.select_one_result('session', 'username')
+            #display = self.db_service.select_one_result('session', 'display')
+            user_name = os.getlogin()
+            display = Util.get_username_display()
+            self.logger.debug('User : ' + str(user_name))
+            pout = Util.show_unregistration_message(user_name,display,
+                                              'Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen DEVAM EDEN İŞLEMLERİNİZİ sonlandırdığınıza emin olunuz !',
+                                              'ETKI ALANINDAN ÇIKARMA')
+            self.logger.debug('pout : ' + str(pout))
+            field_values = pout.split(' ')
+            user_registration_info = list(field_values)
+            data['userName'] = user_registration_info[0];
+            data['userPassword'] = user_registration_info[1];
+        else:
+            data['userName'] = usernameForCheck;
+            data['userPassword'] = passwordForCheck;
 
         #data['macAddresses'] = str(self.conf_manager.get('REGISTRATION', 'macAddresses'))
         #data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION', 'ipAddresses'))

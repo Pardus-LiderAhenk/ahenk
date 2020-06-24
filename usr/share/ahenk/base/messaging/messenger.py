@@ -116,7 +116,6 @@ class Messenger(ClientXMPP):
                         self.logger.info("---------->Received message: {}".format(str(parameter_map)))
                     else:
                         self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
-
                 self.event_manger.fireEvent(message_type, str(msg['body']))
                 self.logger.debug('Fired event is: {0}'.format(message_type))
             except Exception as e:

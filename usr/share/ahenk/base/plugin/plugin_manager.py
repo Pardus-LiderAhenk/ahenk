@@ -202,7 +202,7 @@ class PluginManager(object):
                     for usr_profile in user_profiles:
                         if usr_profile.plugin.name == agent_profile.plugin.name:
                             same_plugin_profile = usr_profile
-
+                    policy.get_user_policy_version()
                     if same_plugin_profile is not None:
                         if agent_profile.overridable.lower() == 'true':
                             self.logger.debug(
