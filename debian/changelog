@@ -1,3 +1,20 @@
+ahenk (1.1.0-4) unstable; urgency=medium
+
+  [ Agah Öz ]
+  * login screen fix
+
+  [ hasan ]
+  * running multiple policies is coded, deleting unassigned or deleted policies from agent db is coded
+
+  [ Edip Yıldız ]
+  * register unregister changes to remote installation and ad home directory changes
+
+  [ Tuncay ÇOLAK ]
+  * updated changelog file
+  * synced to development branch
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Wed, 24 Jun 2020 12:31:54 +0300
+
 ahenk (1.1.0-3) unstable; urgency=medium
 
   [ hasankara ]
