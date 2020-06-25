@@ -1,3 +1,13 @@
+ahenk (1.1.0-5) unstable; urgency=medium
+
+  [ Edip Yıldız ]
+  * display error fix
+
+  [ Tuncay ÇOLAK ]
+  * synced to development branch
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Thu, 25 Jun 2020 10:41:40 +0300
+
 ahenk (1.1.0-4) unstable; urgency=medium
 
   [ Agah Öz ]
