@@ -410,15 +410,19 @@ class ExecutionManager(object):
         if 'not_authorized' == str(status):
             self.logger.info('UnRegistration is failed. User not authorized')
             if self.unregister_user_name is None:
-                user_name = os.getlogin()
-                display = Util.get_username_display()
+                #user_name = os.getlogin()
+                #display = Util.get_username_display()
+                user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
+                display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
                 Util.show_message(user_name, display,
                                   'Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
                                   'Kullanıcı Yetkilendirme Hatası')
         else:
             if self.unregister_user_name is None:
-                user_name = os.getlogin()
-                display = Util.get_username_display()
+                #user_name = os.getlogin()
+                #display = Util.get_username_display()
+                user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
+                display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
                 Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
                 if Util.show_message(user_name, display,
                                      "Değişikliklerin etkili olması için sistem yeniden başlatılacaktır. Lütfen bekleyiniz...",
