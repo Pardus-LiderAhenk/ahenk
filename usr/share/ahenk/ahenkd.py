@@ -174,6 +174,7 @@ class AhenkDaemon(BaseDaemon):
         except Exception as e:
             self.registration_failed()
             self.logger.error('Registration failed. Error message: {0}'.format(str(e)))
+            #Util.execute("/etc/init.d/ahenk stop")
 
 
     def is_registered(self):
