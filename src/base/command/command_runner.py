@@ -184,7 +184,7 @@ class CommandRunner(object):
                 elif str(json_data['event']) == 'unregister' and len(json_data)==1:
                     self.logger.info('Unregistering..')
                     self.execute_manager.set_unregister_credential_params(None, None)
-                    unregister_message = self.message_manager.unregister_msg()
+                    unregister_message = self.message_manager.unregister_msg(None,None)
                     if unregister_message is not None:
                         self.messenger.send_direct_message(unregister_message)
 
