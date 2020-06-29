@@ -171,10 +171,10 @@ class Messaging(object):
         data['password'] = str(self.conf_manager.get('CONNECTION', 'password'))
         # unregistration from commandline..
         if(usernameForCheck==None and passwordForCheck==None):
-            #user_name = self.db_service.select_one_result('session', 'username')
-            #display = self.db_service.select_one_result('session', 'display')
-            user_name = os.getlogin()
-            display = Util.get_username_display()
+            user_name = self.db_service.select_one_result('session', 'username')
+            display = self.db_service.select_one_result('session', 'display')
+            #user_name = os.getlogin()
+            #display = Util.get_username_display()
             self.logger.debug('User : ' + str(user_name))
             pout = Util.show_unregistration_message(user_name,display,
                                               'Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen DEVAM EDEN İŞLEMLERİNİZİ sonlandırdığınıza emin olunuz !',
