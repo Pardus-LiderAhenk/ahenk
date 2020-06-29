@@ -1,3 +1,13 @@
+ahenk (1.1.0-6) unstable; urgency=medium
+
+  [ Edip YILDIZ ]
+  * Update command_runner.py
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Mon, 29 Jun 2020 11:25:45 +0300
+
 ahenk (1.1.0-5) unstable; urgency=medium
 
   [ Edip Yıldız ]
