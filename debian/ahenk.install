@@ -108,7 +108,6 @@ usr/share/ahenk/base/scheduler/custom/scheduledb.py
 usr/share/ahenk/base/scheduler/custom/custom_scheduler.py
 usr/share/ahenk/base/scheduler/custom
 usr/share/ahenk/base/scheduler
-usr/share/ahenk/base/registration/test.py
 usr/share/ahenk/base/registration/execute_cancel_sssd_ad_authentication.py
 usr/share/ahenk/base/registration/config-files/ldap
 usr/share/ahenk/base/registration/config-files/pam_script

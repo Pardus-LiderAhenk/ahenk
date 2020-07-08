@@ -13,6 +13,13 @@ class ExecuteSSSDAdAuthentication:
 
     def authenticate(self, domain_name, host_name, ip_address, password, ad_username):
         try:
+            # Execute the commands that require for leave
+            (result_code, p_out, p_err) = self.util.execute("realm leave")
+            if (result_code == 0):
+                self.logger.info("Realm Leave komutu başarılı")
+            else:
+                self.logger.error("Realm Leave komutu başarısız : " + str(p_err))
+
             # Create and Configure ad_info file
             (result_code, p_out, p_err) = self.util.execute("touch /etc/ahenk/ad_info")
             if (result_code == 0):

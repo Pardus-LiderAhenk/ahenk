@@ -50,6 +50,7 @@ class Messenger(ClientXMPP):
 
         self.register_extensions()
         self.add_listeners()
+        self.roster.auto_subscribe = True
 
     def register_extensions(self):
         try:
