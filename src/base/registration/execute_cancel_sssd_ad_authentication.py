@@ -15,10 +15,6 @@ class ExecuteCancelSSSDAdAuthentication:
 
     def cancel(self):
         try:
-            # Deleting packages require for AD entegration
-            self.util.execute(
-                "apt purge realmd sssd sssd-tools adcli krb5-user packagekit samba-common samba-common-bin samba-libs -y")
-            self.util.execute("apt autoremove -y")
 
             # Read information about AD
             if self.util.is_exist(self.ad_info_path):
@@ -31,11 +27,12 @@ class ExecuteCancelSSSDAdAuthentication:
             else:
                 self.logger.error("ad_info file not found")
 
-            if self.util.is_exist("/etc/sssd"):
-                # self.util.delete_folder("/etc/sssd")
-                self.logger.info("SSSD is deleted")
+            # Leave old domain
+            (result_code, p_out, p_err) = self.util.execute("realm leave ")
+            if (result_code == 0):
+                self.logger.info("Realm Leave komutu başarılı")
             else:
-                self.logger.info("SSSD is not exist")
+                self.logger.error("Realm Leave komutu başarısız : " + str(p_err))
 
             # Re-Configure dhclient.conf deleting AD IP address
             dhclient_conf_path = "/etc/dhcp/dhclient.conf"
@@ -53,6 +50,7 @@ class ExecuteCancelSSSDAdAuthentication:
             file_dhclient = open(dhclient_conf_path, 'w')
             file_dhclient.write(file_data)
             file_dhclient.close()
+
 
             # Configure hosts for deleting AD  "IP address" and "AD hostname"
             hosts_conf_path = "/etc/hosts"
