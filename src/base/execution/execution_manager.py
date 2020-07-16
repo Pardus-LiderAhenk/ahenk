@@ -221,6 +221,7 @@ class ExecutionManager(object):
     def execute_policy(self, arg):
         try:
             j = json.loads(str(arg))
+            self.policy_executed[j['username']] = True
             for i in range(len(j['executePolicyList'])):
                 policy = self.json_to_PolicyBean(json.loads(json.dumps(j['executePolicyList'][i])))
                 self.logger.debug('Updating policies...')
@@ -240,7 +241,6 @@ class ExecutionManager(object):
                     self.db_service.delete('policy',  'type = \'U\' and name = \'' + policy.get_username() + '\'' +
                                             'and policy_id = ' + str(policy.get_policy_id()))
                 else:
-                    self.policy_executed[policy.get_username()] = True
                     machine_uid = self.db_service.select_one_result('registration', 'jid', 'registered=1')
                     user_policy_version = self.db_service.select_one_result('policy', 'version',
                                                                             'type = \'U\' and name = \'' + policy.get_username() + '\'' +
