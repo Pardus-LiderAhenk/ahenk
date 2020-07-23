@@ -50,7 +50,7 @@ class Registration:
         else:
             self.register(True)
 
-    def registration_request(self, hostname,username,password,directoryserver):
+    def registration_request(self, hostname,username,password):
 
         self.logger.debug('Requesting registration')
         # SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,checker_func=self.is_registered, kwargs=None))
@@ -60,7 +60,7 @@ class Registration:
         self.host = hostname
         self.user_name = username
         self.user_password= password
-        self.directory_server = directoryserver
+        # self.directory_server = directoryserver
         self.showUserNotify = False;
 
         if(username is None and password is None and self.host is None ):
@@ -79,12 +79,12 @@ class Registration:
                 self.host = user_registration_info[0]
                 self.user_name = user_registration_info[1]
                 self.user_password = user_registration_info[2]
-                self.directory_server = user_registration_info[3]
+                # self.directory_server = user_registration_info[3]
 
             else:
                 self.user_name = user_registration_info[0]
                 self.user_password = user_registration_info[1]
-                self.directory_server = user_registration_info[2]
+                # self.directory_server = user_registration_info[2]
 
         #anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(user_name,user_password), self.host,self.servicename)
         #anon_messenger.connect_to_server()
@@ -99,9 +99,10 @@ class Registration:
         self.messenger.send_Direct_message(self.message_manager.ldap_registration_msg())
 
     def registration_success(self, reg_reply):
-
         try:
             self.local_user_disable = reg_reply['disableLocalUser']
+            self.directory_server = reg_reply['directoryServer']
+
             if self.local_user_disable is True:
                 self.conf_manager.set('MACHINE', 'user_disabled', 'true')
             else:
@@ -154,19 +155,15 @@ class Registration:
                         new_line = stripped_line.replace("# disable-user-list=true", "disable-user-list=true")
                         new_file_content += new_line + "\n"
                     reading_file.close()
-
                     writing_file = open(pardus_gnome_path, "w")
                     writing_file.write(new_file_content)
                     writing_file.close()
                     self.logger.info("gdm.conf has been configured.")
-
-
-
             # LDAP registration
             if self.directory_server == "LDAP":
                 self.install_and_config_ldap(reg_reply)
             # AD registration
-            else:
+            elif self.directory_server == "ACTIVE_DIRECTORY":
                 self.install_and_config_ad(reg_reply)
 
         except Exception as e:
@@ -333,24 +330,26 @@ class Registration:
         Util.show_message(os.getlogin(),':0',"Lider MYS sistemine ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
-    def purge_and_unregister(self):
+    def purge_and_unregister(self,directory_type):
         try:
-            self.logger.info('Ahenk conf cleaned')
             self.logger.info('Ahenk conf cleaning from db')
             self.unregister()
-
-            directory_type = "LDAP"
-            if self.util.is_exist("/etc/ahenk/ad_info"):
-                directory_type = "AD"
-
-            if directory_type == "LDAP":
-                self.ldap_login_cancel.cancel()
-            else:
-                self.ad_login_cancel.cancel()
-
+            self.logger.info('Ahenk conf cleaned from db')
+            #directory_type = "LDAP"
+            #if self.util.is_exist("/etc/ahenk/ad_info"):
+            #    directory_type = "AD"
             self.logger.info('Cleaning ahenk conf..')
             self.clean()
-            self.logger.info('Ahenk conf cleaned from db')
+            self.logger.info('Ahenk conf cleaned')
+
+            if directory_type == "LDAP":
+                self.logger.info('Ahenk cleaning LDAP config')
+                self.ldap_login_cancel.cancel()
+                self.logger.info('Ahenk cleaned LDAP config')
+            elif directory_type =="ACTIVE_DIRECTORY":
+                self.logger.info('Ahenk cleaning ACTIVE_DIRECTORY config')
+                self.ad_login_cancel.cancel()
+                self.logger.info('Ahenk cleaned ACTIVE_DIRECTORY config')
 
             if self.conf_manager.has_section('MACHINE'):
                 user_disabled = self.conf_manager.get("MACHINE", "user_disabled")
@@ -362,12 +361,16 @@ class Registration:
                     self.logger.info('Local users already enabled')
             # İf desktop env is XFCE configured lightdm.service
             if self.util.get_desktop_env() == "xfce":
+                self.logger.info('XFCE conf file deleting')
                 pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
                 if self.util.is_exist(pardus_xfce_path):
                     self.logger.info("99-pardus-xfce.conf exists. Deleting file.")
                     self.util.delete_file(pardus_xfce_path)
 
+                self.logger.info('XFCE conf file deleted')
+
             if self.util.get_desktop_env() == "gnome":
+                self.logger.info('GNOME conf file deleting')
                 pardus_gnome_path = "/etc/gdm3/greeter.dconf-defaults"
                 if not self.util.is_exist(pardus_gnome_path):
                     self.logger.info("Gnome conf doesn't exist")
@@ -386,7 +389,7 @@ class Registration:
                     writing_file.write(new_file_content)
                     writing_file.close()
                     self.logger.info("gdm.conf has been configured.")
-
+                    self.logger.info('GNOME conf file deleted')
             Util.shutdown()
         except Exception as e:
             self.logger.error("Error while running purge_and_unregister process.. Error Message  " + str(e))

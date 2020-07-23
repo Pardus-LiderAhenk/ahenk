@@ -162,7 +162,8 @@ class AhenkDaemon(BaseDaemon):
                 print("Registration attemp")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
-                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password,self.register_directory_server)
+                # registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password,self.register_directory_server)
+                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password)
                 if max_attempt_number < 0:
                     self.logger.warning('Number of Attempting for registration is over')
                     Util.execute("/etc/init.d/ahenk stop")
@@ -248,7 +249,7 @@ class AhenkDaemon(BaseDaemon):
         self.register_hostname=hostName
         self.register_user_name=username
         self.register_user_password=password
-        self.register_directory_server = directoryServer
+        # self.register_directory_server = directoryServer
 
     # if user_disabled is when ahenk service restarted TRUE disabled local users
     def disable_local_users(self):
@@ -385,8 +386,9 @@ if __name__ == '__main__':
             hostName = sys.argv[2]
             userName = sys.argv[3]
             password = sys.argv[4]
-            directoryServer = sys.argv[5]
-            ahenk_daemon.set_register_user(hostName,userName,password,directoryServer)
+            # directoryServer = sys.argv[5]
+            # ahenk_daemon.set_register_user(hostName,userName,password,directoryServer)
+            ahenk_daemon.set_register_user(hostName,userName,password)
             ahenk_daemon.run()
 
         else:
