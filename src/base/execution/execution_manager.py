@@ -405,6 +405,7 @@ class ExecutionManager(object):
     def unregister(self, msg):
         j = json.loads(msg)
         status = str(j['status']).lower()
+        directory_server = str(j['directoryServer'])
         # user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
         # display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
         if 'not_authorized' == str(status):
@@ -428,10 +429,10 @@ class ExecutionManager(object):
                                      "Değişikliklerin etkili olması için sistem yeniden başlatılacaktır. Lütfen bekleyiniz...",
                                      ""):
                     registration = Scope.get_instance().get_registration()
-                    registration.purge_and_unregister()
+                    registration.purge_and_unregister(directory_server)
             else:
                 registration = Scope.get_instance().get_registration()
-                registration.purge_and_unregister()
+                registration.purge_and_unregister(directory_server)
 
 
     def json_to_task_bean(self, json_data, file_server_conf=None):
