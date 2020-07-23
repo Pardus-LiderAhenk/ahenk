@@ -18,28 +18,30 @@ class AskRegister():
         self.title = title
         self.host = host
         self.master = tk.Tk()
+        self.text= tk.StringVar()
         self.master.title(self.title)
 
-        if self.host != "":
-            pass
-        else:
-             tk.Label(self.master, text="Etki Alanı Sunucusu : ").grid(row=0)
-             self.e1 = tk.Entry(self.master)
-             self.e1.grid(row=0, column=1)
+        tk.Label(self.master, text="* Etki Alanı: ").grid(row=0)
+        self.e1 = tk.Entry(self.master)
+        self.e1.grid(row=0, column=1)
 
-        tk.Label(self.master, text="Yetkili Kullanıcı : ").grid(row=1)
-        tk.Label(self.master, text="Parola : ").grid(row=2)
+        # if self.host != "":
+        #     pass
+        # else:
+
+        tk.Label(self.master, text="* Yetkili Kullanıcı : ").grid(row=1)
+        tk.Label(self.master, text="* Parola : ").grid(row=2)
+        tk.Label(self.master, textvariable= self.text, fg="red").grid(row=3,columnspan=2)
 
         self.e2 = tk.Entry(self.master)
         self.e3 = tk.Entry(show="*")
 
-        self.var1 = IntVar()
-        Checkbutton(self.master, text="Active Directory", variable=self.var1, command=self.check1).grid(row=3, column=0, stick=tk.W,
-                                                                                         pady=4)
-        self.var2 = IntVar()
-        self.var2.set(1)
-        Checkbutton(self.master, text="OpenLDAP", variable=self.var2, command=self.check2).grid(row=3, column=1, stick=tk.W, pady=4)
-
+        # self.var1 = IntVar()
+        # Checkbutton(self.master, text="Active Directory", variable=self.var1, command=self.check1).grid(row=3, column=0, stick=tk.W,
+        #                                                                                  pady=4)
+        # self.var2 = IntVar()
+        # self.var2.set(1)
+        # Checkbutton(self.master, text="OpenLDAP", variable=self.var2, command=self.check2).grid(row=3, column=1, stick=tk.W, pady=4)
 
         self.e2.grid(row=1, column=1)
         self.e3.grid(row=2, column=1)
@@ -49,20 +51,23 @@ class AskRegister():
         tk.mainloop()
 
     def show(self):
+        if(self.e1.get() =='' or self.e2.get()=='' or self.e3.get()==''):
+            self.text.set("Lütfen zorunlu alanları doldurunuz!")
+        else:
+            print(self.e1.get()+" "+self.e2.get()+" "+self.e3.get())
+            self.master.quit()
+        # if self.var2.get() == 1:
+        #     if self.host != "":
+        #         print(self.e2.get()+" "+self.e3.get()+" "+"LDAP")
+        #     else:
+        #         print(self.e1.get()+" "+self.e2.get()+" "+self.e3.get()+" "+"LDAP")
+        #
+        # if self.var1.get() == 1:
+        #     if self.host != "":
+        #         print(self.e2.get()+" "+self.e3.get()+" "+"AD")
+        #     else:
+        #         print(self.e1.get()+" "+self.e2.get()+" "+self.e3.get()+" "+"AD")
 
-        if self.var2.get() == 1:
-            if self.host != "":
-                print(self.e2.get()+" "+self.e3.get()+" "+"LDAP")
-            else:
-                print(self.e1.get()+" "+self.e2.get()+" "+self.e3.get()+" "+"LDAP")
-
-        if self.var1.get() == 1:
-            if self.host != "":
-                print(self.e2.get()+" "+self.e3.get()+" "+"AD")
-            else:
-                print(self.e1.get()+" "+self.e2.get()+" "+self.e3.get()+" "+"AD")
-
-        self.master.quit()
 
     def check1(self):
         self.var2.set(0)

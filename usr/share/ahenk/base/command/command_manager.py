@@ -51,7 +51,7 @@ class Commander(object):
                 print('{0} logging out'.format(str(params[2])))
                 data['event'] = params[1]
                 data['username'] = params[2]
-                
+
             elif len(params) == 4 and params[1] == 'logout':
                 print('{0} logging out'.format(str(params[2])))
                 data['event'] = params[1]

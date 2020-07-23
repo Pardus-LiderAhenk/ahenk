@@ -1,3 +1,39 @@
+ahenk (1.1.0-8) unstable; urgency=medium
+
+  [ Hasan Kara ]
+  * a boolean flag is added  if a policy is executed
+
+  [ Edip YILDIZ ]
+  * directory server disabled and generic
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+  * Update changelog for 1.1.0-7 release
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Thu, 23 Jul 2020 14:39:02 +0300
+
+ahenk (1.1.0-7) unstable; urgency=medium
+
+  [ Hasan Kara ]
+  * added extra parameters to login message for updating agent informations
+
+  [ Edip Yıldız ]
+  * add auto roster accept
+
+  [ Agah Öz ]
+  * register,unregister and AD swap modified
+
+  [ Hasan Kara ]
+  * a boolean flag is added  if a policy is executed
+
+  [ Edip YILDIZ ]
+  * directory server disabled and generic
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Thu, 23 Jul 2020 14:36:49 +0300
+
 ahenk (1.1.0-6) unstable; urgency=medium
 
   [ Edip YILDIZ ]

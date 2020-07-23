@@ -13,6 +13,21 @@ class ExecuteSSSDAdAuthentication:
 
     def authenticate(self, domain_name, host_name, ip_address, password, ad_username):
         try:
+            # Installation of required packages
+            (result_code, p_out, p_err) = self.util.execute(
+                "sudo apt-get -y install realmd")
+            if (result_code == 0):
+                self.logger.info("İndirmeler Başarılı")
+            else:
+                self.logger.error("İndirmeler Başarısız : " + str(p_err))
+
+            # Execute the commands that require for leave
+            (result_code, p_out, p_err) = self.util.execute("realm leave")
+            if (result_code == 0):
+                self.logger.info("Realm Leave komutu başarılı")
+            else:
+                self.logger.error("Realm Leave komutu başarısız : " + str(p_err))
+
             # Create and Configure ad_info file
             (result_code, p_out, p_err) = self.util.execute("touch /etc/ahenk/ad_info")
             if (result_code == 0):
@@ -102,7 +117,7 @@ class ExecuteSSSDAdAuthentication:
                 self.logger.error("Script başarısız oldu : " + str(p_err))
 
             # Installation of required packages
-            (result_code, p_out, p_err) = self.util.execute("sudo apt-get -y install realmd sssd sssd-tools adcli packagekit samba-common-bin samba-libs")
+            (result_code, p_out, p_err) = self.util.execute("sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs")
             if (result_code == 0):
                 self.logger.info("İndirmeler Başarılı")
             else:
