@@ -68,10 +68,10 @@ class Registration:
             self.host = self.conf_manager.get("CONNECTION", "host")
 
             user_name= os.getlogin()
-            self.logger.debug('User : '+ str(user_name))
+            self.logger.info('User : '+ str(user_name))
             pout = Util.show_registration_message(user_name,'Makineyi Lider MYS sistemine kaydetmek için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
                                                   'LIDER MYS SISTEMINE KAYIT', self.host)
-            self.logger.debug('pout : ' + str(pout))
+            self.logger.info('pout : ' + str(pout))
             field_values = pout.split(' ')
             user_registration_info = list(field_values)
 
@@ -82,8 +82,8 @@ class Registration:
                 # self.directory_server = user_registration_info[3]
 
             else:
-                self.user_name = user_registration_info[0]
-                self.user_password = user_registration_info[1]
+                self.user_name = user_registration_info[1]
+                self.user_password = user_registration_info[2]
                 # self.directory_server = user_registration_info[2]
 
         #anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(user_name,user_password), self.host,self.servicename)

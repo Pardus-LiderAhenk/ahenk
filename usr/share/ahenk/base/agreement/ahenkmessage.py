@@ -31,11 +31,12 @@ class AskRegister():
 
         tk.Label(self.master, text="* Yetkili Kullanıcı : ").grid(row=1)
         tk.Label(self.master, text="* Parola : ").grid(row=2)
-        tk.Label(self.master, textvariable= self.text, fg="red").grid(row=3,columnspan=2)
+
 
         self.e2 = tk.Entry(self.master)
         self.e3 = tk.Entry(show="*")
 
+        tk.Label(self.master, textvariable=self.text, fg="red").grid(row=3, columnspan=2)
         # self.var1 = IntVar()
         # Checkbutton(self.master, text="Active Directory", variable=self.var1, command=self.check1).grid(row=3, column=0, stick=tk.W,
         #                                                                                  pady=4)
