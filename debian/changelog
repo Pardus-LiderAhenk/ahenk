@@ -1,3 +1,15 @@
+ahenk (1.1.0-9) unstable; urgency=medium
+
+  [ Edip YILDIZ ]
+  * bugfix registration for directory server
+  * ahenk resgistartion attemp set 1
+  * check unregsiter message
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 24 Jul 2020 10:17:55 +0300
+
 ahenk (1.1.0-8) unstable; urgency=medium
 
   [ Hasan Kara ]
