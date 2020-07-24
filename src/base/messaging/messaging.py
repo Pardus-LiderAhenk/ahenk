@@ -187,8 +187,11 @@ class Messaging(object):
             self.logger.debug('pout : ' + str(pout))
             field_values = pout.split(' ')
             user_registration_info = list(field_values)
-            data['userName'] = user_registration_info[0];
-            data['userPassword'] = user_registration_info[1];
+            if len(user_registration_info) > 1 :
+                data['userName'] = user_registration_info[0];
+                data['userPassword'] = user_registration_info[1];
+            else:
+                return None
         else:
             data['userName'] = usernameForCheck;
             data['userPassword'] = passwordForCheck;
