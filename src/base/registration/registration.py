@@ -100,6 +100,14 @@ class Registration:
 
     def registration_success(self, reg_reply):
         try:
+            # Upload to pam_script module
+            (result_code, p_out, p_err) = self.util.execute("pam-auth-update --package --enable pam_script")
+            if result_code == 0:
+                self.logger.info("'pam-auth-update --package --enable pam_script' has run successfully")
+            else:
+                self.logger.error(
+                    "'pam-auth-update --package --enable pam_script'  could not run successfully: " + p_err)
+
             self.local_user_disable = reg_reply['disableLocalUser']
             self.directory_server = reg_reply['directoryServer']
 
@@ -162,9 +170,11 @@ class Registration:
             # LDAP registration
             if self.directory_server == "LDAP":
                 self.install_and_config_ldap(reg_reply)
+                self.change_permissions_for_local_users()
             # AD registration
             elif self.directory_server == "ACTIVE_DIRECTORY":
                 self.install_and_config_ad(reg_reply)
+                self.change_permissions_for_local_users()
 
         except Exception as e:
             self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
@@ -524,7 +534,6 @@ class Registration:
                 self.util.execute(change_home.format(new_home_dir, new_username))
                 self.logger.debug("User: '{0}' will be enabled and changed username and home directory of username".format(p.pw_name))
 
-
     def disable_local_users(self):
         passwd_cmd = 'passwd -l {}'
         change_home = 'usermod -m -d {0} {1}'
@@ -532,18 +541,6 @@ class Registration:
         content = Util.read_file('/etc/passwd')
         kill_all_process = 'killall -KILL -u {}'
         change_permisson = "chmod -R 700 {}"
-
-        add_user_conf_file = "/etc/adduser.conf"
-        file_dir_mode = open(add_user_conf_file, 'r')
-        file_data = file_dir_mode.read()
-        file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
-        file_dir_mode.close()
-
-        file_dir_mode = open(add_user_conf_file, 'w')
-        file_dir_mode.write(file_data)
-        file_dir_mode.close()
-
-        self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
 
         for p in pwd.getpwall():
             self.logger.info("User: '{0}' will be disabled and changed username and home directory of username".format(p.pw_name))
@@ -559,3 +556,16 @@ class Registration:
                 Util.execute(change_username.format(new_username, p.pw_name))
                 Util.execute(change_home.format(new_home_dir, new_username))
                 Util.execute(change_permisson.format(new_home_dir))
+
+
+    def change_permissions_for_local_users(self):
+        add_user_conf_file = "/etc/adduser.conf"
+        file_dir_mode = open(add_user_conf_file, 'r')
+        file_data = file_dir_mode.read()
+        file_data = file_data.replace("DIR_MODE=0755", "DIR_MODE=0700")
+        file_dir_mode.close()
+
+        file_dir_mode = open(add_user_conf_file, 'w')
+        file_dir_mode.write(file_data)
+        file_dir_mode.close()
+        self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
