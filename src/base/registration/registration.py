@@ -534,6 +534,7 @@ class Registration:
                 self.util.execute(change_home.format(new_home_dir, new_username))
                 self.logger.debug("User: '{0}' will be enabled and changed username and home directory of username".format(p.pw_name))
 
+
     def disable_local_users(self):
         passwd_cmd = 'passwd -l {}'
         change_home = 'usermod -m -d {0} {1}'
@@ -556,7 +557,6 @@ class Registration:
                 Util.execute(change_username.format(new_username, p.pw_name))
                 Util.execute(change_home.format(new_home_dir, new_username))
                 Util.execute(change_permisson.format(new_home_dir))
-
 
     def change_permissions_for_local_users(self):
         add_user_conf_file = "/etc/adduser.conf"
