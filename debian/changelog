@@ -1,3 +1,24 @@
+ahenk (1.1.0-9) unstable; urgency=medium
+
+  [ Edip YILDIZ ]
+  * bugfix registration for directory server
+  * ahenk resgistartion attemp set 1
+  * check unregsiter message
+
+  [ Hasan Kara ]
+  * move and delete agent has been coded
+
+  [ Agah Öz ]
+  * change permission local user and pam_script.so module added
+  * update registiration.py add module
+  * update registiration.py add module
+
+  [ Tuncay ÇOLAK ]
+  * update db for logon user and set display number in gnome for unregistration agent
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Tue, 11 Aug 2020 11:59:42 +0300
+
 ahenk (1.1.0-8) unstable; urgency=medium
 
   [ Hasan Kara ]
