@@ -130,7 +130,7 @@ class CommandRunner(object):
                         agreement_choice = True
 
                     if agreement_choice is True or System.Ahenk.agreement() != '1':
-                        self.db_service.delete('session', 'username=\'{0}\''.format(username))
+                        self.db_service.delete('session', '1=1')
 
                         self.logger.info(
                             'Display is {0}, desktop env is {1} for {2}'.format(display, desktop,
