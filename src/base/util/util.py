@@ -339,7 +339,6 @@ class Util:
 
     @staticmethod
     def send_notify(title, body, display, user, icon=None, timeout=5000):
-
         inner_command = 'notify-send "{0}" "{1}" -t {2}'.format(title, body, timeout)
         if icon:
             inner_command += ' -i {0}'.format(icon)
@@ -350,15 +349,14 @@ class Util:
     @staticmethod
     def show_message(username, display, message='', title=''):
         ask_path = Util.get_ask_path_file()+ 'confirm.py'
-
         Scope.get_instance().get_logger().debug('DISPLAYYYY --------->>>>>>>>: ' + str(display))
-
         if display is None:
             display_number = Util.get_username_display()
         else:
             display_number = display
         try:
-
+            if Util.get_desktop_env() == "gnome":
+                display_number = Util.get_username_display_gnome(username)
             if username is not None:
                 command = 'su - {0} -c \'python3 {1} \"{2}\" \"{3}\" \"{4}\"\''.format(username, ask_path, message,
                                                                                        title, display_number)
@@ -370,23 +368,20 @@ class Util:
                     return False
                 else:
                     return None
-
             else:
                 return None
         except Exception as e :
             print("Error when showing message " + str(e))
-
             return None
 
-
-
     @staticmethod
-    def show_registration_message(login_user_name,message,title,host=None):
-
-        ask_path = Util.get_ask_path_file()+ 'ahenkmessage.py'
-
+    def show_registration_message(login_user_name, message, title, host=None):
+        ask_path = Util.get_ask_path_file() + 'ahenkmessage.py'
         # display_number = ":0"
         display_number = Util.get_username_display()
+
+        if Util.get_desktop_env() == "gnome":
+            display_number = Util.get_username_display_gnome(login_user_name)
 
         if host is None:
             command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name,
@@ -397,27 +392,23 @@ class Util:
                                                                                                         message, title,
                                                                                                         host, display_number)
         result_code, p_out, p_err = Util.execute(command)
-
         pout = str(p_out).replace('\n', '')
-
         return pout
 
     @staticmethod
     def show_unregistration_message(login_user_name,display_number,message,title):
-
         ask_path = Util.get_ask_path_file()+ 'unregistrationmessage.py'
+        if Util.get_desktop_env() == "gnome":
+            display_number = Util.get_username_display_gnome(login_user_name)
 
         command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name, ask_path, message, title, display_number)
         result_code, p_out, p_err = Util.execute(command)
-
         pout = str(p_out).replace('\n', '')
-
         return pout
 
     @staticmethod
     def get_username_display():
         result_code, p_out, p_err = Util.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
-
         result = []
         lines = str(p_out).split('\n')
         for line in lines:
