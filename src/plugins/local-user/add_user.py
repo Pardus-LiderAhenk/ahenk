@@ -33,7 +33,7 @@ class AddUser(AbstractPlugin):
         self.change_password = 'usermod -p {0} {1}'
         self.change_shell = 'usermod -s /bin/bash {}'
         self.change_owner = 'chown {0}.{0} {1}'
-        self.change_permission = 'chmod 755 {}'
+        self.change_permission = 'chmod 700 {}'
 
         self.desktop_path = ''
         self.xfce4_session = "/usr/bin/xfce4-session"

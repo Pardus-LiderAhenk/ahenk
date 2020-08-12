@@ -36,7 +36,7 @@ class EditUser(AbstractPlugin):
         self.change_groups = 'usermod -G {0} {1}'
         self.remove_all_groups = 'usermod -G "" {}'
         self.change_owner = 'chown {0}.{0} {1}'
-        self.change_permission = 'chmod 755 {}'
+        self.change_permission = 'chmod 700 {}'
         self.logout_user = 'pkill -u {}'
         self.kill_all_process = 'killall -KILL -u {}'
 
