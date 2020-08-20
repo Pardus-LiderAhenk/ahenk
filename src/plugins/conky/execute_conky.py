@@ -2,12 +2,9 @@
 # -*- coding: utf-8 -*-
 # Author: Edip YILDIZ
 
-
 from base.model.enum.content_type import ContentType
 import json
-
 from base.plugin.abstract_plugin import AbstractPlugin
-
 
 class RunConkyCommand(AbstractPlugin):
     def __init__(self, data, context):
@@ -51,11 +48,9 @@ class RunConkyCommand(AbstractPlugin):
         self.execute("killall conky")
         if self.is_exist(self.conky_config_global_autorun_file) == True:
             self.delete_file(self.conky_config_global_autorun_file)
-
         self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                      message='Conky measajları kaldırıldı',
                                      content_type=ContentType.APPLICATION_JSON.value)
-
 
     def execute_conky(self, conky_message):
         self.logger.debug("[CONKY] Executing conky.")
@@ -68,11 +63,9 @@ class RunConkyCommand(AbstractPlugin):
 
             self.logger.debug('[Conky] Some processes found which names are conky. They will be killed.')
             self.execute('killall conky')
-
         except:
             self.logger.error('[Conky] Conky install-kill problem.')
             raise
-
         if self.is_exist(self.conky_config_file_dir) == False:
             self.logger.debug('[Conky] Creating directory for conky config at ' + self.conky_config_file_dir)
             self.create_directory(self.conky_config_file_dir)
@@ -85,7 +78,6 @@ class RunConkyCommand(AbstractPlugin):
         self.create_file(self.conky_config_file_path)
         self.write_file(self.conky_config_file_path, conky_message)
         self.logger.debug('[Conky] Config file was filled by context.')
-
 
         # creating wrapper file if is not exist. wrapper for using conky command..its need for ETA
         if self.is_exist(self.conky_wrapper_file) == False:
@@ -101,16 +93,13 @@ class RunConkyCommand(AbstractPlugin):
             self.logger.debug('[Conky] Creating directory for conky autorun file at ' + self.conky_config_global_autorun_file)
             self.create_file(self.conky_config_global_autorun_file)
             self.write_file(self.conky_config_global_autorun_file, self.conky_autorun_content)
-
         users = self.Sessions.user_name()
         desktop_env = self.get_desktop_env()
         self.logger.info("Get desktop environment is {0}".format(desktop_env))
-
         for user in users:
             user_display = self.Sessions.display(user)
             if desktop_env == "gnome":
                 user_display = self.get_username_display_gnome(user)
-
             if user_display is None:
                 self.logger.debug('[Conky] executing for display none for user  '+ str(user))
                 self.execute('conky -q', result=False)
@@ -119,10 +108,7 @@ class RunConkyCommand(AbstractPlugin):
                 conky_cmd = 'su ' + str(user) + ' -c ' + ' "conky --display=' + str(user_display) + ' " '
                 self.logger.debug('[Conky] executing command:  ' + str(conky_cmd))
                 self.execute(conky_cmd, result=False)
-
-
         #self.execute('conky ', result=False)
-
         self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                      message='Conky başarıyla oluşturuldu.',
                                      data=json.dumps({'Result': conky_message}),
@@ -132,19 +118,15 @@ class RunConkyCommand(AbstractPlugin):
         try:
             conky_message = self.data['conkyMessage']
             remove_conky_message = self.data['removeConkyMessage']
-
             if remove_conky_message:
                 self.remove_conky_message()
-
             else:
                 self.execute_conky(conky_message)
-
         except Exception as e:
             self.logger.error(" error on handle conky task. Error: " + str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='Conky mesajı olusturulurken hata oluştu:' + str(e),
                                          content_type=ContentType.APPLICATION_JSON.value)
-
 
 def handle_task(task, context):
     cls = RunConkyCommand(task, context)
