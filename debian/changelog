@@ -1,3 +1,14 @@
+ahenk (1.1.0-11) unstable; urgency=medium
+
+  [ Agah Öz ]
+  * plugins local-user updated
+
+  [ Tuncay ÇOLAK ]
+  * policy for gnome desktop env and safe mode has been added
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Mon, 24 Aug 2020 11:24:24 +0300
+
 ahenk (1.1.0-10) unstable; urgency=medium
 
   [ Hasan Kara ]
