@@ -195,6 +195,7 @@ usr/share/ahenk/plugins/network-inventory/multiple-file-transfer.py
 usr/share/ahenk/plugins/network-inventory/scannetwork.py
 usr/share/ahenk/plugins/network-inventory/installahenk.py
 usr/share/ahenk/plugins/network-inventory
+usr/share/ahenk/plugins/conky/safe.py
 usr/share/ahenk/plugins/conky/main.py
 usr/share/ahenk/plugins/conky/policy.py
 usr/share/ahenk/plugins/conky/execute_conky.py

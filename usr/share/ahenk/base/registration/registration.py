@@ -559,6 +559,19 @@ class Registration:
                 Util.execute(change_permisson.format(new_home_dir))
 
     def change_permissions_for_local_users(self):
+        if self.disable_local_users is False:
+            content = Util.read_file('/etc/passwd')
+            change_permisson = "chmod -R 700 {}"
+            for p in pwd.getpwall():
+                self.logger.info(
+                    "User: '{0}' will change home directory of username".format(p.pw_name))
+                if not sysx.shell_is_interactive(p.pw_shell):
+                    continue
+                if p.pw_uid == 0:
+                    continue
+                if p.pw_name in content:
+                    Util.execute(change_permisson.format(p.pw_dir))
+
         add_user_conf_file = "/etc/adduser.conf"
         file_dir_mode = open(add_user_conf_file, 'r')
         file_data = file_dir_mode.read()

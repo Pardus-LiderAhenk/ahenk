@@ -6,7 +6,6 @@
 import sys
 import easygui
 
-
 def ask(content, title):
     choice = easygui.buttonbox(msg=title, title=content, choices=['TAMAM'])
     #choice = easygui.textbox(msg=title, text=content)
@@ -14,7 +13,6 @@ def ask(content, title):
         print('Y')
     else:
         print('N')
-
 
 if __name__ == '__main__':
 
