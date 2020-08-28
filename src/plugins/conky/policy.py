@@ -66,7 +66,7 @@ class Conky(AbstractPlugin):
                 if desktop_env == "gnome":
                     user_display = self.get_username_display_gnome(self.username)
                 self.logger.info("Get desktop environment is {0}".format(desktop_env))
-                self.execute(self.command_autorun_conky.format('--display=' + user_display, self.conky_config_file_path), as_user=self.username, result=False)
+                self.execute(self.command_autorun_conky.format('--display=' + str(user_display), self.conky_config_file_path), as_user=self.username, result=False)
                 self.execute('chown -hR ' + self.username + ':' + self.username + ' ' + self.conky_config_file_dir)
                 self.logger.debug('Owner of Conky config file was changed.')
             else:

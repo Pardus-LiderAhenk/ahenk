@@ -100,14 +100,24 @@ class Registration:
 
     def registration_success(self, reg_reply):
         try:
-            # Upload to pam_script module
-            (result_code, p_out, p_err) = self.util.execute("pam-auth-update --package --enable pam_script")
-            if result_code == 0:
-                self.logger.info("'pam-auth-update --package --enable pam_script' has run successfully")
-            else:
-                self.logger.error(
-                    "'pam-auth-update --package --enable pam_script'  could not run successfully: " + p_err)
+            file_common_session = open("/etc/pam.d/common-session", 'r')
+            file_data = file_common_session.read()
+            pattern = re.compile(r'\s+')
+            text = pattern.sub('', file_data)
 
+            if "sessionoptionalpam_script.so" not in text:
+                self.logger.info("pam_script.so is not exist in common-session")
+                 # Upload to pam_script module
+                (result_code, p_out, p_err) = self.util.execute("pam-auth-update --package --enable pam_script")
+                if result_code == 0:
+                    self.logger.info("'pam-auth-update --package --enable pam_script' has run successfully")
+                else:
+                    self.logger.error("'pam-auth-update --package --enable pam_script'  could not run successfully: " + p_err)
+            else:
+                self.logger.info("pam_script.so already exist in common-session")
+        except Exception as e:
+            self.logger.error('pam-auth-update --package --enable pam_script error. Error Message: {0}.'.format(str(e)))
+        try:
             self.local_user_disable = reg_reply['disableLocalUser']
             self.directory_server = reg_reply['directoryServer']
 
@@ -125,48 +135,13 @@ class Registration:
             # lightdm configuration by desktop env is XFCE
             self.desktop_env = self.util.get_desktop_env()
             self.logger.info("Get desktop environment is {0}".format(self.desktop_env))
-            if self.desktop_env == "xfce":
-                # Configure lightdm.service
-                # check if 99-pardus-xfce.conf exists if not create
-                pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
-                if not self.util.is_exist(pardus_xfce_path):
-                    self.logger.info("99-pardus-xfce.conf does not exist.")
-                    self.util.create_file(pardus_xfce_path)
 
-                    file_lightdm = open(pardus_xfce_path, 'a')
-                    file_lightdm.write("[Seat:*]\n")
-                    file_lightdm.write("greeter-hide-users=true")
-                    file_lightdm.close()
-                    self.logger.info("lightdm has been configured.")
-                else:
-                    self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
-                    self.util.delete_file(pardus_xfce_path)
-                    self.util.create_file(pardus_xfce_path)
+            if self.directory_server == "LDAP" or self.directory_server == "ACTIVE_DIRECTORY":
+                if self.desktop_env == "xfce":
+                    self.configure_lightdm()
+                if self.desktop_env == "gnome":
+                    self.configure_gdm()
 
-                    file_lightdm = open(pardus_xfce_path, 'a')
-                    file_lightdm.write("[Seat:*]")
-                    file_lightdm.write("greeter-hide-users=true")
-                    file_lightdm.close()
-                    self.logger.info("lightdm.conf has been configured.")
-
-            if self.desktop_env == "gnome":
-                pardus_gnome_path = "/etc/gdm3/greeter.dconf-defaults"
-                if not self.util.is_exist(pardus_gnome_path):
-                    self.logger.info("Gnome conf doesn't exist")
-
-                else:
-                    reading_file = open(pardus_gnome_path, "r")
-
-                    new_file_content = ""
-                    for line in reading_file:
-                        stripped_line = line.strip()
-                        new_line = stripped_line.replace("# disable-user-list=true", "disable-user-list=true")
-                        new_file_content += new_line + "\n"
-                    reading_file.close()
-                    writing_file = open(pardus_gnome_path, "w")
-                    writing_file.write(new_file_content)
-                    writing_file.close()
-                    self.logger.info("gdm.conf has been configured.")
             # LDAP registration
             if self.directory_server == "LDAP":
                 self.install_and_config_ldap(reg_reply)
@@ -582,3 +557,43 @@ class Registration:
         file_dir_mode.write(file_data)
         file_dir_mode.close()
         self.logger.info("add user mode changed to 0700 in file {}".format(add_user_conf_file))
+
+    def configure_lightdm(self):
+        # check if 99-pardus-xfce.conf exists if not create
+        pardus_xfce_path = "/usr/share/lightdm/lightdm.conf.d/99-pardus-xfce.conf"
+        if not self.util.is_exist(pardus_xfce_path):
+            self.logger.info("99-pardus-xfce.conf does not exist.")
+            self.util.create_file(pardus_xfce_path)
+            file_lightdm = open(pardus_xfce_path, 'a')
+            file_lightdm.write("[Seat:*]\n")
+            file_lightdm.write("greeter-hide-users=true")
+            file_lightdm.close()
+            self.logger.info("lightdm has been configured.")
+        else:
+            self.logger.info("99-pardus-xfce.conf exists. Delete file and create new one.")
+            self.util.delete_file(pardus_xfce_path)
+            self.util.create_file(pardus_xfce_path)
+
+            file_lightdm = open(pardus_xfce_path, 'a')
+            file_lightdm.write("[Seat:*]")
+            file_lightdm.write("greeter-hide-users=true")
+            file_lightdm.close()
+            self.logger.info("lightdm.conf has been configured.")
+
+    def configure_gdm(self):
+        pardus_gnome_path = "/etc/gdm3/greeter.dconf-defaults"
+        if not self.util.is_exist(pardus_gnome_path):
+            self.logger.info("Gnome conf doesn't exist")
+        else:
+            reading_file = open(pardus_gnome_path, "r")
+            new_file_content = ""
+            for line in reading_file:
+                stripped_line = line.strip()
+                new_line = stripped_line.replace("# disable-user-list=true", "disable-user-list=true")
+                new_file_content += new_line + "\n"
+            reading_file.close()
+            writing_file = open(pardus_gnome_path, "w")
+            writing_file.write(new_file_content)
+            writing_file.close()
+            self.logger.info("gdm.conf has been configured.")
+
