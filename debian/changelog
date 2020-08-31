@@ -1,3 +1,11 @@
+ahenk (1.1.0-12) unstable; urgency=medium
+
+  * if directory server None lightdm and gdm not configured has been added
+  * get display number for gnome env fix
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Mon, 31 Aug 2020 12:17:10 +0300
+
 ahenk (1.1.0-11) unstable; urgency=medium
 
   [ Agah Öz ]
