@@ -4,6 +4,7 @@
 
 import json
 from base.plugin.abstract_plugin import AbstractPlugin
+import time
 
 class Conky(AbstractPlugin):
     def __init__(self, data, context):
@@ -63,8 +64,16 @@ class Conky(AbstractPlugin):
             if self.machine_profile is False:
                 user_display = self.Sessions.display(self.username)
                 desktop_env = self.get_desktop_env()
+                num = 0
                 if desktop_env == "gnome":
-                    user_display = self.get_username_display_gnome(self.username)
+                    while num < 50:
+                        user_display = self.get_username_display_gnome(self.username)
+                        if user_display != None:
+                            break
+                        num += 1
+                    if user_display == None:
+                        time.sleep(10)
+                        user_display = self.get_username_display_gnome(self.username)
                 self.logger.info("Get desktop environment is {0}".format(desktop_env))
                 self.execute(self.command_autorun_conky.format('--display=' + str(user_display), self.conky_config_file_path), as_user=self.username, result=False)
                 self.execute('chown -hR ' + self.username + ':' + self.username + ' ' + self.conky_config_file_dir)
