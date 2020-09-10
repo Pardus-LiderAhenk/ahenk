@@ -131,7 +131,10 @@ class Browser(AbstractPlugin):
     def find_user_preference_paths(self, user_name):
 
         paths = []
-        firefox_path = '/home/' + user_name + '/.mozilla/firefox/'
+        homedir = self.get_homedir(user_name)
+        self.logger.info("Get home directory is {0} of {1} for firefox policy".format(homedir, user_name))
+        firefox_path = '{0}/.mozilla/firefox/'.format(homedir)
+        self.logger.info("Firefox path is {0}".format(firefox_path))
         if self.is_exist(firefox_path + 'profiles.ini'):
             profile_ini_file = open(firefox_path + 'profiles.ini', 'r')
             profile_ini_file_lines = profile_ini_file.readlines()
