@@ -1,3 +1,17 @@
+ahenk (1.1.0-13) unstable; urgency=medium
+
+  [ Tuncay ÇOLAK ]
+  * dynamically get home directory by logon user
+  * get processor when agent registration
+
+  [ hasan.kara ]
+  * rename agent is developed
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Wed, 16 Sep 2020 10:00:15 +0300
+
 ahenk (1.1.0-12) unstable; urgency=medium
 
   * if directory server None lightdm and gdm not configured has been added
