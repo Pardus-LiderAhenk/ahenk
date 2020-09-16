@@ -14,6 +14,7 @@ import subprocess
 import uuid
 import locale
 from base.scope import Scope
+from os.path import expanduser
 
 
 class Util:
@@ -450,8 +451,12 @@ class Util:
         result_code, p_out, p_err = Util.execute("ls {}".format(xfce4_session))
         if result_code == 0:
             desktop_env = "xfce"
-
         return desktop_env
 
-
-
+    # return home directory for user. "/home/username"
+    @staticmethod
+    def get_homedir(user):
+        try:
+            return expanduser("~{0}".format(user))
+        except:
+            raise

@@ -20,6 +20,7 @@ class Conky(AbstractPlugin):
         self.autostart_dir_path = '{0}.config/autostart/'
         self.autorun_file_path = '{0}conky.desktop'
         self.logger.debug('Parameters were initialized.')
+        self.homedir = None
 
     def handle_policy(self):
         try:
@@ -36,7 +37,9 @@ class Conky(AbstractPlugin):
             if 'username' in self.context.data and self.context.get('username') is not None:
                 self.logger.debug('This is user profile, parameters reinitializing.')
                 self.username = self.context.get('username')
-                self.conky_config_file_dir = '{0}.conky/'.format(self.Sessions.user_home_path(self.username))
+                self.homedir = self.get_homedir(self.username) + '/'
+                self.logger.info("Get home directory of {0}".format(self.homedir))
+                self.conky_config_file_dir = '{0}.conky/'.format(self.homedir)
                 self.conky_config_file_path = '{0}conky.conf'.format(self.conky_config_file_dir)
                 self.machine_profile = False
 
@@ -110,15 +113,14 @@ class Conky(AbstractPlugin):
             if self.Sessions.user_name() is not None and len(self.Sessions.user_name()) > 0:
                 for username in self.Sessions.user_name():
                     self.logger.debug('Removing conf file of user {0}'.format(username))
-                    self.delete_file(self.autorun_file_path.format( self.autostart_dir_path.format(self.Sessions.user_home_path(username))))
+                    self.delete_file(self.autorun_file_path.format( self.autostart_dir_path.format(self.homedir)))
             else:
                 self.logger.debug('There are no user')
         else:
-            home_path = self.Sessions.user_home_path(self.username)
             self.logger.debug('Creating autorun file for user {0}'.format(self.username))
-            self.create_autorun_file(self.autostart_dir_path.format(home_path),
+            self.create_autorun_file(self.autostart_dir_path.format(self.homedir),
                                      self.conky_config_file_path,
-                                     self.autorun_file_path.format(self.autostart_dir_path.format(home_path)))
+                                     self.autorun_file_path.format(self.autostart_dir_path.format(self.homedir)))
             self.logger.debug('Autorun created')
 
     def create_autorun_file(self, autostart_path, conky_config_file_path, autorun_file_path):

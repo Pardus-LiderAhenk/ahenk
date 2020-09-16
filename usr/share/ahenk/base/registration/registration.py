@@ -280,6 +280,7 @@ class Registration:
             System.Hardware.BaseBoard.product_name()[0] == 0 else 'n/a',
             'hardware.baseboard.serialNumber': System.Hardware.BaseBoard.serial_number()[1].replace('\n', '') if
             System.Hardware.BaseBoard.serial_number()[0] == 0 else 'n/a',
+            'processor': System.Hardware.Cpu.brand(),
         }
 
         return json.dumps(params)
