@@ -57,6 +57,8 @@ class CommandRunner(object):
                 if event is None:
                     break
                 json_data = json.loads(event)
+                self.logger.info(event)
+
             except Exception as e:
                 self.logger.error(
                     'A problem occurred while loading json. Check json format! Error Message: {0}.'
@@ -64,7 +66,6 @@ class CommandRunner(object):
                 return
 
             if json_data is not None:
-
                 self.logger.debug('Signal handled')
                 self.logger.debug('Signal is :{0}'.format(str(json_data['event'])))
 
@@ -77,27 +78,22 @@ class CommandRunner(object):
                     if 'ip' in json_data:
                         ip = json_data['ip']
 
+                    domain = None
+                    if 'domain' in json_data:
+                        domain = json_data['domain']
+
                     self.logger.info('login event is handled for user: {0}'.format(username))
                     Util.execute("systemctl restart sssd.service")
                     login_message = self.message_manager.login_msg(username,ip)
                     self.messenger.send_direct_message(login_message)
-
                     agreement = Agreement()
                     agreement_choice = None
-
-                    ## Default policy for users
-
-                    self.logger.info("Applying default policies for user {0}".format(username))
-                    self.default_policy.default_firefox_policy(username)
-                    self.default_policy.disable_update_package_notify(username)
 
                     if agreement.check_agreement(username) is not True and System.Ahenk.agreement() == '1':
                         self.logger.debug('User {0} has not accepted agreement.'.format(username))
                         thread_ask = Process(target=agreement.ask, args=(username, display,))
                         thread_ask.start()
-
                         agreement_timeout = self.conf_manager.get('SESSION', 'agreement_timeout')
-
                         timeout = int(agreement_timeout)  # sec
                         timer = time.time()
                         while 1:
@@ -131,15 +127,18 @@ class CommandRunner(object):
 
                     if agreement_choice is True or System.Ahenk.agreement() != '1':
                         self.db_service.delete('session', '1=1')
-
-                        self.logger.info(
-                            'Display is {0}, desktop env is {1} for {2}'.format(display, desktop,
-                                                                                username))
+                        self.logger.info('Display is {0}, desktop env is {1} for {2}'.format(display, desktop, username))
                         session_columns = self.db_service.get_cols('session')
                         self.db_service.update('session', session_columns,
-                                               [username, display, desktop, str(int(time.time())), ip])
-                        get_policy_message = self.message_manager.policy_request_msg(username)
+                                               [username, display, desktop, str(int(time.time())), ip, domain])
 
+                        # Default policy for users --->> START
+                        self.logger.info("Applying default policies for user {0}".format(Util.get_username()))
+                        self.default_policy.default_firefox_policy(Util.get_username())
+                        self.default_policy.disable_update_package_notify(Util.get_username())
+                        # Default policy for users --->> STOP
+
+                        get_policy_message = self.message_manager.policy_request_msg(username)
                         self.plugin_manager.process_mode('safe', username)
                         self.plugin_manager.process_mode('login', username)
 
@@ -151,29 +150,28 @@ class CommandRunner(object):
                                                timeout_function=self.execute_manager.execute_default_policy,
                                                checker_func=self.execute_manager.is_policy_executed, kwargs=kward))
 
-                        self.logger.info(
-                            'Requesting updated policies from Lider. If Ahenk could not reach updated '
+                        self.logger.info('Requesting updated policies from Lider. If Ahenk could not reach updated '
                             'policies in {0} sec, booked policies will be executed'.format(
                                 System.Ahenk.get_policy_timeout()))
                         self.messenger.send_direct_message(get_policy_message)
 
                 elif str(json_data['event']) == 'logout':
                     username = json_data['username']
-                    self.db_service.delete('session', 'username=\'{0}\''.format(username))
                     self.execute_manager.remove_user_executed_policy_dict(username)
+                    self.plugin_manager.process_mode('logout', username)
+                    self.plugin_manager.process_mode('safe', username)
+                    self.db_service.delete('session', '1=1')
                     # TODO delete all user records while initializing
                     self.logger.info('logout event is handled for user: {0}'.format(username))
                     ip = None
                     if 'ip' in json_data:
                         ip = json_data['ip']
+
                     logout_message = self.message_manager.logout_msg(username,ip)
                     self.messenger.send_direct_message(logout_message)
-
                     self.logger.info('Ahenk polkit file deleting..')
                     self.delete_polkit_user()
-
-                    self.plugin_manager.process_mode('logout', username)
-                    self.plugin_manager.process_mode('safe', username)
+                    # self.db_service.delete('session', 'username=\'{0}\''.format(username))
 
                 elif str(json_data['event']) == 'send':
                     self.logger.info('Sending message over ahenkd command. Response Message: {0}'.format(

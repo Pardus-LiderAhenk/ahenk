@@ -22,6 +22,7 @@ class Util:
 
     def __init__(self):
         super().__init__()
+        scope = Scope().get_instance()
 
     @staticmethod
     def get_ask_path_file():
@@ -456,7 +457,34 @@ class Util:
     # return home directory for user. "/home/username"
     @staticmethod
     def get_homedir(user):
+        username = user
         try:
-            return expanduser("~{0}".format(user))
+            return expanduser("~{0}".format(username))
+        except:
+            raise
+
+    # return username from ahenk.db. if domain is not null return username is DOMAIN\\username
+    @staticmethod
+    def get_username():
+        user_name = Scope.get_instance().get_db_service().select_one_result('session', 'username', " 1=1 order by id desc ")
+        domain = Scope.get_instance().get_db_service().select_one_result('session', 'domain', " 1=1 order by id desc ")
+        if domain:
+            user_name = "{0}\\{1}".format(domain, user_name)
+        return user_name
+
+    # as_user is the user that run command. Return as_user for execute method. if domain is not null return as_user is DOMAIN\\\\username
+    @staticmethod
+    def get_as_user():
+        as_user = Scope.get_instance().get_db_service().select_one_result('session', 'username', " 1=1 order by id desc ")
+        domain = Scope.get_instance().get_db_service().select_one_result('session', 'domain', " 1=1 order by id desc ")
+        if domain:
+            as_user = "{0}\\\\{1}".format(domain, as_user)
+        return as_user
+
+    # return gid_number of username
+    @staticmethod
+    def get_gid_number(username):
+        try:
+            return pwd.getpwnam(username).pw_gid
         except:
             raise

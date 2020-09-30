@@ -23,7 +23,8 @@ class Browser(AbstractPlugin):
     def handle_policy(self):
         self.logger.info('Browser plugin handling...')
         try:
-            username = self.context.get('username')
+            # username = self.context.get('username')
+            username = self.get_username()
             self.logger.info('Username: {}'.format(username))
             if username is not None:
                 self.logger.debug('Writing preferences to user profile')
@@ -61,7 +62,7 @@ class Browser(AbstractPlugin):
 
                         self.logger.debug('User preferences were wrote successfully')
                         user_jss.close()
-                        change_owner = 'chown ' + username + ':' + username + ' ' + path
+                        change_owner = 'chown ' + self.get_as_user() + ':' + str(self.get_gid_number(username)) + ' ' + path
                         self.execute(change_owner)
                         self.logger.debug('Preferences file owner is changed')
 
@@ -131,7 +132,7 @@ class Browser(AbstractPlugin):
     def find_user_preference_paths(self, user_name):
 
         paths = []
-        homedir = self.get_homedir(user_name)
+        homedir = self.get_homedir(self.get_username())
         self.logger.info("Get home directory is {0} of {1} for firefox policy".format(homedir, user_name))
         firefox_path = '{0}/.mozilla/firefox/'.format(homedir)
         self.logger.info("Firefox path is {0}".format(firefox_path))

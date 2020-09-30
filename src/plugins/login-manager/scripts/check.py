@@ -11,9 +11,7 @@ import subprocess, time
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
 from base.util.util import Util
-
 
 class CheckTime:
     def __init__(self):
@@ -26,7 +24,6 @@ class CheckTime:
                             level=logging.DEBUG)
 
         self.files = glob.glob('{0}login-manager/login_files/*.permissions'.format(sys.argv[1]))
-
         self.username = 'None'
 
         self.days = ''
@@ -56,12 +53,10 @@ class CheckTime:
 
             for file in self.files:
                 permission_file = str(file).replace('{0}login-manager/login_files/'.format(sys.argv[1]), '')
-                self.username = permission_file.replace('.permissions', '')
+                # self.username = permission_file.replace('.permissions', '')
 
                 config_parser = configparser.ConfigParser()
                 config_parser.read(file)
-
-                logging.debug('Getting parameters from permission file for user \'{0}\''.format(self.username))
 
                 self.days = config_parser.get('PERMISSION', 'days')
                 self.start_time = config_parser.get('PERMISSION', 'start_time')
@@ -69,6 +64,8 @@ class CheckTime:
                 self.last_date = datetime.datetime.strptime(str(config_parser.get('PERMISSION', 'last_date')),
                                                             "%Y-%m-%d").date()
                 self.duration = config_parser.get('PERMISSION', 'duration')
+                self.username = config_parser.get('PERMISSION', 'username')
+                logging.debug('Getting parameters from permission file for user \'{0}\''.format(self.username))
 
                 logging.debug(
                     'Days: {0}, Start Time: {1}, End Time: {2}, Last Date: {3}, Duration between notify and logout: {4}'.format(
@@ -92,8 +89,10 @@ class CheckTime:
             logging.error(e)
 
     def write_to_user_profile(self):
-        if str(self.today) in self.days:
 
+
+        logging.debug("---->>> " + str(self.username))
+        if str(self.today) in self.days:
             if not (self.start_minute < self.current_minute < self.end_minute and self.current_date <= self.last_date):
                 logging.debug('User \'{0}\' will log out.'.format(self.username))
                 process = subprocess.Popen(self.command_logout_user.format(self.username), stdin=None, env=None,

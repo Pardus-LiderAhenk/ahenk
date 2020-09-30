@@ -45,6 +45,8 @@ class Commander(object):
                 data['desktop'] = params[3]
                 data['display'] = params[4]
                 if len(params) == 6:
+                    data['domain'] = params[5]
+                if len(params) == 7:
                     data['ip'] = params[5]
 
             elif len(params) == 3 and params[1] == 'logout':

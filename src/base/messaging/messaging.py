@@ -176,7 +176,8 @@ class Messaging(object):
         data['password'] = str(self.conf_manager.get('CONNECTION', 'password'))
         # unregistration from commandline..
         if(usernameForCheck==None and passwordForCheck==None):
-            user_name = self.db_service.select_one_result('session', 'username')
+            # user_name = self.db_service.select_one_result('session', 'username')
+            user_name = Util.get_as_user()
             display = self.db_service.select_one_result('session', 'display')
             #user_name = os.getlogin()
             #display = Util.get_username_display()

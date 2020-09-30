@@ -8,7 +8,7 @@ class Safe(AbstractPlugin):
     def __init__(self, context):
         super(Safe, self).__init__()
         self.context = context
-        self.username = str(context.get_username())
+        self.username = self.get_username()
         self.logger = self.get_logger()
         self.logger.debug('Parameters were initialized.')
 
@@ -17,7 +17,7 @@ class Safe(AbstractPlugin):
         self.logger.debug('Conky named processes will be killed.')
         self.execute('killall -9 conky')
         # delete autostart and conky config file of logout username
-        self.homedir = self.get_homedir(self.username) + '/'
+        self.homedir = self.get_homedir(self.get_username()) + '/'
         self.conky_config_file_dir = '{0}.conky/'.format(self.homedir)
         self.conky_config_file_path = '{0}conky.conf'.format(self.conky_config_file_dir)
         if self.is_exist(self.conky_config_file_dir):

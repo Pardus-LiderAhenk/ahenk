@@ -24,7 +24,21 @@ if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
     if [ -n $PAM_TTY ]; then
       TTY_DISPLAY="$PAM_TTY"
     fi
-    log "login: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY"
-    sudo python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY
+    domain="none"
+    if [[ $PAM_USER = *'\'* ]]; then
+      IFS='\' read -ra NAMES <<< "$PAM_USER"
+      log "login: \ ile geldi"
+      for i in "${NAMES[@]}"; do
+        domain="${NAMES[0]}"
+        PAM_USER="${NAMES[1]}"
+      done
+    fi
+    if [[ $domain != "none" ]]; then
+      log "login: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY domain: $domain"
+      sudo python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY $domain
+    else
+      log "login: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY domain: none"
+      sudo python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY
+    fi
   fi
 fi
