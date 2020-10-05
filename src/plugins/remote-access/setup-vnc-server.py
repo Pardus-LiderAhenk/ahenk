@@ -62,7 +62,12 @@ class SetupVnc(AbstractPlugin):
                      result=False)
         self.logger.debug('Running VNC proceses were killed')
         self.logger.debug('Getting display and username...')
-        display_number = self.get_username_display(user_name)
+        # display_number = self.get_username_display(user_name)
+        display_number = self.Sessions.display(user_name)
+        desktop_env = self.get_desktop_env()
+        if desktop_env == "gnome":
+            self.get_username_display_gnome(user_name)
+        self.logger.info("Get display of {0} is {1}".format(user_name, display_number))
         homedir = self.get_homedir(user_name)
         self.logger.info("Get home directory of {0} is {1}".format(user_name, homedir))
         # this user_name for execute method
@@ -80,38 +85,22 @@ class SetupVnc(AbstractPlugin):
         if self.data['permission'] == "yes":
             self.send_notify("Liderahenk",
                              "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
-                             ":0", user_name, timeout=50000)
+                             display_number, user_name, timeout=50000)
             time.sleep(5)
-            self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display :{4}"'.format(
+            self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
                     user_name, self.port, homedir, user_name, display_number), result=False)
         elif self.data["permission"] == "no":
             self.logger.info("Lider Ahenk sistem yöneticisi 5 sn sonra bilgisayarınıza uzak erişim sağlayacaktır. ")
             self.send_notify("Liderahenk",
                              "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
-                             ":0", user_name, timeout=50000)
+                             display_number, user_name, timeout=50000)
             time.sleep(5)
-            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display :{4}"'.format(
+            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
                     user_name, self.port, homedir, user_name, display_number), result=False)
         else:
-            self.execute('su - {0} -c "x11vnc -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display :{4}"'.format(
+            self.execute('su - {0} -c "x11vnc -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
                     user_name, self.port, homedir, user_name, display_number), result=False)
             self.logger.info("Lider Ahenk sistem yöneticisi tarafından kullanıcı izni ve bildirim gerektirmeksizin uzak erişim sağlanmıştır")
-
-    def get_username_display(self, user):
-        result_code, p_out, p_err = self.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
-        display_number = None
-        result = []
-        lines = str(p_out).split('\n')
-        for line in lines:
-            arr = line.split(' ')
-            if len(arr) > 1 and str(arr[1]).isnumeric() is True:
-                result.append(line)
-        for res in result:
-            arr = res.split(" ")
-            username = arr[0]
-            if username == user:
-                display_number = arr[1]
-        return display_number
 
     def create_password(self, pass_range):
         self.logger.debug('Password created')

@@ -83,6 +83,8 @@ class CommandRunner(object):
                         domain = json_data['domain']
 
                     self.logger.info('login event is handled for user: {0}'.format(username))
+                    self.logger.info('login parameters of login user, username: {0}, display: {1}, desktop: {2}, domain: {3}'.format(username, display, desktop, domain))
+
                     Util.execute("systemctl restart sssd.service")
                     login_message = self.message_manager.login_msg(username,ip)
                     self.messenger.send_direct_message(login_message)
@@ -129,6 +131,7 @@ class CommandRunner(object):
                         self.db_service.delete('session', '1=1')
                         self.logger.info('Display is {0}, desktop env is {1} for {2}'.format(display, desktop, username))
                         session_columns = self.db_service.get_cols('session')
+                        # ['username', 'display', 'desktop', 'timestamp', 'ip', 'domain']
                         self.db_service.update('session', session_columns,
                                                [username, display, desktop, str(int(time.time())), ip, domain])
 

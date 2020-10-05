@@ -15,12 +15,12 @@ class Safe(AbstractPlugin):
         self.logger.debug('Parameters were initialized.')
 
     def handle_safe_mode(self):
+        user_permission_file = '{0}login-manager/login_files/{1}.permissions'.format(self.Ahenk.plugins_path(), self.username)
+        login_files = '{0}login-manager/login_files'.format(self.Ahenk.plugins_path())
 
-        user_permission_file = '{0}login-manager/login_files/{1}.permissions'.format(self.Ahenk.plugins_path(),
-                                                                                     self.username)
-        if self.is_exist(user_permission_file):
-            self.logger.debug('Delete permission file for user \'{0}\'...'.format(self.username))
-            self.delete_file(user_permission_file)
+        if self.is_exist(login_files):
+            self.logger.debug('Delete login files folder')
+            self.delete_folder(login_files)
 
         machine_permission_file = '{0}login-manager/login_files/None.permissions'.format(self.Ahenk.plugins_path())
         if self.is_exist(machine_permission_file):

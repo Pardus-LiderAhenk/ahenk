@@ -245,7 +245,7 @@ class AhenkDaemon(BaseDaemon):
         Util.create_file(System.Ahenk.fifo_file())
         Util.set_permission(System.Ahenk.fifo_file(), '600')
 
-    def set_register_user(self, hostName, username, password,directoryServer):
+    def set_register_user(self, hostName, username, password):
         self.register_hostname=hostName
         self.register_user_name=username
         self.register_user_password=password
