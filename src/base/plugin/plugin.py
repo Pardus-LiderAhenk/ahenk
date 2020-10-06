@@ -220,10 +220,10 @@ class Plugin(threading.Thread):
                     display = System.Sessions.display(item_obj.get_username())
                     if Util.get_desktop_env() == "gnome":
                         display = Util.get_username_display_gnome(Util.get_username())
-                    Util.send_notify("Lider Ahenk",
-                                     "{0} eklentisi şu anda bir profil çalıştırıyor.".format(self.getName()),
-                                     display,
-                                     Util.get_as_user())
+                    if self.is_user_notify_active == 1:
+                        Util.send_notify("Lider Ahenk",
+                                         "{0} eklentisi şu anda bir profil çalıştırıyor.".format(self.getName()),
+                                         display, Util.get_as_user())
 
                     self.logger.debug('[Plugin] Handling profile')
                     Scope.get_instance().get_plugin_manager().find_policy_module(item_obj.get_plugin().get_name()).handle_policy(profile_data, self.context)
