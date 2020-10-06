@@ -173,7 +173,7 @@ class System:
 
         @staticmethod
         def received_dir_path():
-            path = '/tmp/' # move this to properties 
+            path = '/tmp/' # move this to properties
             if Util.is_exist(path) is False:
                 Util.create_directory(path)
                 Util.set_permission(path, '777')
@@ -291,6 +291,9 @@ class System:
         @staticmethod
         def display(username):
             system = System()
+            if "\\" in username:
+                user_parser = username.split("\\")
+                username = user_parser[1]
             display = system.db_service.select_one_result('session', 'display', " username='{0}'".format(username))
             return display
 
@@ -300,9 +303,12 @@ class System:
             desktop = system.db_service.select_one_result('session', 'desktop', " username='{0}'".format(username))
             return desktop
 
-        staticmethod
+        @staticmethod
         def userip(username):
             system = System()
+            if "\\" in username:
+                user_parser = username.split("\\")
+                username = user_parser[1]
             userip = system.db_service.select_one_result('session', 'ip', " username='{0}'".format(username))
             return userip
 

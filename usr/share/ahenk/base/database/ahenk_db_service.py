@@ -51,7 +51,8 @@ class AhenkDbService(object):
         self.check_and_create_table('agreement',
                                     ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'contract_id TEXT', 'username TEXT',
                                      'timestamp TEXT', 'choice TEXT'])
-        self.check_and_create_table('session', ['id INTEGER PRIMARY KEY AUTOINCREMENT','username TEXT', 'display TEXT', 'desktop TEXT', 'timestamp TEXT', 'ip TEXT'])
+        self.check_and_create_table('session', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'username TEXT', 'display TEXT',
+                                    'desktop TEXT', 'timestamp TEXT', 'ip TEXT', 'domain TEXT'])
 
         self.check_and_create_table('mail', ['id INTEGER PRIMARY KEY AUTOINCREMENT', 'command TEXT', 'mailstatus INTEGER',  'timestamp TEXT'])
 
@@ -65,7 +66,7 @@ class AhenkDbService(object):
         elif table_name == 'contract':
             return ['content', 'title', 'timestamp']
         elif table_name == 'session':
-            return ['username', 'display', 'desktop', 'timestamp', 'ip']
+            return ['username', 'display', 'desktop', 'timestamp', 'ip', 'domain']
         elif table_name == 'task':
             return ['id', 'create_date', 'modify_date', 'command_cls_id', 'parameter_map', 'deleted', 'plugin',
                     'cron_expr', 'file_server']
@@ -83,7 +84,11 @@ class AhenkDbService(object):
             self.logger.error('Database connection error: {0}'.format(str(e)))
 
     def check_and_create_table(self, table_name, cols):
-
+        if table_name == 'session':
+            if self.get_table_name('session') is not None:
+                domain = self.get_column_name('session', 'domain')
+                if domain is None:
+                    self.drop_table('session')
         try:
             self.lock.acquire(True)
             if self.cursor:
@@ -196,3 +201,27 @@ class AhenkDbService(object):
             self.connection.close()
         except Exception as e:
             self.logger.error('Closing database connection error: {0}'.format(str(e)))
+
+    def get_column_name(self, table_name, column_name):
+        try:
+            self.lock.acquire(True)
+            if self.cursor:
+                reader = self.cursor.execute('SELECT * FROM ' + table_name)
+                cols = [x[0] for x in reader.description]
+                self.connection.commit()
+                if column_name in cols:
+                    return column_name
+                else:
+                    return None
+        finally:
+            self.lock.release()
+
+    def get_table_name(self, table_name):
+        result = self.cursor.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
+        tables = []
+        for name in result:
+            tables.append(name[0])
+        if table_name in tables:
+            return table_name
+        else:
+            return None

@@ -48,7 +48,8 @@ class SetupVnc(AbstractPlugin):
                                          message='VNC sunucusu çalışırken bir hata oluştu.')
 
     def run_vnc_server(self):
-        user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
+        # user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
+        user_name = self.get_username()
         self.logger.info('get logon username is {0}'.format(user_name))
         self.logger.debug('Is VNC server installed?')
         if self.is_installed('x11vnc') is False:
@@ -61,14 +62,16 @@ class SetupVnc(AbstractPlugin):
                      result=False)
         self.logger.debug('Running VNC proceses were killed')
         self.logger.debug('Getting display and username...')
-        display_number = self.get_username_display(user_name)
-        # if len(arr) < 1:
-        #     raise NameError('Display not found!')
-
-        # params = str(arr[0]).split(' ')
+        # display_number = self.get_username_display(user_name)
+        display_number = self.Sessions.display(user_name)
+        desktop_env = self.get_desktop_env()
+        if desktop_env == "gnome":
+            self.get_username_display_gnome(user_name)
+        self.logger.info("Get display of {0} is {1}".format(user_name, display_number))
         homedir = self.get_homedir(user_name)
         self.logger.info("Get home directory of {0} is {1}".format(user_name, homedir))
-        # self.logger.info("--------->>>> " + str(params))
+        # this user_name for execute method
+        user_name = self.get_as_user()
         self.logger.debug('Username:{0} Display:{1}'.format(user_name, display_number))
         if self.is_exist('{0}/.vncahenk{1}'.format(homedir, user_name)) is True:
             self.delete_folder('{0}/.vncahenk{1}'.format(homedir, user_name))
@@ -82,49 +85,22 @@ class SetupVnc(AbstractPlugin):
         if self.data['permission'] == "yes":
             self.send_notify("Liderahenk",
                              "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
-                             ":0", user_name, timeout=50000)
+                             display_number, user_name, timeout=50000)
             time.sleep(5)
-            self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display :{4}"'.format(
+            self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
                     user_name, self.port, homedir, user_name, display_number), result=False)
         elif self.data["permission"] == "no":
             self.logger.info("Lider Ahenk sistem yöneticisi 5 sn sonra bilgisayarınıza uzak erişim sağlayacaktır. ")
             self.send_notify("Liderahenk",
                              "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
-                             ":0", user_name, timeout=50000)
+                             display_number, user_name, timeout=50000)
             time.sleep(5)
-            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display :{4}"'.format(
+            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
                     user_name, self.port, homedir, user_name, display_number), result=False)
         else:
-            self.execute('su - {0} -c "x11vnc -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display :{4}"'.format(
+            self.execute('su - {0} -c "x11vnc -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
                     user_name, self.port, homedir, user_name, display_number), result=False)
             self.logger.info("Lider Ahenk sistem yöneticisi tarafından kullanıcı izni ve bildirim gerektirmeksizin uzak erişim sağlanmıştır")
-
-    def get_username_display(self, user):
-        # result_code, p_out, p_err = self.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
-        # self.logger.debug('Getting display result code:{0}'.format(str(result_code)))
-        #
-        # result = []
-        # lines = str(p_out).split('\n')
-        # for line in lines:
-        #     arr = line.split(' ')
-        #     if len(arr) > 1 and str(arr[1]).isnumeric() is True:
-        #         result.append(line)
-        # return result
-
-        result_code, p_out, p_err = self.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
-        display_number = None
-        result = []
-        lines = str(p_out).split('\n')
-        for line in lines:
-            arr = line.split(' ')
-            if len(arr) > 1 and str(arr[1]).isnumeric() is True:
-                result.append(line)
-        for res in result:
-            arr = res.split(" ")
-            username = arr[0]
-            if username == user:
-                display_number = arr[1]
-        return display_number
 
     def create_password(self, pass_range):
         self.logger.debug('Password created')

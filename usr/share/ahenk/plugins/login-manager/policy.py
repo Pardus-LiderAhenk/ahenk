@@ -18,6 +18,7 @@ class LoginManager(AbstractPlugin):
         self.message_code = self.get_message_code()
 
         self.username = self.context.get('username')
+        # self.username = self.get_username()
 
         self.parameters = json.loads(self.data)
 
@@ -35,12 +36,12 @@ class LoginManager(AbstractPlugin):
         try:
             config = configparser.RawConfigParser()
             config.add_section('PERMISSION')
-
             config.set('PERMISSION', 'days', str(self.days))
             config.set('PERMISSION', 'start_time', str(self.start_time))
             config.set('PERMISSION', 'end_time', str(self.end_time))
             config.set('PERMISSION', 'last_date', str(self.last_date))
             config.set('PERMISSION', 'duration', str(self.duration))
+            config.set('PERMISSION', 'username', str(self.get_as_user()))
 
             if not self.is_exist('{0}login-manager/login_files'.format(self.Ahenk.plugins_path())):
                 self.create_directory('{0}login-manager/login_files'.format(self.Ahenk.plugins_path()))
@@ -69,14 +70,11 @@ class LoginManager(AbstractPlugin):
             self.context.create_response(code=self.message_code.POLICY_PROCESSED.value,
                                          message='Oturum kontrolü başlatıldı.')
 
-
         except Exception as e:
             self.logger.error(
                 'A problem occured while handling Login-Manager policy: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.POLICY_ERROR.value,
                                          message='Login-Manager profili uygulanırken bir hata oluştu.')
-
-
 def handle_policy(profile_data, context):
     manage = LoginManager(profile_data, context)
     manage.handle_policy()

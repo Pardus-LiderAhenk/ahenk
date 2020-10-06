@@ -245,7 +245,7 @@ class AhenkDaemon(BaseDaemon):
         Util.create_file(System.Ahenk.fifo_file())
         Util.set_permission(System.Ahenk.fifo_file(), '600')
 
-    def set_register_user(self, hostName, username, password,directoryServer):
+    def set_register_user(self, hostName, username, password):
         self.register_hostname=hostName
         self.register_user_name=username
         self.register_user_password=password
@@ -355,7 +355,7 @@ if __name__ == '__main__':
     ahenk_daemon = AhenkDaemon(System.Ahenk.pid_path())
     try:
         if len(sys.argv) == 2 and (sys.argv[1] in ('start', 'stop', 'restart', 'status')):
-            ahenk_daemon.set_register_user(None, None, None, None)
+            ahenk_daemon.set_register_user(None, None, None)
             if sys.argv[1] == 'start':
                 if System.Ahenk.is_running() is True:
                     print('There is already running Ahenk service. It will be killed.[{0}]'.format(

@@ -36,7 +36,8 @@ class Conky(AbstractPlugin):
             # Is user profile
             if 'username' in self.context.data and self.context.get('username') is not None:
                 self.logger.debug('This is user profile, parameters reinitializing.')
-                self.username = self.context.get('username')
+                # self.username = self.context.get('username')
+                self.username = self.get_username()
                 self.homedir = self.get_homedir(self.username) + '/'
                 self.logger.info("Get home directory of {0}".format(self.homedir))
                 self.conky_config_file_dir = '{0}.conky/'.format(self.homedir)
@@ -65,7 +66,7 @@ class Conky(AbstractPlugin):
             self.initialize_auto_run()
 
             if self.machine_profile is False:
-                user_display = self.Sessions.display(self.username)
+                user_display = self.Sessions.display(self.context.get('username'))
                 desktop_env = self.get_desktop_env()
                 num = 0
                 if desktop_env == "gnome":
@@ -78,8 +79,10 @@ class Conky(AbstractPlugin):
                         time.sleep(10)
                         user_display = self.get_username_display_gnome(self.username)
                 self.logger.info("Get desktop environment is {0}".format(desktop_env))
-                self.execute(self.command_autorun_conky.format('--display=' + str(user_display), self.conky_config_file_path), as_user=self.username, result=False)
-                self.execute('chown -hR ' + self.username + ':' + self.username + ' ' + self.conky_config_file_dir)
+                #
+                as_user = self.get_as_user()
+                self.execute(self.command_autorun_conky.format('--display=' + str(user_display), self.conky_config_file_path), as_user=as_user, result=False)
+                self.execute('chown -hR ' + self.username + ':' + str(self.get_gid_number(self.username)) + ' ' + self.conky_config_file_dir)
                 self.logger.debug('Owner of Conky config file was changed.')
             else:
                 self.execute(self.command_autorun_conky.format('', self.conky_config_file_path), result=False)
