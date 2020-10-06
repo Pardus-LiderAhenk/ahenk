@@ -1,3 +1,13 @@
+ahenk (1.1.0-14) unstable; urgency=medium
+
+  * get username for policy and get home directory and get as_user for execute command from util. has been added domain column to session in database.
+  * get display number for remote access and remove folder for login manager safe mode
+  * bugfix
+  * dynamical show policy message
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Tue, 06 Oct 2020 14:01:03 +0300
+
 ahenk (1.1.0-13) unstable; urgency=medium
 
   [ Tuncay ÇOLAK ]
