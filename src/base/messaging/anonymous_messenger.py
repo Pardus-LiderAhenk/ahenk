@@ -104,47 +104,55 @@ class AnonymousMessenger(ClientXMPP):
             self.logger.debug('Registration status: ' + str(status))
 
             if 'not_authorized' == str(status):
-                self.logger.info('Registration is failed. User not authorized')
+                self.logger.debug('[REGISTRATION IS FAILED]. User not authorized')
                 if self.registration.showUserNotify == True:
-                    Util.show_message(os.getlogin(), ':0','Ahenk Lider MYS sistemine alınamadı !! Sadece yetkili kullanıcılar kayıt yapabilir.', 'Kullanıcı Yetkilendirme Hatası')
+                    Util.show_message(os.getlogin(), ':0','Ahenk Lider MYS\`ye alınamadı !! Sadece yetkili kullanıcılar kayıt yapabilir.', 'Kullanıcı Yetkilendirme Hatası')
                 self.logger.debug('Disconnecting...')
                 self.disconnect()
-            elif 'already_exists' == str(status) or 'registered' == str(status) or 'registered_without_ldap' == str(status):
+            elif 'registered' == str(status) or 'registered_without_ldap' == str(status):
                 try:
                     self.logger.info('Registred from server. Registration process starting.')
                     self.event_manager.fireEvent('REGISTRATION_SUCCESS', j)
                     if self.registration.showUserNotify == True:
                         msg = str(self.host) + " Etki Alanına hoş geldiniz."
-                        Util.show_message(os.getlogin(), ':0' ,msg, "UYARI")
+                        Util.show_message(os.getlogin(), ':0', msg, "UYARI")
                         msg = "Değişikliklerin etkili olması için sistem yeniden başlayacaktır. Sistem yeniden başlatılıyor...."
-                        Util.show_message(os.getlogin(), ':0',msg, "UYARI")
+                        Util.show_message(os.getlogin(), ':0', msg, "UYARI")
                     time.sleep(3)
                     self.logger.info('Disconnecting...')
                     self.disconnect()
                     self.logger.info('Rebooting...')
                     #System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
                     #sys.exit(2)
-                    Util.shutdown();
+                    Util.shutdown()
+
                 except Exception as e:
                     self.logger.error('Error Message: {0}.'.format(str(e)))
                     if self.registration.showUserNotify == True:
                         Util.show_message(os.getlogin(), ':0',str(e))
                     self.logger.debug('Disconnecting...')
                     self.disconnect()
+            elif 'already_exists' == str(status):
+                self.logger.debug('[REGISTRATION IS FAILED] - Hostname already in use!')
+                if self.registration.showUserNotify == True:
+                    Util.show_message(os.getlogin(), ':0',
+                                      '{0} bilgisayar adı zaten kullanılmaktadır. Lütfen bilgisayar adını değiştirerek tekrar deneyiniz'.format(System.Os.hostname()),
+                                      'Bilgisayar İsimlendirme Hatası')
+                self.logger.debug('Disconnecting...')
+                self.disconnect()
+
             elif 'registration_error' == str(status):
-                self.logger.info('Registration is failed. New registration request will send')
+                self.logger.info('[REGISTRATION IS FAILED] - New registration request will send')
                 #self.event_manager.fireEvent('REGISTRATION_ERROR', str(j))
                 if self.registration.showUserNotify == True:
-                    Util.show_message(os.getlogin(), ':0','Ahenk Lider MYS sistemine alınamadı !! Kayıt esnasında hata oluştu. Lütfen sistem yöneticinize başvurunuz.',
+                    Util.show_message(os.getlogin(), ':0', 'Ahenk Lider MYS\`ye alınamadı !! Kayıt esnasında hata oluştu. Lütfen sistem yöneticinize başvurunuz.',
                        'Sistem Hatası')
                 self.logger.debug('Disconnecting...')
                 self.disconnect()
             else:
-                self.event_manger.fireEvent(message_type, str(msg['body']))
+                self.event_manager.fireEvent(message_type, str(msg['body']))
                 self.logger.debug('Fired event is: {0}'.format(message_type))
 
     def send_direct_message(self, msg):
         self.logger.debug('<<--------Sending message: {0}'.format(msg))
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
-
-
