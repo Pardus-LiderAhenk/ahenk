@@ -46,6 +46,7 @@ class Messenger(ClientXMPP):
         if self.receiver_resource:
             self.receiver += '/' + self.receiver_resource
 
+        self.port = self.configuration_manager.get('CONNECTION', 'port')
         self.logger.debug('XMPP Messager parameters were set')
 
         self.register_extensions()
@@ -73,8 +74,7 @@ class Messenger(ClientXMPP):
     def connect_to_server(self):  # Connect to the XMPP server and start processing XMPP stanzas.
         try:
             self['feature_mechanisms'].unencrypted_plain = True
-
-            self.connect((self.hostname, 5222), use_tls=self.use_tls)
+            self.connect((self.hostname, self.port), use_tls=self.use_tls)
             self.process(block=False)
             self.logger.debug('Connection were established successfully')
             return True
