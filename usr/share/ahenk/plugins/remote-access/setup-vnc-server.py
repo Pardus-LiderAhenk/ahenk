@@ -66,7 +66,7 @@ class SetupVnc(AbstractPlugin):
         display_number = self.Sessions.display(user_name)
         desktop_env = self.get_desktop_env()
         if desktop_env == "gnome":
-            self.get_username_display_gnome(user_name)
+            display_number = self.get_username_display_gnome(user_name)
         self.logger.info("Get display of {0} is {1}".format(user_name, display_number))
         homedir = self.get_homedir(user_name)
         self.logger.info("Get home directory of {0} is {1}".format(user_name, homedir))
