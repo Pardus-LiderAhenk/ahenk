@@ -1,3 +1,11 @@
+ahenk (1.1.0-15) unstable; urgency=medium
+
+  * if hostname already in use not registered and show message for already_exist event
+  * get port number from ahenk.conf for xmpp connect
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Thu, 08 Oct 2020 12:10:03 +0300
+
 ahenk (1.1.0-14) unstable; urgency=medium
 
   * get username for policy and get home directory and get as_user for execute command from util. has been added domain column to session in database.
