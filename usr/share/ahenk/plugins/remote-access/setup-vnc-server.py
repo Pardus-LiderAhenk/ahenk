@@ -68,38 +68,40 @@ class SetupVnc(AbstractPlugin):
         if desktop_env == "gnome":
             display_number = self.get_username_display_gnome(user_name)
         self.logger.info("Get display of {0} is {1}".format(user_name, display_number))
-        homedir = self.get_homedir(user_name)
-        self.logger.info("Get home directory of {0} is {1}".format(user_name, homedir))
+        #homedir = self.get_homedir(user_name)
+        #self.logger.info("Get home directory of {0} is {1}".format(user_name, homedir))
         # this user_name for execute method
         user_name = self.get_as_user()
         self.logger.debug('Username:{0} Display:{1}'.format(user_name, display_number))
-        if self.is_exist('{0}/.vncahenk{1}'.format(homedir, user_name)) is True:
-            self.delete_folder('{0}/.vncahenk{1}'.format(homedir, user_name))
-            self.logger.debug('Cleaning previous configurations.')
-        self.logger.debug('Creating user VNC conf file as user')
-        self.execute('su - {0} -c "mkdir -p {1}/.vncahenk{0}"'.format(user_name, homedir), result=False)
-        self.logger.debug('Creating password as user')
-        self.execute('su - {0} -c "x11vnc -storepasswd {1} {2}/.vncahenk{3}/x11vncpasswd"'.format(user_name, self.password, homedir,
-                                                                                         user_name), result=False)
+        #if self.is_exist('{0}/.vncahenk{1}'.format(homedir, user_name)) is True:
+        #    self.delete_folder('{0}/.vncahenk{1}'.format(homedir, user_name))
+        #    self.logger.debug('Cleaning previous configurations.')
+        #self.logger.debug('Creating user VNC conf file as user')
+        #self.execute('su - {0} -c "mkdir -p {1}/.vncahenk{0}"'.format(user_name, homedir), result=False)
+        #self.logger.debug('Creating password as user')
+        #self.execute('su - {0} -c "x11vnc -storepasswd {1} {2}/.vncahenk{3}/x11vncpasswd"'.format(user_name, self.password, homedir,user_name), result=False)
         self.logger.debug('Running VNC server as user.')
         if self.data['permission'] == "yes":
             self.send_notify("Liderahenk",
                              "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
                              display_number, user_name, timeout=50000)
             time.sleep(5)
-            self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
-                    user_name, self.port, homedir, user_name, display_number), result=False)
+            # self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2} -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
+            #         user_name, self.port, user_name, display_number), result=False)
+            self.execute(
+                'su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2} -o /tmp/vnc.log -display {3}"'.format(
+                    user_name, self.port, self.password, display_number), result=False)
         elif self.data["permission"] == "no":
             self.logger.info("Lider Ahenk sistem yöneticisi 5 sn sonra bilgisayarınıza uzak erişim sağlayacaktır. ")
             self.send_notify("Liderahenk",
                              "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
                              display_number, user_name, timeout=50000)
-            time.sleep(5)
-            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
-                    user_name, self.port, homedir, user_name, display_number), result=False)
+            time.sleep(2)
+            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -passwd {2} -o /tmp/vnc.log -display {3}"'.format(
+                    user_name, self.port, self.password, display_number), result=False)
         else:
-            self.execute('su - {0} -c "x11vnc -rfbport {1} -rfbauth {2}/.vncahenk{0}/x11vncpasswd -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
-                    user_name, self.port, homedir, user_name, display_number), result=False)
+            self.execute('su - {0} -c "x11vnc -rfbport {1} -passwd {2} -o /tmp/vnc.log -display {3}"'.format(
+                    user_name, self.port, self.password, display_number), result=False)
             self.logger.info("Lider Ahenk sistem yöneticisi tarafından kullanıcı izni ve bildirim gerektirmeksizin uzak erişim sağlanmıştır")
 
     def create_password(self, pass_range):
