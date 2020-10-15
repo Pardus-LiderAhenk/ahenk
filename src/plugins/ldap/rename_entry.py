@@ -20,6 +20,7 @@ class RenameEntry(AbstractPlugin):
         self.message_code = self.get_message_code()
         self.conf_manager = scope.get_configuration_manager()
         self.hostname_file = '/etc/hostname'
+        self.hosts_file = '/etc/hosts'
 
     def update_dn(self, old_cn, new_cn, new_dn):
         return self.db_service.update('registration', ['jid', 'dn'], [new_cn, new_dn], ' jid = ' + '\'' + old_cn + '\'')
@@ -32,13 +33,36 @@ class RenameEntry(AbstractPlugin):
             new_cn = self.data['new_cn']
             directory_server = self.data['directory_server']
             new_dn = str(old_dn).replace(old_cn, new_cn)
-            
+
             self.logger.debug('Renaming hostname from: ' + old_cn + " to: " + new_cn)
             self.write_file(self.hostname_file, new_cn)
 
-            ## update agent db 
+            ## update /etc/hosts file
+            hosts_file = open (self.hosts_file, 'r')
+            file_data = hosts_file.read()
+
+            old_hostname_line = ""
+            new_hostname_line = ""
+            with open(self.hosts_file) as fp:
+                line = fp.readline()
+                while line:
+                    if line.strip().startswith("127.0.1.1"):
+                        old_hostname_line = line
+                        new_hostname_line = line.replace(old_cn, new_cn)
+                        break
+                    line = fp.readline()
+
+            file_data = file_data.replace(old_hostname_line, new_hostname_line)
+
+            hosts_file.close()
+            hosts_file = open(self.hosts_file, 'w')
+            hosts_file.write(file_data)
+            hosts_file.close()
+            self.logger.info("/etc/hosts file is updated.")
+            ## update agent db
             jid = self.db_service.select_one_result('registration','jid','registered = 1')
             new_dn = str(old_dn).replace(old_cn, new_cn)
+
 
             self.update_dn(old_cn, new_cn, new_dn)
             if directory_server == "LDAP":
@@ -63,7 +87,7 @@ class RenameEntry(AbstractPlugin):
             self.conf_manager.set('CONNECTION', 'uid', new_cn)
             with open('/etc/ahenk/ahenk.conf', 'w') as configfile:
                 self.conf_manager.write(configfile)
-            
+
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Ahenk adı başarı ile değiştirildi.',
                                          data=json.dumps({'Dn': new_dn}),
