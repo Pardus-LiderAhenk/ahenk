@@ -281,6 +281,7 @@ class Registration:
             'hardware.baseboard.serialNumber': System.Hardware.BaseBoard.serial_number()[1].replace('\n', '') if
             System.Hardware.BaseBoard.serial_number()[0] == 0 else 'n/a',
             'processor': System.Hardware.Cpu.brand(),
+            'agentVersion': Util.get_agent_version(),
         }
 
         return json.dumps(params)
