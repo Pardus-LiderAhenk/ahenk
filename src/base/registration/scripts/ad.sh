@@ -7,8 +7,8 @@ ad_host_name=$2
 echo "samba-common samba-common/workgroup string  WORKGROUP" | sudo debconf-set-selections
 echo "samba-common samba-common/dhcp boolean false" | sudo debconf-set-selections
 echo "samba-common samba-common/do_debconf boolean true" | sudo debconf-set-selections
-apt-get -y install samba-common
-
+#apt-get -y install samba-common
+DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" samba-common
 
 cat > /root/debconf-krb5.conf <<EOF
 
