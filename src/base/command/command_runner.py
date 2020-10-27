@@ -45,8 +45,9 @@ class CommandRunner(object):
             self.logger.info('Ahenk polkit file not found')
         else:
             Util.delete_file(ahenk_policy_file)
-            Util.write_file(ahenk_policy_file, content)
-            self.logger.info('Root added ahenk polkit file')
+            self.logger.info("Delete polkit file")
+            # Util.write_file(ahenk_policy_file, content)
+            # self.logger.info('Root added ahenk polkit file')
 
     def run_command_from_fifo(self, num, stack):
         """ docstring"""
