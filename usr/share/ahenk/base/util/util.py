@@ -488,3 +488,13 @@ class Util:
             return pwd.getpwnam(username).pw_gid
         except:
             raise
+
+    @staticmethod
+    def get_agent_version():
+        result_code, result, p_err = Util.execute('dpkg -s {} | grep Version'.format("ahenk"))
+        data = result.split(': ')
+        if data[0] == 'Version':
+            version = data[1].strip('\n')
+            return version
+        else:
+            return None

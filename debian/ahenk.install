@@ -166,6 +166,8 @@ usr/share/ahenk/plugins/service/service_list.py
 usr/share/ahenk/plugins/service/main.py
 usr/share/ahenk/plugins/service/get_services.py
 usr/share/ahenk/plugins/service
+usr/share/ahenk/plugins/resource-usage/agent_info.py
+usr/share/ahenk/plugins/resource-usage/agent_info
 usr/share/ahenk/plugins/resource-usage/main.py
 usr/share/ahenk/plugins/resource-usage/resource_info_alert.py
 usr/share/ahenk/plugins/resource-usage/send_mail.py

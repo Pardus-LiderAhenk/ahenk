@@ -78,6 +78,7 @@ class Messaging(object):
         data['diskFree'] = System.Hardware.Disk.free()
         data['memory'] = System.Hardware.Memory.total()
         data['hostname'] = str(System.Os.hostname())
+        data['agentVersion'] = str(Util.get_agent_version())
 
         self.logger.debug('USER IP : '+ str(ip)+ ' IPADDRESSES : '+ str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', ''))
 
