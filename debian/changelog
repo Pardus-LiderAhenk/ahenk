@@ -1,3 +1,13 @@
+ahenk (1.1.0-16) unstable; urgency=medium
+
+  [ Edip Yıldız ]
+  * vnc set plain password
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Fri, 09 Oct 2020 12:15:59 +0300
+
 ahenk (1.1.0-15) unstable; urgency=medium
 
   * if hostname already in use not registered and show message for already_exist event
