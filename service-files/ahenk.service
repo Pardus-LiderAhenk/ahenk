@@ -1,6 +1,7 @@
 [Unit]
 Description=Starts Ahenk at system startup
-After=network.target
+Wants=network-online.target
+After=network.target network-online.target
 
 [Service]
 Type=simple
