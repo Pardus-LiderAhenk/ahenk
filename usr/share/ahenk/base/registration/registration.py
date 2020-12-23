@@ -577,7 +577,7 @@ class Registration:
             self.util.create_file(pardus_xfce_path)
 
             file_lightdm = open(pardus_xfce_path, 'a')
-            file_lightdm.write("[Seat:*]")
+            file_lightdm.write("[Seat:*]\n")
             file_lightdm.write("greeter-hide-users=true")
             file_lightdm.close()
             self.logger.info("lightdm.conf has been configured.")
