@@ -1,3 +1,14 @@
+ahenk (1.1.0-18) unstable; urgency=medium
+
+  [ hasan.kara ]
+  * updated lightdm conf. Added new line to conf file if file exits
+
+  [ Tuncay ÇOLAK ]
+  * update ahenk.service file
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Wed, 23 Dec 2020 13:09:44 +0300
+
 ahenk (1.1.0-17) unstable; urgency=medium
 
   [ hasan.kara ]
