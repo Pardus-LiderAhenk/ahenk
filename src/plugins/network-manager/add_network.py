@@ -32,12 +32,12 @@ class AddNetwork(AbstractPlugin):
         try:
             if self.type == 'STATIC':
                 if self.is_active is True:
-                    self.content = 'iface {0} inet static\n address {1}\n netmask {2}\n gateway {3}\n'.format(self.name,
+                    self.content = 'auto {0}\n iface {0} inet static\n address {1}\n netmask {2}\n gateway {3}\n'.format(self.name,
                                                                                                               self.ip,
                                                                                                               self.netmask,
                                                                                                               self.gateway)
                 else:
-                    self.content = 'iface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name,
+                    self.content = 'auto {0}\n iface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name,
                                                                                                               self.ip,
                                                                                                               self.netmask,
                                                                                                               self.gateway)
