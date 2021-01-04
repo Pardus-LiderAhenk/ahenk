@@ -37,7 +37,7 @@ class AddNetwork(AbstractPlugin):
                                                                                                               self.netmask,
                                                                                                               self.gateway)
                 else:
-                    self.content = 'auto {0}\n iface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name,
+                    self.content = 'auto {0}\niface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name,
                                                                                                               self.ip,
                                                                                                               self.netmask,
                                                                                                               self.gateway)

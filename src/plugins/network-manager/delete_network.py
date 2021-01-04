@@ -47,7 +47,7 @@ class DeleteNetwork(AbstractPlugin):
                             self.content = '#auto {0}\n'.format(self.name)
 
                         if line.startswith(self.content):
-                            counter = 4
+                            counter = 3
                         else:
                             print(str(line).strip())
 
@@ -57,17 +57,25 @@ class DeleteNetwork(AbstractPlugin):
                         else:
                             self.content = '#auto {0}\n'.format(self.name)
 
-                        if not line.startswith(self.content):
+                        if line.startswith(self.content):
+                            counter = 1
+                        else:
                             print(str(line).strip())
+
+                        # if not line.startswith(self.content):
+                        #     print(str(line).strip())
 
                     elif self.type == 'loopback':
                         if self.is_active is True:
                             self.content = 'auto {0}\n'.format(self.name)
                         else:
-                            self.content = '#auto {0}\n'.format(self.name)
+                            self.content = 'auto {0}\n'.format(self.name)
 
-                        if not line.startswith(self.content):
+                        if line.startswith(self.content):
+                            counter = 1
+                        else:
                             print(str(line).strip())
+
                 else:
                     counter -= 1
 
