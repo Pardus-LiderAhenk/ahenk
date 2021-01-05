@@ -97,18 +97,24 @@ class Packages(AbstractPlugin):
                                                              message='{0}\n Paket kaldırılırken '
                                                                      'hata oluştu. Hata Mesajı: {1}'.format(
                                                                  cn, str(p_err)))
+
+
                 except Exception as e:
                     self.logger.error('Unpredictable error exists. Error Message: {0}'.format(str(e)))
+                    self.delete_source_file()
                     self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                  message='{0}.\nÖngörülemeyen bir hata oluştu.Hata mesajı:{1}'.format(
                                                      cn, str(e)))
                     return
+
+            self.delete_source_file()
 
             self.logger.debug('Task handled successfully')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='{0} ahenginde, {1} paketi({2}) {3} işlemi başarı ile gerçekleştirildi.'.format(cn,item['packageName'], item['version'], item['tag']))
         except Exception as e:
             self.logger.error('Unpredictable error exists. Error Message: {0}'.format(str(e)))
+            self.delete_source_file()
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='{0}\nGörev çalıştırılırken beklenmedik bir hata oluştu. Hata Mesajı: {1}'.format(
                                              cn,
@@ -126,6 +132,11 @@ class Packages(AbstractPlugin):
 
     def add_source(self, source):
         self.write_file('/etc/apt/sources.list.d/ahenk.list', source+'\n', 'a+')
+
+    def delete_source_file(self):
+        if self.is_exist('/etc/apt/sources.list.d/ahenk.list'):
+            self.delete_file('/etc/apt/sources.list.d/ahenk.list')
+            self.logger.info("Delete ahenk.list source file")
 
 
 def handle_task(task, context):

@@ -47,7 +47,7 @@ class DeleteNetwork(AbstractPlugin):
                             self.content = '#auto {0}\n'.format(self.name)
 
                         if line.startswith(self.content):
-                            counter = 3
+                            counter = 4
                         else:
                             print(str(line).strip())
 
