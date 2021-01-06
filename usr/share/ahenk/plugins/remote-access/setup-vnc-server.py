@@ -89,7 +89,7 @@ class SetupVnc(AbstractPlugin):
             # self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2} -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
             #         user_name, self.port, user_name, display_number), result=False)
             self.execute(
-                'su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2}  -display {3}"'.format(
+                'su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2} -capslock -display {3}"'.format(
                     user_name, self.port, self.password, display_number), result=False)
         elif self.data["permission"] == "no":
             self.logger.info("Lider Ahenk sistem yöneticisi 5 sn sonra bilgisayarınıza uzak erişim sağlayacaktır. ")
@@ -97,10 +97,10 @@ class SetupVnc(AbstractPlugin):
                              "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
                              display_number, user_name, timeout=50000)
             time.sleep(2)
-            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -passwd {2} -display {3}"'.format(
+            self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -passwd {2} -capslock -display {3}"'.format(
                     user_name, self.port, self.password, display_number), result=False)
         else:
-            self.execute('su - {0} -c "x11vnc -rfbport {1} -passwd {2} -display {3}"'.format(
+            self.execute('su - {0} -c "x11vnc -rfbport {1} -passwd {2} -capslock -display {3}"'.format(
                     user_name, self.port, self.password, display_number), result=False)
             self.logger.info("Lider Ahenk sistem yöneticisi tarafından kullanıcı izni ve bildirim gerektirmeksizin uzak erişim sağlanmıştır")
 

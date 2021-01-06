@@ -42,32 +42,40 @@ class DeleteNetwork(AbstractPlugin):
                 if not counter:
                     if self.type == 'static':
                         if self.is_active is True:
-                            self.content = 'iface {0} inet static\n'.format(self.name)
+                            self.content = 'auto {0}\n'.format(self.name)
                         else:
-                            self.content = '#iface {0} inet static\n'.format(self.name)
+                            self.content = '#auto {0}\n'.format(self.name)
 
                         if line.startswith(self.content):
-                            counter = 3
+                            counter = 4
                         else:
                             print(str(line).strip())
 
                     elif self.type == 'dhcp':
                         if self.is_active is True:
-                            self.content = 'iface {} inet dhcp\n'.format(self.name)
+                            self.content = 'auto {0}\n'.format(self.name)
                         else:
-                            self.content = '#iface {} inet dhcp\n'.format(self.name)
+                            self.content = '#auto {0}\n'.format(self.name)
 
-                        if not line.startswith(self.content):
+                        if line.startswith(self.content):
+                            counter = 1
+                        else:
                             print(str(line).strip())
+
+                        # if not line.startswith(self.content):
+                        #     print(str(line).strip())
 
                     elif self.type == 'loopback':
                         if self.is_active is True:
-                            self.content = 'iface {} inet loopback\n'.format(self.name)
+                            self.content = 'auto {0}\n'.format(self.name)
                         else:
-                            self.content = '#iface {} inet loopback\n'.format(self.name)
+                            self.content = 'auto {0}\n'.format(self.name)
 
-                        if not line.startswith(self.content):
+                        if line.startswith(self.content):
+                            counter = 1
+                        else:
                             print(str(line).strip())
+
                 else:
                     counter -= 1
 

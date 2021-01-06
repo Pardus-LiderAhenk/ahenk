@@ -32,22 +32,22 @@ class AddNetwork(AbstractPlugin):
         try:
             if self.type == 'STATIC':
                 if self.is_active is True:
-                    self.content = 'iface {0} inet static\n address {1}\n netmask {2}\n gateway {3}\n'.format(self.name,
+                    self.content = 'auto {0}\niface {0} inet static\naddress {1}\nnetmask {2}\ngateway {3}\n'.format(self.name,
                                                                                                               self.ip,
                                                                                                               self.netmask,
                                                                                                               self.gateway)
                 else:
-                    self.content = 'iface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name,
+                    self.content = 'auto {0}\niface {0} inet static\n#address {1}\n#netmask {2}\n#gateway {3}\n'.format(self.name,
                                                                                                               self.ip,
                                                                                                               self.netmask,
                                                                                                               self.gateway)
 
                 self.logger.debug('Created content for STATIC type.')
             elif self.type == 'DHCP':
-                self.content = 'iface {} inet dhcp\n'.format(self.name)
+                self.content = 'auto {0}\niface {0} inet dhcp\n'.format(self.name)
                 self.logger.debug('Created content for DHCP type.')
             elif self.type == 'LOOPBACK':
-                self.content = 'iface {} inet loopback\n'.format(self.name)
+                self.content = 'auto {0}\niface {0} inet loopback\n'.format(self.name)
                 self.logger.debug('Created content for LOOPBACK type.')
 
             if self.is_active is False:

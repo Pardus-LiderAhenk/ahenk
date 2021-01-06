@@ -22,6 +22,7 @@ class Packages(AbstractPlugin):
             cn = '{0}\r\n'.format(self.Ahenk.dn().split(',')[0])
 
             items = (self.data)['packageInfoList']
+            packages = []
             for item in items:
                 try:
                     if self.has_attr_json(item, 'tag') and self.has_attr_json(item, 'source'):
@@ -61,6 +62,9 @@ class Packages(AbstractPlugin):
 
                         ## INSTALL/REMOVE PACKAGE
 
+                        p_item = {'packageName': '{0}'.format(item['packageName']),
+                               'tag': '{0}'.format(item['tag'])}
+                        packages.append(p_item)
                         if item['tag'] == 'Yükle' or item['tag'] == 'Install':
                             self.logger.debug(
                                 "Installing new package... {0}".format(item['packageName']))
@@ -97,18 +101,23 @@ class Packages(AbstractPlugin):
                                                              message='{0}\n Paket kaldırılırken '
                                                                      'hata oluştu. Hata Mesajı: {1}'.format(
                                                                  cn, str(p_err)))
+
+
                 except Exception as e:
                     self.logger.error('Unpredictable error exists. Error Message: {0}'.format(str(e)))
+                    self.delete_source_file()
                     self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                  message='{0}.\nÖngörülemeyen bir hata oluştu.Hata mesajı:{1}'.format(
                                                      cn, str(e)))
                     return
 
+            self.delete_source_file()
             self.logger.debug('Task handled successfully')
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='{0} ahenginde, {1} paketi({2}) {3} işlemi başarı ile gerçekleştirildi.'.format(cn,item['packageName'], item['version'], item['tag']))
+                                         message='{0} paket kur/kaldır işlemleri başarı ile gerçekleştirildi.'.format(packages))
         except Exception as e:
             self.logger.error('Unpredictable error exists. Error Message: {0}'.format(str(e)))
+            self.delete_source_file()
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='{0}\nGörev çalıştırılırken beklenmedik bir hata oluştu. Hata Mesajı: {1}'.format(
                                              cn,
@@ -126,6 +135,11 @@ class Packages(AbstractPlugin):
 
     def add_source(self, source):
         self.write_file('/etc/apt/sources.list.d/ahenk.list', source+'\n', 'a+')
+
+    def delete_source_file(self):
+        if self.is_exist('/etc/apt/sources.list.d/ahenk.list'):
+            self.delete_file('/etc/apt/sources.list.d/ahenk.list')
+            self.logger.info("Delete ahenk.list source file")
 
 
 def handle_task(task, context):
