@@ -1,3 +1,19 @@
+ahenk (1.1.0-19) unstable; urgency=medium
+
+  [ agahhulusi ]
+  * static IP bug fixed
+  * ahenk static network bug fixed
+  * network manager delete and add fixed
+
+  [ Tuncay ÇOLAK ]
+  * added logrotate for ahenk log and delete ahenk list source file on packages.py
+  * disk info fixed
+  * updated get message from ahenk for packages
+  * capslock paramater is added for remote access
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>  Wed, 06 Jan 2021 11:01:17 +0300
+
 ahenk (1.1.0-18) unstable; urgency=medium
 
   [ hasan.kara ]
