@@ -151,6 +151,8 @@ class Registration:
                 self.install_and_config_ad(reg_reply)
                 self.change_permissions_for_local_users()
 
+            self.create_ahenk_pulseaudio_desktop_file()
+
         except Exception as e:
             self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
             print(e)
@@ -377,6 +379,9 @@ class Registration:
                     writing_file.close()
                     self.logger.info("gdm.conf has been configured.")
                     self.logger.info('GNOME conf file deleted')
+
+            self.delete_ahenk_pulseaudio_desktop_file()
+
             Util.shutdown()
         except Exception as e:
             self.logger.error("Error while running purge_and_unregister process.. Error Message  " + str(e))
@@ -599,3 +604,23 @@ class Registration:
             writing_file.close()
             self.logger.info("gdm.conf has been configured.")
 
+    def create_ahenk_pulseaudio_desktop_file(self):
+        ahenkpulseaudio = "/etc/xdg/autostart/ahenk.pulseaudio.desktop"
+        ahenkpulseaudio_template = "/usr/share/ahenk/base/registration/config-files/ahenk.pulseaudio.desktop"
+        if not self.util.is_exist(ahenkpulseaudio):
+            self.logger.info("ahenk.pulseaudio.desktop autostart file doesn't exist")
+            self.util.create_file(ahenkpulseaudio)
+            file_ahenkpulseaudio = open(ahenkpulseaudio, 'a')
+            self.util.copy_file(ahenkpulseaudio_template, ahenkpulseaudio)
+            file_ahenkpulseaudio.close()
+            self.logger.info("ahenk.pulseaudio.desktop has been configured.")
+        else:
+            self.logger.info("ahenk.pulseaudio.desktop autostart file exist")
+
+    def delete_ahenk_pulseaudio_desktop_file(self):
+        ahenkpulseaudio = "/etc/xdg/autostart/ahenk.pulseaudio.desktop"
+        if self.util.is_exist(ahenkpulseaudio):
+            self.util.delete_file(ahenkpulseaudio)
+            self.logger.info("ahenk.pulseaudio.desktop autostart file deleted")
+        else:
+            self.logger.info("ahenk.pulseaudio.desktop autostart file doesn't exist")

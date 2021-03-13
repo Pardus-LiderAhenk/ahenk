@@ -51,7 +51,6 @@ class DefaultPolicy:
             else:
                 self.logger.info(".config/autostart folder exists.")
                 self.logger.info("Checking if {0}-autostart-for-profile.desktop autorun file exists.".format(exec_command))
-
             if not Util.is_exist("{0}/.config/autostart/{1}-autostart-for-profile.desktop".format(homedir, exec_command)):
                 self.logger.info("{0}-autostart-for-profile.desktop autorun file does not exists. Creating file.".format(exec_command))
                 Util.create_file("{0}/.config/autostart/{1}-autostart-for-profile.desktop".format(homedir, exec_command))
@@ -60,6 +59,10 @@ class DefaultPolicy:
                           "Exec={0}{1} www.liderahenk.org".format(firefox_path, exec_command)
                 Util.write_file("{0}/.config/autostart/{1}-autostart-for-profile.desktop".format(homedir, exec_command), content)
                 self.logger.info("Autorun config is written to {0}-autostart-for-profile.desktop.".format(exec_command))
+                gid = self.util.file_group(homedir)
+                cmd = "chown -R {0}:{1} {2}/.config/autostart".format(username, gid, homedir)
+                self.util.execute(cmd)
+                self.logger.info("Set permissons for {0}/.config/autostart directory".format(homedir))
             else:
                 self.logger.info("{0}-autostart-for-profile.desktop exists".format(exec_command))
         else:

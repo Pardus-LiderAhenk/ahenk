@@ -4,6 +4,7 @@
 
 from base.scope import Scope
 from base.util.util import Util
+import time
 
 class ExecuteSSSDAdAuthentication:
     def __init__(self):
@@ -144,11 +145,20 @@ class ExecuteSSSDAdAuthentication:
             else:
                 self.logger.error("Realm Discover komutu başarısız : " + str(p_err))
 
-            (result_code, p_out, p_err) = self.util.execute("echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username, domain_name.upper()))
-            if (result_code == 0):
-                self.logger.info("Realm Join komutu başarılı")
-            else:
-                self.logger.error("Realm Join komutu başarısız : " + str(p_err))
+            self.domain_try_counter = 0
+
+            while (True):
+                self.domain_try_counter = self.domain_try_counter + 1
+                if (self.domain_try_counter == 10):
+                    break
+                else:
+                    (result_code, p_out, p_err) = self.util.execute("echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username, domain_name.upper()))
+                    if (result_code == 0):
+                        self.logger.info("Realm Join komutu başarılı")
+                        break
+                    else:
+                        self.logger.error("Realm Join komutu başarısız : " + str(p_err))
+                        time.sleep(2)
 
             # Configure sssd template
             sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd_ad.conf"
