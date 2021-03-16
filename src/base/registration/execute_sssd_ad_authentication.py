@@ -139,11 +139,29 @@ class ExecuteSSSDAdAuthentication:
             file_default_pam.close()
 
             # Execute the commands that require for join Domain
-            (result_code, p_out, p_err) = self.util.execute("realm discover {}".format(domain_name.upper()))
-            if (result_code == 0):
-                self.logger.info("Realm Discover komutu başarılı")
-            else:
-                self.logger.error("Realm Discover komutu başarısız : " + str(p_err))
+            # (result_code, p_out, p_err) = self.util.execute("realm discover {}".format(domain_name.upper()))
+            # if (result_code == 0):
+            #     self.logger.info("Realm Discover komutu başarılı")
+            # else:
+            #     self.logger.error("Realm Discover komutu başarısız : " + str(p_err))
+
+            self.domain_try_counter2 = 0
+            try:
+                while (True):
+                    self.domain_try_counter2 = self.domain_try_counter2 + 1
+                    if (self.domain_try_counter2 == 10):
+                        break
+                    else:
+                        (result_code, p_out, p_err) = self.util.execute("realm discover {}".format(domain_name.upper()))
+                        if (result_code == 0):
+                            self.logger.info("Realm Discover komutu başarılı")
+                            break
+                        else:
+                            self.logger.error("Realm Discover komutu başarısız : ")
+                            time.sleep(2)
+            except Exception as e:
+                self.logger.error(e)
+                self.logger.info("AD DİSCOVER Login işlemi esnasında hata oluştu.")
 
             self.domain_try_counter = 0
 
@@ -157,7 +175,7 @@ class ExecuteSSSDAdAuthentication:
                         self.logger.info("Realm Join komutu başarılı")
                         break
                     else:
-                        self.logger.error("Realm Join komutu başarısız : " + str(p_err))
+                        self.logger.error("Realm Join komutu başarısız : ")
                         time.sleep(2)
 
             # Configure sssd template
