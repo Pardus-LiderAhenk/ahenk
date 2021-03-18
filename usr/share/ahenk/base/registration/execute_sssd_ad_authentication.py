@@ -4,12 +4,15 @@
 
 from base.scope import Scope
 from base.util.util import Util
+from base.system.system import System
+import time
 
 class ExecuteSSSDAdAuthentication:
     def __init__(self):
         scope = Scope().get_instance()
         self.logger = scope.get_logger()
         self.util = Util()
+        self.system = System()
 
     def authenticate(self, domain_name, host_name, ip_address, password, ad_username):
         try:
@@ -81,7 +84,6 @@ class ExecuteSSSDAdAuthentication:
                 lines = lines.replace(lines, ("#" + lines))
                 resolve_conf_temp.write(lines)
             resolve_conf_temp.close()
-
             file_default_resolve = open(resolve_conf_path, 'r')
             file_data = file_default_resolve.read()
 
@@ -99,9 +101,17 @@ class ExecuteSSSDAdAuthentication:
             file_default_hosts = open(host_path, 'r')
             file_data = file_default_hosts.read()
 
-            if ("{0}    {1}".format(ip_address, host_name)) not in file_data:
-                file_data = file_data + "\n" + ("{0}    {1}".format(ip_address, host_name))
-                self.logger.info("/etc/hosts is configured")
+            if ("{0}       {1}".format(ip_address, host_name)) not in file_data:
+                file_data = file_data + "\n" + ("{0}       {1}".format(ip_address, host_name))
+                self.logger.info("/etc/hosts is configured for hostname")
+            else:
+                self.logger.info("/etc/hosts is NOT configured for hostname")
+
+            if ("{0}       {1}".format(ip_address, domain_name)) not in file_data:
+                file_data = file_data + "\n" + ("{0}       {1}".format(ip_address, domain_name))
+                self.logger.info("/etc/hosts is configured for domainname")
+            else:
+                self.logger.info("/etc/hosts is NOT configured for domainname")
 
             file_default_hosts.close()
             file_default_hosts = open(host_path, 'w')
@@ -117,7 +127,7 @@ class ExecuteSSSDAdAuthentication:
                 self.logger.error("Script başarısız oldu : " + str(p_err))
 
             # Installation of required packages
-            (result_code, p_out, p_err) = self.util.execute("sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs")
+            (result_code, p_out, p_err) = self.util.execute("sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs dnsutils")
             if (result_code == 0):
                 self.logger.info("İndirmeler Başarılı")
             else:
@@ -137,18 +147,41 @@ class ExecuteSSSDAdAuthentication:
             file_default_pam.write(file_data)
             file_default_pam.close()
 
-            # Execute the commands that require for join Domain
-            (result_code, p_out, p_err) = self.util.execute("realm discover {}".format(domain_name.upper()))
-            if (result_code == 0):
-                self.logger.info("Realm Discover komutu başarılı")
-            else:
-                self.logger.error("Realm Discover komutu başarısız : " + str(p_err))
+            self.discover_try_counter2 = 0
+            try:
+                while (True):
+                    self.discover_try_counter2 = self.discover_try_counter2 + 1
+                    if (self.discover_try_counter2 == 5):
+                        break
+                    else:
+                        (result_code, p_out, p_err) = self.util.execute("realm discover {}".format(domain_name.upper()))
+                        if (result_code == 0):
+                            self.logger.info("Realm Discover komutu başarılı")
+                            break
+                        else:
+                            self.logger.error("Realm Discover komutu başarısız : ")
+                            time.sleep(2)
+            except Exception as e:
+                self.logger.error(e)
+                self.logger.info("Active Directory Discover işlemi esnasında hata oluştu.")
 
-            (result_code, p_out, p_err) = self.util.execute("echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username, domain_name.upper()))
-            if (result_code == 0):
-                self.logger.info("Realm Join komutu başarılı")
-            else:
-                self.logger.error("Realm Join komutu başarısız : " + str(p_err))
+            self.join_try_counter = 0
+            try:
+                while (True):
+                    self.join_try_counter = self.join_try_counter + 1
+                    if (self.join_try_counter == 5):
+                        break
+                    else:
+                        (result_code, p_out, p_err) = self.util.execute("echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username, domain_name.upper()))
+                        if (result_code == 0):
+                            self.logger.info("Realm Join komutu başarılı")
+                            break
+                        else:
+                            self.logger.error("Realm Join komutu başarısız : ")
+                            time.sleep(2)
+            except Exception as e:
+                self.logger.error(e)
+                self.logger.info("Active Directory Join işlemi esnasında hata oluştu.")
 
             # Configure sssd template
             sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd_ad.conf"
@@ -175,6 +208,7 @@ class ExecuteSSSDAdAuthentication:
             file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
             file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
             file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
+            file_data = file_data.replace("###ad_hostname###", "ad_hostname = {0}.{1}".format(self.system.Os.hostname(), domain_name.lower()))
 
             file_sssd.close()
             file_sssd = open(sssd_config_file_path, 'w')
@@ -183,6 +217,39 @@ class ExecuteSSSDAdAuthentication:
 
             # Arrangement of chmod as 600 for sssd.conf
             (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
+            if(result_code == 0):
+                self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
+            else:
+                self.logger.error("Chmod komutu başarısız : " + str(p_err))
+
+            # Configure krb5 template
+            krb5_config_template_path = "/usr/share/ahenk/base/registration/config-files/krb5_ad.conf"
+            krb5_config_folder_path = "/etc"
+            krb5_config_file_path = "/etc/krb5.conf"
+
+            if not self.util.is_exist(krb5_config_folder_path):
+                self.util.create_directory(krb5_config_folder_path)
+                self.logger.info("{0} folder is created".format(krb5_config_folder_path))
+
+            if self.util.is_exist(krb5_config_file_path):
+                self.util.delete_file(krb5_config_file_path)
+                self.logger.info("delete krb5 org conf")
+
+            self.util.copy_file(krb5_config_template_path, krb5_config_folder_path)
+            self.logger.info("{0} config file is copied under {1}".format(krb5_config_template_path, krb5_config_folder_path))
+            self.util.rename_file("/etc/krb5_ad.conf", "/etc/krb5.conf")
+
+            # Configure krb5_ad.conf
+            file_krb5 = open(krb5_config_file_path, 'r')
+            file_data = file_krb5.read()
+            file_data = file_data.replace("###default_realm###", "default_realm = {}".format(domain_name.upper()))
+            file_krb5.close()
+            file_krb5 = open(krb5_config_file_path, 'w')
+            file_krb5.write(file_data)
+            file_krb5.close()
+
+            # Arrangement of chmod as 644 for krb5_ad.conf
+            (result_code, p_out, p_err) = self.util.execute("chmod 644 {}".format(krb5_config_file_path))
             if(result_code == 0):
                 self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
             else:
@@ -211,11 +278,10 @@ class ExecuteSSSDAdAuthentication:
             file_default_sssd.close()
 
             self.util.execute("systemctl restart nscd.service")
-            # self.util.execute("pam-auth-update --force")
             self.logger.info("AD Login operation has been completed.")
-
             self.logger.info("AD Login işlemi başarı ile sağlandı.")
             return True
+
         except Exception as e:
             self.logger.error(str(e))
             self.logger.info("AD Login işlemi esnasında hata oluştu.")

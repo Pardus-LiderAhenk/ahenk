@@ -4,6 +4,7 @@
 
 from base.scope import Scope
 from base.util.util import Util
+from base.system.system import System
 import re
 
 class ExecuteCancelSSSDAdAuthentication:
@@ -11,6 +12,7 @@ class ExecuteCancelSSSDAdAuthentication:
         scope = Scope().get_instance()
         self.logger = scope.get_logger()
         self.util = Util()
+        self.system = System()
         self.ad_info_path = "/etc/ahenk/ad_info"
 
     def cancel(self):
@@ -21,8 +23,10 @@ class ExecuteCancelSSSDAdAuthentication:
                 file_data = self.util.read_file_by_line(self.ad_info_path)
                 self.ip_address = file_data[0].strip("\n")
                 self.host_name = file_data[1].strip("\n")
+                self.domain_name = file_data[2].strip("\n")
                 self.logger.info(self.ip_address)
                 self.logger.info(self.host_name)
+                self.logger.info(self.domain_name)
                 self.logger.info("Information read successfully from ad_info.")
             else:
                 self.logger.error("ad_info file not found")
@@ -51,17 +55,23 @@ class ExecuteCancelSSSDAdAuthentication:
             file_dhclient.write(file_data)
             file_dhclient.close()
 
-
             # Configure hosts for deleting AD  "IP address" and "AD hostname"
             hosts_conf_path = "/etc/hosts"
             file_hosts = open(hosts_conf_path, 'r')
             file_data = file_hosts.read()
 
-            if ("{0}    {1}".format(self.ip_address, self.host_name)) in file_data:
-                file_data = file_data.replace(("{0}    {1}".format(self.ip_address, self.host_name)), " ")
-                self.logger.info("hosts is configured")
+            if ("{0}       {1}".format(self.ip_address, self.domain_name)) in file_data:
+                file_data = file_data.replace(("{0}       {1}".format(self.ip_address, self.domain_name)), " ")
+                self.logger.info("hosts is deleted")
             else:
-                self.logger.error("hosts is not configured")
+                self.logger.error("hosts domain is not deleted")
+
+            if ("{0}       {1}".format(self.ip_address, self.host_name)) in file_data:
+                file_data = file_data.replace(("{0}       {1}".format(self.ip_address, self.host_name)), " ")
+                self.logger.info("hosts is deleted")
+            else:
+                self.logger.error("hosts hostname is not deleted")
+
             file_hosts.close()
             file_hosts = open(hosts_conf_path, 'w')
             file_hosts.write(file_data)

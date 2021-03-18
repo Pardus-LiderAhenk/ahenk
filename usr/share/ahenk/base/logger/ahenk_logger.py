@@ -53,7 +53,7 @@ class Logger(object):
         try:
             exc_type, exc_value, exc_trace_back = sys.exc_info()
             caller = getframeinfo(stack()[1][0])
-
+            message = message.decode("utf-8")
             if exc_type is None and exc_value is None and exc_trace_back is None:
                 self.logger.error('[{0} {1}]\t {2}'.format(self.get_log_header(caller.filename), caller.lineno, message))
             else:

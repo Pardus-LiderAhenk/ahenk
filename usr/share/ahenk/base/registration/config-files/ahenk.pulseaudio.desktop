@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=PulseAudio Sound System
+Name[tr]=PulseAudio Ses Sistemi
+Comment=Start the PulseAudio Sound System
+Comment[tr]=PulseAudio Ses Sistemini Başlat
+Exec=pulseaudio --start
+Terminal=false
+Type=Application
+Categories=
+GenericName=
+X-GNOME-Autostart-Phase=Initialization
+X-KDE-autostart-phase=1
