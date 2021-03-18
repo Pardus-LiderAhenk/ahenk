@@ -1,3 +1,17 @@
+ahenk (1.1.0-20) unstable; urgency=medium
+
+  [ agahhulusi ]
+  * changes for AD gpo
+  * ahenk pulseaudio issue solved
+  * Active Directort domain bug fixed
+  * AD dns bug fixed
+  * fqdn bug fixed
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Thu, 18 Mar 2021 14:45:59 +0300
+
 ahenk (1.1.0-19) unstable; urgency=medium
 
   [ agahhulusi ]
