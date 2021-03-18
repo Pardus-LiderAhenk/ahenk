@@ -101,12 +101,6 @@ class ExecuteSSSDAdAuthentication:
             file_default_hosts = open(host_path, 'r')
             file_data = file_default_hosts.read()
 
-            if ("{0}       {1}.{2} {1}".format("127.0.1.1",self.system.Os.hostname(),domain_name)) not in file_data:
-                file_data = file_data + "\n" + ("{0}       {1}.{2} {1}".format("127.0.1.1",self.system.Os.hostname(),domain_name))
-                self.logger.info("FQDN is configured")
-            else:
-                self.logger.info("FQDN is not configured")
-
             if ("{0}       {1}".format(ip_address, host_name)) not in file_data:
                 file_data = file_data + "\n" + ("{0}       {1}".format(ip_address, host_name))
                 self.logger.info("/etc/hosts is configured for hostname")
