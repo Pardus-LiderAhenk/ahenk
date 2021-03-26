@@ -70,6 +70,7 @@ usr/share/ahenk/base/registration/execute_sssd_authentication.py
 usr/share/ahenk/base/registration/scripts/ldap-login.sh
 usr/share/ahenk/base/registration/scripts/ad.sh
 usr/share/ahenk/base/registration/scripts
+usr/share/ahenk/base/registration/config-files/sssd_ad_dns.conf
 usr/share/ahenk/base/registration/config-files/pam_script
 usr/share/ahenk/base/registration/config-files/ldap
 usr/share/ahenk/base/registration/config-files/krb5_ad.conf

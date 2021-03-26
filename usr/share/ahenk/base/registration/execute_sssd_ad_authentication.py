@@ -7,6 +7,7 @@ from base.util.util import Util
 from base.system.system import System
 import time
 
+
 class ExecuteSSSDAdAuthentication:
     def __init__(self):
         scope = Scope().get_instance()
@@ -14,8 +15,9 @@ class ExecuteSSSDAdAuthentication:
         self.util = Util()
         self.system = System()
 
-    def authenticate(self, domain_name, host_name, ip_address, password, ad_username):
+    def authenticate(self, domain_name, host_name, ip_address, password, ad_username, dynamic_dns_update):
         try:
+
             # Installation of required packages
             (result_code, p_out, p_err) = self.util.execute(
                 "sudo apt-get -y install realmd")
@@ -23,6 +25,15 @@ class ExecuteSSSDAdAuthentication:
                 self.logger.info("İndirmeler Başarılı")
             else:
                 self.logger.error("İndirmeler Başarısız : " + str(p_err))
+
+            # Split datas that Lider send
+            self.logger.info(host_name)
+            self.logger.info(ip_address)
+
+            ip_address_split = ip_address.split(",")
+            host_name_split = host_name.split(",")
+            ip_address = ip_address_split[0]
+            host_name = host_name_split[0]
 
             # Execute the commands that require for leave
             (result_code, p_out, p_err) = self.util.execute("realm leave")
@@ -40,8 +51,10 @@ class ExecuteSSSDAdAuthentication:
                 file_default_ad_info = open(default_ad_info_path, 'r')
                 file_data = file_default_ad_info.read()
 
-                file_data = file_data + ("{}".format(ip_address)) + "\n" + ("{}".format(host_name)) + "\n" + (
-                    "{}".format(domain_name)) + "\n" + ("{}".format(ad_username))
+                file_data = file_data + ("{}".format(ip_address_split)) + "\n" + (
+                    "{}".format(host_name_split)) + "\n" + (
+                                "{}".format(domain_name)) + "\n" + ("{}".format(ad_username))
+
                 self.logger.info("/etc/ahenk/ad_info bilgiler girildi.")
                 file_default_ad_info.close()
                 file_default_ad_info = open(default_ad_info_path, 'w')
@@ -101,17 +114,8 @@ class ExecuteSSSDAdAuthentication:
             file_default_hosts = open(host_path, 'r')
             file_data = file_default_hosts.read()
 
-            if ("{0}       {1}".format(ip_address, host_name)) not in file_data:
-                file_data = file_data + "\n" + ("{0}       {1}".format(ip_address, host_name))
-                self.logger.info("/etc/hosts is configured for hostname")
-            else:
-                self.logger.info("/etc/hosts is NOT configured for hostname")
-
-            if ("{0}       {1}".format(ip_address, domain_name)) not in file_data:
-                file_data = file_data + "\n" + ("{0}       {1}".format(ip_address, domain_name))
-                self.logger.info("/etc/hosts is configured for domainname")
-            else:
-                self.logger.info("/etc/hosts is NOT configured for domainname")
+            for ips, hostnames in zip(ip_address_split, host_name_split):
+                file_data = file_data + "\n" + ips + "       " + hostnames + " " + domain_name
 
             file_default_hosts.close()
             file_default_hosts = open(host_path, 'w')
@@ -119,15 +123,18 @@ class ExecuteSSSDAdAuthentication:
             file_default_hosts.close()
 
             # Execute the script that required for "samba-common" and "krb5"
-            (result_code, p_out, p_err) = self.util.execute("/bin/bash /usr/share/ahenk/base/registration/scripts/ad.sh {0} {1}".format(domain_name.upper(),host_name))
+            (result_code, p_out, p_err) = self.util.execute(
+                "/bin/bash /usr/share/ahenk/base/registration/scripts/ad.sh {0} {1}".format(domain_name.upper(),
+                                                                                            host_name))
 
-            if(result_code == 0):
+            if (result_code == 0):
                 self.logger.info("Script başarılı bir  şekilde çalıştırıldı.")
             else:
                 self.logger.error("Script başarısız oldu : " + str(p_err))
 
             # Installation of required packages
-            (result_code, p_out, p_err) = self.util.execute("sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs dnsutils")
+            (result_code, p_out, p_err) = self.util.execute(
+                "sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs")
             if (result_code == 0):
                 self.logger.info("İndirmeler Başarılı")
             else:
@@ -172,7 +179,9 @@ class ExecuteSSSDAdAuthentication:
                     if (self.join_try_counter == 5):
                         break
                     else:
-                        (result_code, p_out, p_err) = self.util.execute("echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username, domain_name.upper()))
+                        (result_code, p_out, p_err) = self.util.execute(
+                            "echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username,
+                                                                              domain_name.upper()))
                         if (result_code == 0):
                             self.logger.info("Realm Join komutu başarılı")
                             break
@@ -183,44 +192,99 @@ class ExecuteSSSDAdAuthentication:
                 self.logger.error(e)
                 self.logger.info("Active Directory Join işlemi esnasında hata oluştu.")
 
-            # Configure sssd template
-            sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd_ad.conf"
-            sssd_config_folder_path = "/etc/sssd"
-            sssd_config_file_path = "/etc/sssd/sssd.conf"
+            # DynamicDNSUpdate in Active Directory
+            if dynamic_dns_update == True:
+                self.logger.info("dynamicDNSUpdate is Activated")
+                # Installation of required packages
+                (result_code, p_out, p_err) = self.util.execute(
+                    "sudo apt-get -y install dnsutils")
+                if (result_code == 0):
+                    self.logger.info("İndirmeler Başarılı")
+                else:
+                    self.logger.error("İndirmeler Başarısız : " + str(p_err))
 
-            if not self.util.is_exist(sssd_config_folder_path):
-                self.util.create_directory(sssd_config_folder_path)
-                self.logger.info("{0} folder is created".format(sssd_config_folder_path))
+                # Configure sssd template
+                sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd_ad_dns.conf"
+                sssd_config_folder_path = "/etc/sssd"
+                sssd_config_file_path = "/etc/sssd/sssd.conf"
 
-            if self.util.is_exist(sssd_config_file_path):
-                self.util.delete_file(sssd_config_file_path)
-                self.logger.info("delete sssd org conf")
+                if not self.util.is_exist(sssd_config_folder_path):
+                    self.util.create_directory(sssd_config_folder_path)
+                    self.logger.info("{0} folder is created".format(sssd_config_folder_path))
 
-            self.util.copy_file(sssd_config_template_path, sssd_config_folder_path)
-            self.logger.info("{0} config file is copied under {1}".format(sssd_config_template_path, sssd_config_folder_path))
-            self.util.rename_file("/etc/sssd/sssd_ad.conf", "/etc/sssd/sssd.conf")
+                if self.util.is_exist(sssd_config_file_path):
+                    self.util.delete_file(sssd_config_file_path)
+                    self.logger.info("delete sssd org conf")
 
-            # Configure sssd.conf
-            file_sssd = open(sssd_config_file_path, 'r')
-            file_data = file_sssd.read()
+                self.util.copy_file(sssd_config_template_path, sssd_config_folder_path)
+                self.logger.info(
+                    "{0} config file is copied under {1}".format(sssd_config_template_path, sssd_config_folder_path))
+                self.util.rename_file("/etc/sssd/sssd_ad_dns.conf", "/etc/sssd/sssd.conf")
 
-            file_data = file_data.replace("###domains###", "domains = {}".format(domain_name))
-            file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
-            file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
-            file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
-            file_data = file_data.replace("###ad_hostname###", "ad_hostname = {0}.{1}".format(self.system.Os.hostname(), domain_name.lower()))
+                # Configure sssd.conf
+                file_sssd = open(sssd_config_file_path, 'r')
+                file_data = file_sssd.read()
 
-            file_sssd.close()
-            file_sssd = open(sssd_config_file_path, 'w')
-            file_sssd.write(file_data)
-            file_sssd.close()
+                file_data = file_data.replace("###domains###", "domains = {}".format(domain_name))
+                file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
+                file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
+                file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
+                file_data = file_data.replace("###ad_hostname###",
+                                              "ad_hostname = {0}.{1}".format(self.system.Os.hostname(),
+                                                                             domain_name.lower()))
 
-            # Arrangement of chmod as 600 for sssd.conf
-            (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
-            if(result_code == 0):
-                self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
+                file_sssd.close()
+                file_sssd = open(sssd_config_file_path, 'w')
+                file_sssd.write(file_data)
+                file_sssd.close()
+
+                # Arrangement of chmod as 600 for sssd.conf
+                (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
+                if (result_code == 0):
+                    self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
+                else:
+                    self.logger.error("Chmod komutu başarısız : " + str(p_err))
+
             else:
-                self.logger.error("Chmod komutu başarısız : " + str(p_err))
+                self.logger.info("dynamicDNSUpdate is NOT Activated")
+                # Configure sssd template
+                sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd_ad.conf"
+                sssd_config_folder_path = "/etc/sssd"
+                sssd_config_file_path = "/etc/sssd/sssd.conf"
+
+                if not self.util.is_exist(sssd_config_folder_path):
+                    self.util.create_directory(sssd_config_folder_path)
+                    self.logger.info("{0} folder is created".format(sssd_config_folder_path))
+
+                if self.util.is_exist(sssd_config_file_path):
+                    self.util.delete_file(sssd_config_file_path)
+                    self.logger.info("delete sssd org conf")
+
+                self.util.copy_file(sssd_config_template_path, sssd_config_folder_path)
+                self.logger.info(
+                    "{0} config file is copied under {1}".format(sssd_config_template_path, sssd_config_folder_path))
+                self.util.rename_file("/etc/sssd/sssd_ad.conf", "/etc/sssd/sssd.conf")
+
+                # Configure sssd.conf
+                file_sssd = open(sssd_config_file_path, 'r')
+                file_data = file_sssd.read()
+
+                file_data = file_data.replace("###domains###", "domains = {}".format(domain_name))
+                file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
+                file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
+                file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
+
+                file_sssd.close()
+                file_sssd = open(sssd_config_file_path, 'w')
+                file_sssd.write(file_data)
+                file_sssd.close()
+
+                # Arrangement of chmod as 600 for sssd.conf
+                (result_code, p_out, p_err) = self.util.execute("chmod 600 {}".format(sssd_config_file_path))
+                if (result_code == 0):
+                    self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
+                else:
+                    self.logger.error("Chmod komutu başarısız : " + str(p_err))
 
             # Configure krb5 template
             krb5_config_template_path = "/usr/share/ahenk/base/registration/config-files/krb5_ad.conf"
@@ -236,7 +300,8 @@ class ExecuteSSSDAdAuthentication:
                 self.logger.info("delete krb5 org conf")
 
             self.util.copy_file(krb5_config_template_path, krb5_config_folder_path)
-            self.logger.info("{0} config file is copied under {1}".format(krb5_config_template_path, krb5_config_folder_path))
+            self.logger.info(
+                "{0} config file is copied under {1}".format(krb5_config_template_path, krb5_config_folder_path))
             self.util.rename_file("/etc/krb5_ad.conf", "/etc/krb5.conf")
 
             # Configure krb5_ad.conf
@@ -250,7 +315,7 @@ class ExecuteSSSDAdAuthentication:
 
             # Arrangement of chmod as 644 for krb5_ad.conf
             (result_code, p_out, p_err) = self.util.execute("chmod 644 {}".format(krb5_config_file_path))
-            if(result_code == 0):
+            if (result_code == 0):
                 self.logger.info("Chmod komutu başarılı bir şekilde çalıştırıldı")
             else:
                 self.logger.error("Chmod komutu başarısız : " + str(p_err))
@@ -268,7 +333,7 @@ class ExecuteSSSDAdAuthentication:
                 self.util.delete_file(default_sssd_path)
                 self.logger.info("delete sssd org conf")
 
-            if "LC_ALL=\"tr_CY.UTF-8\"" not in file_data :
+            if "LC_ALL=\"tr_CY.UTF-8\"" not in file_data:
                 file_data = file_data + "\n" + "LC_ALL=\"tr_CY.UTF-8\""
                 self.logger.info("/etc/default/sssd is configured")
 
