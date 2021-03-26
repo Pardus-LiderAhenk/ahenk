@@ -1,3 +1,13 @@
+ahenk (1.1.0-21) unstable; urgency=medium
+
+  [ agahhulusi ]
+  * dynamics DNS update
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Fri, 26 Mar 2021 15:31:09 +0300
+
 ahenk (1.1.0-20) unstable; urgency=medium
 
   [ agahhulusi ]
