@@ -201,15 +201,16 @@ class Registration:
         ip_address = str(reg_reply['adIpAddress'])
         password = str(reg_reply['adAdminPassword'])
         ad_username = str(reg_reply['adAdminUserName'])
+        dynamic_dns_update = reg_reply['dynamicDNSUpdate']
 
         if domain_name is None or host_name is None or  ip_address is None  or password is None :
             self.logger.error("Registration params is null")
             return
 
-        self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username)
+        self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username, dynamic_dns_update)
 
     def registration_error(self, reg_reply):
-       self.re_register()
+        self.re_register()
 
     def is_registered(self):
         try:

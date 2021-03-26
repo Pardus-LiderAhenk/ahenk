@@ -7,6 +7,7 @@ from base.util.util import Util
 from base.system.system import System
 import re
 
+
 class ExecuteCancelSSSDAdAuthentication:
     def __init__(self):
         scope = Scope().get_instance()
@@ -21,12 +22,22 @@ class ExecuteCancelSSSDAdAuthentication:
             # Read information about AD
             if self.util.is_exist(self.ad_info_path):
                 file_data = self.util.read_file_by_line(self.ad_info_path)
-                self.ip_address = file_data[0].strip("\n")
-                self.host_name = file_data[1].strip("\n")
+                self.ip_list = file_data[0].strip("\n").replace("[", "").replace("]", "")
+                self.host_list = file_data[1].strip("\n").replace("[", "").replace("]", "")
                 self.domain_name = file_data[2].strip("\n")
+
+                self.ip_address = self.ip_list.split(", ")
+                self.host_name = self.host_list.split(", ")
+
+                self.ip_address[0] = self.ip_address[0].replace("'", "")
+                self.host_name[0] = self.host_name[0].replace("'", "")
+
                 self.logger.info(self.ip_address)
                 self.logger.info(self.host_name)
                 self.logger.info(self.domain_name)
+                self.logger.info(self.ip_list)
+                self.logger.info(self.host_list)
+
                 self.logger.info("Information read successfully from ad_info.")
             else:
                 self.logger.error("ad_info file not found")
@@ -43,8 +54,8 @@ class ExecuteCancelSSSDAdAuthentication:
             file_dhclient = open(dhclient_conf_path, 'r')
             file_data = file_dhclient.read()
 
-            if "prepend domain-name-servers {};".format(self.ip_address) in file_data:
-                file_data = file_data.replace(("prepend domain-name-servers {};".format(self.ip_address)),
+            if "prepend domain-name-servers {};".format(self.ip_address[0]) in file_data:
+                file_data = file_data.replace(("prepend domain-name-servers {};".format(self.ip_address[0])),
                                               "#prepend domain-name-servers 127.0.0.1;")
                 self.logger.info("dhclient is reconfigured")
             else:
@@ -60,17 +71,11 @@ class ExecuteCancelSSSDAdAuthentication:
             file_hosts = open(hosts_conf_path, 'r')
             file_data = file_hosts.read()
 
-            if ("{0}       {1}".format(self.ip_address, self.domain_name)) in file_data:
-                file_data = file_data.replace(("{0}       {1}".format(self.ip_address, self.domain_name)), " ")
-                self.logger.info("hosts is deleted")
-            else:
-                self.logger.error("hosts domain is not deleted")
-
-            if ("{0}       {1}".format(self.ip_address, self.host_name)) in file_data:
-                file_data = file_data.replace(("{0}       {1}".format(self.ip_address, self.host_name)), " ")
-                self.logger.info("hosts is deleted")
-            else:
-                self.logger.error("hosts hostname is not deleted")
+            for ip, host in zip(self.ip_address, self.host_name):
+                ip = ip.replace("'", "")
+                host = host.replace("'", "")
+                if ("{0}       {1} {2}".format(ip, host, self.domain_name)) in file_data:
+                    file_data = file_data.replace(("{0}       {1} {2}".format(ip, host, self.domain_name)), " ")
 
             file_hosts.close()
             file_hosts = open(hosts_conf_path, 'w')
@@ -98,8 +103,8 @@ class ExecuteCancelSSSDAdAuthentication:
             file_resolv = open(resolv_conf_path, 'r')
             file_data = file_resolv.read()
 
-            if ("nameserver {0}".format(self.ip_address)) in file_data:
-                file_data = file_data.replace(("nameserver {0}".format(self.ip_address)), "")
+            if ("nameserver {0}".format(self.ip_address[0])) in file_data:
+                file_data = file_data.replace(("nameserver {0}".format(self.ip_address[0])), "")
                 self.logger.info("resolv.conf is configured")
             else:
                 self.logger.error("resolv is not configured")
@@ -115,7 +120,6 @@ class ExecuteCancelSSSDAdAuthentication:
                 self.logger.info("Deleted ad_info file")
             else:
                 self.logger.error("ad_info file not found")
-
 
             self.logger.info("AD Login iptal etme işlemi başarı ile sağlandı.")
             return True
