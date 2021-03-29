@@ -196,18 +196,28 @@ class Registration:
 
     def install_and_config_ad(self, reg_reply):
         self.logger.info('AD install process starting')
+
         domain_name = str(reg_reply['adDomainName'])
         host_name = str(reg_reply['adHostName'])
         ip_address = str(reg_reply['adIpAddress'])
         password = str(reg_reply['adAdminPassword'])
         ad_username = str(reg_reply['adAdminUserName'])
-        dynamic_dns_update = reg_reply['dynamicDNSUpdate']
+        dynamic_dns_update = False
 
-        if domain_name is None or host_name is None or  ip_address is None  or password is None :
-            self.logger.error("Registration params is null")
-            return
-
-        self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username, dynamic_dns_update)
+        if 'dynamicDNSUpdate' in reg_reply:
+            dynamic_dns_update = reg_reply['dynamicDNSUpdate']
+            self.logger.info("DynamicDNSUpdate is NOT NULL")
+            if domain_name is None or host_name is None or ip_address is None or password is None:
+                self.logger.error("Registration params is null")
+                return
+            self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username, dynamic_dns_update)
+        else:
+            self.logger.info("DynamicDNSUpdate is NULL")
+            if domain_name is None or host_name is None or ip_address is None or password is None:
+                self.logger.error("Registration params is null")
+                return
+            self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username, dynamic_dns_update)
+        # self.ad_login.authenticate(domain_name, host_name, ip_address, password, ad_username, dynamic_dns_update)
 
     def registration_error(self, reg_reply):
         self.re_register()
