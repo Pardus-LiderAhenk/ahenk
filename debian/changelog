@@ -1,3 +1,14 @@
+ahenk (1.1.0-23) unstable; urgency=medium
+
+  [ hulusi ]
+  * enumerate=false update
+  * ldap authentication enumerate=false
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Tue, 06 Apr 2021 11:42:10 +0300
+
 ahenk (1.1.0-22) unstable; urgency=medium
 
   [ agahhulusi ]
