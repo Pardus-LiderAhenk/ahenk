@@ -5,6 +5,7 @@ import json
 import time
 from base64 import b64encode
 from os import urandom
+
 from base.plugin.abstract_plugin import AbstractPlugin
 
 class SetupVnc(AbstractPlugin):
@@ -82,21 +83,14 @@ class SetupVnc(AbstractPlugin):
         #self.execute('su - {0} -c "x11vnc -storepasswd {1} {2}/.vncahenk{3}/x11vncpasswd"'.format(user_name, self.password, homedir,user_name), result=False)
         self.logger.debug('Running VNC server as user.')
         if self.data['permission'] == "yes":
-            self.send_notify("Liderahenk",
-                             "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
-                             display_number, user_name, timeout=50000)
-            time.sleep(5)
-            # self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2} -o {2}/.vncahenk{3}/vnc.log -display {4}"'.format(
-            #         user_name, self.port, user_name, display_number), result=False)
-            self.execute(
-                'su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2} -capslock -display {3}"'.format(
+            self.execute('su - {0} -c "x11vnc -accept \'popup\' -gone \'popup\' -rfbport {1} -passwd {2} -capslock -display {3}"'.format(
                     user_name, self.port, self.password, display_number), result=False)
         elif self.data["permission"] == "no":
             self.logger.info("Lider Ahenk sistem yöneticisi 5 sn sonra bilgisayarınıza uzak erişim sağlayacaktır. ")
-            self.send_notify("Liderahenk",
-                             "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
-                             display_number, user_name, timeout=50000)
-            time.sleep(2)
+            # self.send_notify("Liderahenk",
+            #                  "Lider Ahenk Sistem Yoneticisi tarafindan\n5 sn sonra bilgisayarınıza uzak erişim sağlanacaktır.\nBağlantı kapatıldıktan sonra ayrıca bilgilendirilecektir.",
+            #                  display_number, user_name, timeout=50000)
+            #time.sleep(2)
             self.execute('su - {0} -c "x11vnc -gone \'popup\' -rfbport {1} -passwd {2} -capslock -display {3}"'.format(
                     user_name, self.port, self.password, display_number), result=False)
         else:
