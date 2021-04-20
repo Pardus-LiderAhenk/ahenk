@@ -1,3 +1,11 @@
+ahenk (1.1.0-24) unstable; urgency=medium
+
+  [ Tuncay ÇOLAK ]
+  * deleted notify for vnc
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Wed, 21 Apr 2021 00:19:53 +0300
+
 ahenk (1.1.0-23) unstable; urgency=medium
 
   [ hulusi ]
