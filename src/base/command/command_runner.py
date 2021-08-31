@@ -60,6 +60,7 @@ class CommandRunner(object):
                 json_data = json.loads(event)
                 self.logger.info(event)
 
+
             except Exception as e:
                 self.logger.error(
                     'A problem occurred while loading json. Check json format! Error Message: {0}.'
