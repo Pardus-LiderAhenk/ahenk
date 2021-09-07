@@ -227,7 +227,7 @@ class ExecuteSSSDAdAuthentication:
 
                 file_data = file_data.replace("###domains###", "domains = {}".format(domain_name))
                 file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
-                file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
+                file_data = file_data.replace("###ad_server###", "ad_server = {}".format(domain_name))
                 file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
                 file_data = file_data.replace("###ad_hostname###",
                                               "ad_hostname = {0}.{1}".format(self.system.Os.hostname(),
@@ -271,7 +271,7 @@ class ExecuteSSSDAdAuthentication:
 
                 file_data = file_data.replace("###domains###", "domains = {}".format(domain_name))
                 file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
-                file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
+                file_data = file_data.replace("###ad_server###", "ad_server = {}".format(domain_name))
                 file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
 
                 file_sssd.close()
