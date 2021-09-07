@@ -12,7 +12,7 @@ import socket
 import struct
 import netifaces
 from uuid import getnode as get_mac
-
+import distro
 import cpuinfo
 import psutil
 
@@ -337,15 +337,18 @@ class System:
 
         @staticmethod
         def distribution_name():
-            return platform.linux_distribution()[0]
+            #return platform.linux_distribution()[0]
+            return distro.linux_distribution()[0]
 
         @staticmethod
         def distribution_version():
-            return platform.linux_distribution()[1]
+            # return platform.linux_distribution()[1]
+            return distro.linux_distribution()[1]
 
         @staticmethod
         def distribution_id():
-            return platform.linux_distribution()[2]
+            # return platform.linux_distribution()[2]
+            return distro.linux_distribution()[2]
 
         @staticmethod
         def version():

@@ -73,7 +73,7 @@ class CommandRunner(object):
 
                 if str(json_data['event']) == 'login' and self.check_last_login():
                     username = json_data['username']
-                    if username != "Debian-gdm":
+                    if username != "Debian-gdm" or username != "gdm":
                         display = json_data['display']
                         desktop = json_data['desktop']
 
