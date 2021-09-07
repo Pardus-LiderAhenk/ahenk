@@ -4,7 +4,7 @@ set -e
 
 # Create necessary directories
 #update ahenk from 1.0.0-6 to 1.0.0-7
-if [ -d /etc/ahenk ]; then
+if [[ -d /etc/ahenk ]]; then
 
     cp -rf /etc/ahenk /tmp
 

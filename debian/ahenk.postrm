@@ -2,6 +2,6 @@
 
 set -e
 
-if [ -d /etc/ahenk ] && [ "$1" = "purge" ];then
+if [[ -d /etc/ahenk ]] && [[ "$1" = "purge" ]];then
     rm -rf /etc/ahenk
 fi

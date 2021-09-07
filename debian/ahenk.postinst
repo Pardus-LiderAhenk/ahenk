@@ -5,10 +5,15 @@ set -e
 #mkdir -p /usr/share/ahenk/plugins
 
 # update ahenk from 1.0.0-6 to 1.0.0-7
-if [ ! -d /etc/ahenk ]; then
-
+if [[ ! -d /etc/ahenk ]]; then
     mkdir -p /etc/ahenk
     cp -rf /tmp/ahenk/* /etc/ahenk
+# update pardus21 sssd conf changes when update pardus from 24 to 25
+    if [[ -f /etc/ahenk/ad_info ]]; then
+          if [[ -f /etc/sssd/sssd.conf ]]; then
+            sed -i 's/ad_domain/ad_server/g' /etc/sssd/sssd.conf
+          fi
+    fi
 fi
 
 systemctl enable ahenk
