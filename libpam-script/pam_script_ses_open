@@ -14,14 +14,14 @@ function log() {
   echo "$(date) $0: $@" >> $LOG
 }
 
-if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
-  if ([ -n $PAM_SERVICE ] && [[ ( $PAM_SERVICE == "gdm"* || $PAM_SERVICE == *"dm" )]]) || ([ -n $PAM_TTY ] && [[ $PAM_TTY == ":"* ]]); then
+if [[ -n $PAM_USER ]] && [[ $PAM_USER != "root" ]]; then
+  if ([[ -n $PAM_SERVICE ]] && [[ ( $PAM_SERVICE == "gdm"* || $PAM_SERVICE == *"dm" )]]) || ([[ -n $PAM_TTY ]] && [[ $PAM_TTY == ":"* ]]); then
     SERVICE="none"
-    if [ -n $PAM_SERVICE ]; then
+    if [[ -n $PAM_SERVICE ]]; then
       SERVICE="$PAM_SERVICE"
     fi
     TTY_DISPLAY="none"
-    if [ -n $PAM_TTY ]; then
+    if [[ -n $PAM_TTY ]]; then
       TTY_DISPLAY="$PAM_TTY"
     fi
     domain="none"
@@ -35,10 +35,10 @@ if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
     fi
     if [[ $domain != "none" ]]; then
       log "login: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY domain: $domain"
-      sudo python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY $domain
+      python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY $domain
     else
       log "login: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY domain: none"
-      sudo python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY
+      python3 /usr/share/ahenk/ahenkd.py login $PAM_USER $SERVICE $TTY_DISPLAY
     fi
   fi
 fi
