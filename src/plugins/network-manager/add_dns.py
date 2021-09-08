@@ -23,10 +23,10 @@ class AddDNS(AbstractPlugin):
     def handle_task(self):
         try:
             if self.is_active is True:
-                content = 'nameserver {}\n'.format(self.ip)
+                content = '\nnameserver {}\n'.format(self.ip)
                 self.logger.debug('Created active dns content.')
             else:
-                content = '#nameserver {}\n'.format(self.ip)
+                content = '\n#nameserver {}\n'.format(self.ip)
                 self.logger.debug('Created passive dns content.')
 
             self.logger.debug('Writing to file...')

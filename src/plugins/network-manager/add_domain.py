@@ -21,7 +21,7 @@ class AddDomain(AbstractPlugin):
 
     def handle_task(self):
         try:
-            content = 'domain {0}\nsearch {0}\n'.format(self.domain)
+            content = '\ndomain {0}\nsearch {0}\n'.format(self.domain)
 
             self.logger.debug('Writing to file...')
             self.write_file(self.dns_file, content, 'a')

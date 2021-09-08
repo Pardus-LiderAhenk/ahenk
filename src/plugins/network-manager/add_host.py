@@ -24,10 +24,10 @@ class AddHost(AbstractPlugin):
     def handle_task(self):
         try:
             if self.is_active is True:
-                content = '{0} {1}\n'.format(self.ip, self.hostname)
+                content = '\n{0} {1}\n'.format(self.ip, self.hostname)
                 self.logger.debug('Created active host content.')
             else:
-                content = '#{0} {1}\n'.format(self.ip, self.hostname)
+                content = '\n#{0} {1}\n'.format(self.ip, self.hostname)
                 self.logger.debug('Created passive host content.')
 
             self.logger.debug('Writing to file...')
