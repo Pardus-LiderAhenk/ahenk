@@ -352,7 +352,9 @@ class System:
 
         @staticmethod
         def version():
-            return platform.version()
+            # return platform.version()
+            version = distro.lsb_release_info()['description'] +"-"+ distro.lsb_release_info()["release"]
+            return version
 
         @staticmethod
         def kernel_release():
