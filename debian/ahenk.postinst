@@ -28,6 +28,7 @@ if [ -d /etc/sssd ]; then
       :
   else
       echo """LC_ALL=\"tr_CY.UTF-8\"""" >> /etc/default/sssd
+      systemctl restart sssd.service
   fi
 fi
 
