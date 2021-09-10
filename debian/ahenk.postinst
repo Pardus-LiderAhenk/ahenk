@@ -13,13 +13,22 @@ if [ ! -d /etc/ahenk ]; then
 fi
 
 # update pardus21 sssd conf changes when update pardus from 24 to 25
-if [ -f /etc/ahenk/ad_info ]; then
-
+if [ -d /etc/ahenk ]; then
+  if [ -f /etc/ahenk/ad_info ]; then
     if [ -f /etc/sssd/sssd.conf ]; then
        sed -i 's/ad_domain/ad_server/g' /etc/sssd/sssd.conf
        systemctl restart sssd.service
     fi
+  fi
+fi
 
+if [ -d /etc/sssd ]; then
+  if grep -Fxq 'LC_ALL="tr_CY.UTF-8"' /etc/default/sssd
+  then
+      :
+  else
+      echo """LC_ALL=\"tr_CY.UTF-8\"""" >> /etc/default/sssd
+  fi
 fi
 
 systemctl enable ahenk

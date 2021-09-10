@@ -155,6 +155,10 @@ class ExecuteSSSDAdAuthentication:
             file_default_pam.close()
 
             self.discover_try_counter2 = 0
+
+
+
+
             try:
                 while (True):
                     self.discover_try_counter2 = self.discover_try_counter2 + 1
