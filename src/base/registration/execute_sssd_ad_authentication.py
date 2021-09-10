@@ -134,7 +134,7 @@ class ExecuteSSSDAdAuthentication:
 
             # Installation of required packages
             (result_code, p_out, p_err) = self.util.execute(
-                "sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs")
+                "sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs libsss-sudo")
             if (result_code == 0):
                 self.logger.info("İndirmeler Başarılı")
             else:
