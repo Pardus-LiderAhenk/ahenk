@@ -151,7 +151,7 @@ class Registration:
                 self.install_and_config_ad(reg_reply)
                 self.change_permissions_for_local_users()
 
-            self.create_ahenk_pulseaudio_desktop_file()
+            # self.create_ahenk_pulseaudio_desktop_file()
 
         except Exception as e:
             self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))

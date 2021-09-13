@@ -135,3 +135,17 @@ class DefaultPolicy:
                 tree.write(fileName)
             else:
                 self.logger.info("'" + app_name_for_blocking + "' is already added to muted_applications tag.")
+
+    # create pulseaudio autostart file while user opening session
+    def create_pulseaudio_autostart(self):
+        pulseaudio_des_path = "/etc/xdg/autostart/ahenk.pulseaudio.start.desktop"
+        pulseaudio_src_path = "/usr/share/ahenk/base/default_policy/config-files/ahenk.pulseaudio.start.desktop"
+        pulseaudio_old_file = "/etc/xdg/autostart/ahenk.pulseaudio.desktop"
+        if Util.is_exist(pulseaudio_old_file):
+            Util.delete_file(pulseaudio_old_file)
+
+        if not Util.is_exist(pulseaudio_des_path):
+            Util.copy_file(pulseaudio_src_path, pulseaudio_des_path)
+            self.logger.info("Copy pulseaudio autostart file")
+        else:
+            self.logger.info("Pulseaudio autostart file already exist")

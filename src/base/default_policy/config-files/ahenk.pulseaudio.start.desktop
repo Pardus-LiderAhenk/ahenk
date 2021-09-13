@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=sesbaslat
+Comment=Start the PulseAudio Sound System
+Exec=sh -c 'killall pulseaudio; sleep 3; pulseaudio --start'
+Terminal=false
+Type=Application
+Categories=
+GenericName=
+X-GNOME-Autostart-Phase=Initialization
+X-KDE-autostart-phase=1

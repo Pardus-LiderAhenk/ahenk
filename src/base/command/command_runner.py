@@ -142,6 +142,7 @@ class CommandRunner(object):
                             self.logger.info("Applying default policies for user {0}".format(Util.get_username()))
                             self.default_policy.default_firefox_policy(Util.get_username())
                             self.default_policy.disable_update_package_notify(Util.get_username())
+                            self.default_policy.create_pulseaudio_autostart()
                             # Default policy for users --->> STOP
 
                             get_policy_message = self.message_manager.policy_request_msg(username)
