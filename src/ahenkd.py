@@ -30,6 +30,7 @@ from base.scope import Scope
 from base.system.system import System
 from base.task.task_manager import TaskManager
 from base.util.util import Util
+from base.default_config.default_config import DefaultConfig
 from easygui import msgbox
 
 sys.path.append('../..')
@@ -274,6 +275,10 @@ class AhenkDaemon(BaseDaemon):
             else:
                 self.logger.info('local users will not be disabled because local_user_paramater is FALSE')
 
+    def default_settings(self):
+        default_config = DefaultConfig()
+        default_config.check_sssd_settings()
+
     def run(self):
         """ docstring"""
         print('Ahenk running...')
@@ -319,6 +324,8 @@ class AhenkDaemon(BaseDaemon):
         self.init_execution_manager()
         self.logger.info('Execution Manager was set')
 
+        self.default_settings()
+
         self.check_registration()
 
         self.is_registered()
@@ -341,7 +348,6 @@ class AhenkDaemon(BaseDaemon):
         # if registration.is_ldap_registered() is False:
         #    logger.debug('Attempting to registering ldap')
         #    registration.ldap_registration_request() #TODO work on message
-
         self.logger.info('LDAP registration of Ahenk is completed')
 
         self.messenger.send_direct_message('test')
