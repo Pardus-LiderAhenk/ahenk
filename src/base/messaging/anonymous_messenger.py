@@ -95,13 +95,22 @@ class AnonymousMessenger(ClientXMPP):
 
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
-            self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
+
             self.logger.info('Reading registration reply')
             j = json.loads(str(msg['body']))
             message_type = j['type']
             status = str(j['status']).lower()
             dn = str(j['agentDn'])
             self.logger.debug('Registration status: ' + str(status))
+            is_password = False
+            for key, value in j.items():
+                if "password" in key.lower():
+                    j[key] = "********"
+                    is_password = True
+            if is_password:
+                self.logger.info('---------->Received message: {0}'.format(str(j)))
+            else:
+                self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
 
             if 'not_authorized' == str(status):
                 self.logger.debug('[REGISTRATION IS FAILED]. User not authorized')
@@ -154,5 +163,15 @@ class AnonymousMessenger(ClientXMPP):
                 self.logger.debug('Fired event is: {0}'.format(message_type))
 
     def send_direct_message(self, msg):
-        self.logger.debug('<<--------Sending message: {0}'.format(msg))
+        body = json.loads(str(msg))
+        if body['type'] == "REGISTER" or body['type'] == "UNREGISTER":
+            is_password = False
+            for key, value in body.items():
+                if "password" in key.lower():
+                    body[key] = "********"
+                    is_password = True
+            if is_password:
+                self.logger.info('<<--------Sending message: {0}'.format(body))
+        else:
+            self.logger.info('<<--------Sending message: {0}'.format(msg))
         self.send_message(mto=self.receiver, mbody=msg, mtype='normal')

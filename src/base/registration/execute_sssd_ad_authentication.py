@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: Agah Hulusi ÖZ <enghulusi@gmail.com>
+import subprocess
 
 from base.scope import Scope
 from base.util.util import Util
@@ -183,7 +184,7 @@ class ExecuteSSSDAdAuthentication:
                     if (self.join_try_counter == 5):
                         break
                     else:
-                        (result_code, p_out, p_err) = self.util.execute(
+                        (result_code, p_out, p_err) = self.execute_command(
                             "echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username,
                                                                               domain_name.upper()))
                         if (result_code == 0):
@@ -355,4 +356,19 @@ class ExecuteSSSDAdAuthentication:
             self.logger.error(str(e))
             self.logger.info("AD Login işlemi esnasında hata oluştu.")
             return False
+
+    def execute_command(self, command, stdin=None, env=None, cwd=None, shell=True, result=True):
+
+        try:
+            process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, shell=shell)
+            if result is True:
+                result_code = process.wait()
+                p_out = process.stdout.read().decode("unicode_escape")
+                p_err = process.stderr.read().decode("unicode_escape")
+                return result_code, p_out, p_err
+            else:
+                return None, None, None
+        except Exception as e:
+            return 1, 'Could not execute command'
 

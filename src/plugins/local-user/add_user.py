@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author:Mine DOGAN <mine.dogan@agem.com.tr>
 # Author:Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>
+import subprocess
 
 from base.plugin.abstract_plugin import AbstractPlugin
 from pathlib import Path
@@ -60,10 +61,10 @@ class AddUser(AbstractPlugin):
                 self.logger.debug('Added user to these groups: {}'.format(self.groups))
 
             if str(self.password).strip() != "":
-                result_code, p_out, p_err = self.execute(self.create_shadow_password.format(self.password))
+                result_code, p_out, p_err = self.execute_command(self.create_shadow_password.format(self.password))
                 shadow_password = p_out.strip()
                 # shadow_password = crypt.crypt(self.password)
-                self.execute(self.change_password.format('\'{}\''.format(shadow_password), self.username))
+                self.execute_command(self.change_password.format('\'{}\''.format(shadow_password), self.username))
                 self.logger.debug('Changed password.')
 
             self.execute(self.change_shell.format(self.username))
@@ -142,6 +143,21 @@ class AddUser(AbstractPlugin):
             self.logger.error('A problem occurred while handling Local-User task: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='Local-User görevi çalıştırılırken bir hata oluştu.')
+
+    ## this methode is only for local-user password plugin
+    def execute_command(self, command, stdin=None, env=None, cwd=None, shell=True, result=True):
+        try:
+            process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, shell=shell)
+            if result is True:
+                result_code = process.wait()
+                p_out = process.stdout.read().decode("unicode_escape")
+                p_err = process.stderr.read().decode("unicode_escape")
+                return result_code, p_out, p_err
+            else:
+                return None, None, None
+        except Exception as e:
+            return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
 
 
 def handle_task(task, context):

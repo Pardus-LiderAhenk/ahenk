@@ -92,7 +92,17 @@ class Messenger(ClientXMPP):
 
     def send_direct_message(self, msg):
         try:
-            self.logger.info('<<--------Sending message: {0}'.format(msg))
+            body = json.loads(str(msg))
+            if body['type'] == "REGISTER" or body['type'] == "UNREGISTER":
+                is_password = False
+                for key, value in body.items():
+                    if "password" in key.lower():
+                        body[key] = "********"
+                        is_password = True
+                if is_password:
+                    self.logger.info('<<--------Sending message: {0}'.format(body))
+            else:
+                self.logger.info('<<--------Sending message: {0}'.format(msg))
             self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
         except Exception as e:
             self.logger.error(
@@ -109,12 +119,31 @@ class Messenger(ClientXMPP):
                     self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
 
                 if j['type'] == "EXECUTE_TASK":
-                    i = json.loads(str(j['task']))
-                    plugin_name = i['plugin']['name']
-                    if plugin_name == "manage-root":
-                        parameter_map = i['parameterMap']
-                        parameter_map.pop("RootPassword")
-                        self.logger.info("---------->Received message: {}".format(str(parameter_map)))
+                    message = json.loads(str(msg['body']))
+                    task = json.loads(str(message['task']))
+                    #plugin_name = task['plugin']['name']
+                    parameter_map = task['parameterMap']
+                    use_file_transfer = message['fileServerConf']
+                    is_password = False
+                    for key, value in parameter_map.items():
+                        if "password" in key.lower():
+                            parameter_map[key] = "********"
+                            task['parameterMap'] = parameter_map
+                            message['task'] = task
+                            is_password = True
+                    if use_file_transfer != None:
+                        #message['fileServerConf'] = "*******"
+                        file_server_conf = message['fileServerConf']
+                        file_server_param = file_server_conf['parameterMap']
+                        for key, value in file_server_param.items():
+                            if "password" in key.lower():
+                                file_server_param[key] = "********"
+                                file_server_conf['parameterMap'] = file_server_param
+                                #message['fileServerConf']['parameterMap'] = file_server_param
+                                message['fileServerConf'] = file_server_conf
+                        is_password = True
+                    if is_password:
+                        self.logger.info('---------->Received message: {0}'.format(str(message)))
                     else:
                         self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
                 self.event_manger.fireEvent(message_type, str(msg['body']))

@@ -98,21 +98,16 @@ class RootPassword(AbstractPlugin):
         try:
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
                                        stdout=subprocess.PIPE, shell=shell)
-
             self.logger.debug('Executing command for manage-root')
-
             if result is True:
                 result_code = process.wait()
                 p_out = process.stdout.read().decode("unicode_escape")
                 p_err = process.stderr.read().decode("unicode_escape")
-
                 return result_code, p_out, p_err
             else:
                 return None, None, None
         except Exception as e:
-            return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
-
-
+            return 1, 'Could not execute command'
 
 
 def handle_task(task, context):

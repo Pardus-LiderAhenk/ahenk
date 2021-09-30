@@ -154,7 +154,17 @@ class Messaging(object):
         data['timestamp'] = self.db_service.select_one_result('registration', 'timestamp', ' 1=1')
         json_data = json.dumps(data)
         self.logger.debug('Registration message was created')
-        self.logger.info('Registration message was created. Data content: '+ json_data)
+
+        body = json.loads(str(json_data))
+        is_password = False
+        for key, value in body.items():
+            if "password" in key.lower():
+                body[key] = "********"
+                is_password = True
+        if is_password:
+            self.logger.info('Registration message was created. Data content:  {0}'.format(body))
+
+        #self.logger.info('Registration message was created. Data content: ' + json_data)
         return json_data
 
     def ldap_registration_msg(self):
