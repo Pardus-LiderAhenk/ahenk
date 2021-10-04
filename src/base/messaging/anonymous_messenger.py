@@ -103,12 +103,13 @@ class AnonymousMessenger(ClientXMPP):
             dn = str(j['agentDn'])
             self.logger.debug('Registration status: ' + str(status))
             is_password = False
-            for key, value in j.items():
+            body_without_password = json.loads(str(msg['body']))
+            for key, value in body_without_password.items():
                 if "password" in key.lower():
-                    j[key] = "********"
+                    body_without_password[key] = "********"
                     is_password = True
             if is_password:
-                self.logger.info('---------->Received message: {0}'.format(str(j)))
+                self.logger.info('---------->Received message: {0}'.format(str(body_without_password)))
             else:
                 self.logger.info('---------->Received message: {0}'.format(str(msg['body'])))
 

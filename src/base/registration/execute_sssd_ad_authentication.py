@@ -362,6 +362,7 @@ class ExecuteSSSDAdAuthentication:
         try:
             process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
                                        stdout=subprocess.PIPE, shell=shell)
+            self.logger.debug('Executing command for ad registration')
             if result is True:
                 result_code = process.wait()
                 p_out = process.stdout.read().decode("unicode_escape")
@@ -370,5 +371,5 @@ class ExecuteSSSDAdAuthentication:
             else:
                 return None, None, None
         except Exception as e:
-            return 1, 'Could not execute command'
+            return 1, 'Error Message: {0}'.format(str(e)), ''
 
