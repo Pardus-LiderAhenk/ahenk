@@ -1,3 +1,42 @@
+ahenk (1.1.0-25) unstable; urgency=medium
+
+  [ agah ]
+  * plugins bash changes
+
+  [ enghulusi ]
+  * command_runner
+  * pardus21 bug fixed
+
+  [ Tuncay ÇOLAK ]
+  * change module for linux_distro as distro and added dynamic_dns_update param to ad_login
+
+  [ agahhulusi ]
+  * ldap sssd libsss-sudo, bash changes, ahenk post install sssd_ad_authentication
+  * pam_script_ses files changes
+  * dns and network plugins fixed
+  * ahenk postint fixed
+  * post and pre install of ahenk fixed
+
+  [ Tuncay ÇOLAK ]
+  * change os version as distro.lsb_release in system
+
+  [ agahhulusi ]
+  * ahenkpostint add SSSD language settings
+  * bıg fixed
+  * bug fixed
+  * bug fixed
+
+  [ Tuncay ÇOLAK ]
+  * crate pulseaudio autostart file while opening user session on default_policy module
+  * deleted pulseaudio autostart file when unregistered
+  * added default config class for sssd settings
+  * changed command for service enable and disable and other bugfix
+  * password param fixed for ad
+  * fixed typo for registration attempt
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Wed, 06 Oct 2021 17:02:04 +0300
+
 ahenk (1.1.0-24) unstable; urgency=medium
 
   [ Tuncay ÇOLAK ]
