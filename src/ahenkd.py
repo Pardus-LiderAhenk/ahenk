@@ -160,7 +160,7 @@ class AhenkDaemon(BaseDaemon):
             #        self.registration_failed()
 
             while registration.is_registered() is False:
-                print("Registration attemp")
+                print("Registration attempt")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
                 # registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password,self.register_directory_server)
