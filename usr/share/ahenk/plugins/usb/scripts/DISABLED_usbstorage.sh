@@ -2,7 +2,7 @@
 
 var=$(lsmod | awk '{print $1}'| grep usb_storage)
 
-if [ -z "$var" ]
+if [[ -z "$var" ]]
 then
 echo "USB storage devices are already blocked"
 else
@@ -26,7 +26,7 @@ sleep 2
 
 var=$(lsmod | grep usb_storage | awk '{print $4}')
 
-if [ ! -z "$var" ]
+if [[ ! -z "$var" ]]
 then
 IFS=',' read -ra deps <<< "$var"
 for i in "${deps[@]}"; do

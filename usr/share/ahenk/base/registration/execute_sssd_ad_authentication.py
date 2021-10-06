@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: Agah Hulusi ÖZ <enghulusi@gmail.com>
+import subprocess
 
 from base.scope import Scope
 from base.util.util import Util
@@ -134,7 +135,7 @@ class ExecuteSSSDAdAuthentication:
 
             # Installation of required packages
             (result_code, p_out, p_err) = self.util.execute(
-                "sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs")
+                "sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs libsss-sudo")
             if (result_code == 0):
                 self.logger.info("İndirmeler Başarılı")
             else:
@@ -155,6 +156,10 @@ class ExecuteSSSDAdAuthentication:
             file_default_pam.close()
 
             self.discover_try_counter2 = 0
+
+
+
+
             try:
                 while (True):
                     self.discover_try_counter2 = self.discover_try_counter2 + 1
@@ -179,7 +184,7 @@ class ExecuteSSSDAdAuthentication:
                     if (self.join_try_counter == 5):
                         break
                     else:
-                        (result_code, p_out, p_err) = self.util.execute(
+                        (result_code, p_out, p_err) = self.execute_command(
                             "echo \"{0}\" | realm join --user={1} {2}".format(password, ad_username,
                                                                               domain_name.upper()))
                         if (result_code == 0):
@@ -227,7 +232,7 @@ class ExecuteSSSDAdAuthentication:
 
                 file_data = file_data.replace("###domains###", "domains = {}".format(domain_name))
                 file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
-                file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
+                file_data = file_data.replace("###ad_server###", "ad_server = {}".format(domain_name))
                 file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
                 file_data = file_data.replace("###ad_hostname###",
                                               "ad_hostname = {0}.{1}".format(self.system.Os.hostname(),
@@ -271,7 +276,7 @@ class ExecuteSSSDAdAuthentication:
 
                 file_data = file_data.replace("###domains###", "domains = {}".format(domain_name))
                 file_data = file_data.replace("###[domain/###", "[domain/{}]".format(domain_name))
-                file_data = file_data.replace("###ad_domain###", "ad_domain = {}".format(domain_name))
+                file_data = file_data.replace("###ad_server###", "ad_server = {}".format(domain_name))
                 file_data = file_data.replace("###krb5_realm###", "krb5_realm = {}".format(domain_name.upper()))
 
                 file_sssd.close()
@@ -351,4 +356,20 @@ class ExecuteSSSDAdAuthentication:
             self.logger.error(str(e))
             self.logger.info("AD Login işlemi esnasında hata oluştu.")
             return False
+
+    def execute_command(self, command, stdin=None, env=None, cwd=None, shell=True, result=True):
+
+        try:
+            process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, shell=shell)
+            self.logger.debug('Executing command for ad registration')
+            if result is True:
+                result_code = process.wait()
+                p_out = process.stdout.read().decode("unicode_escape")
+                p_err = process.stderr.read().decode("unicode_escape")
+                return result_code, p_out, p_err
+            else:
+                return None, None, None
+        except Exception as e:
+            return 1, 'Error Message: {0}'.format(str(e)), ''
 

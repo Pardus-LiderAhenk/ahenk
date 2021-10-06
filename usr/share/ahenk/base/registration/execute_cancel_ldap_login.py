@@ -16,7 +16,7 @@ class ExecuteCancelLDAPLogin:
     def cancel(self):
         self.logger.info('Purge ldap packages')
         self.util.execute("apt-get install sudo -y")
-        self.util.execute("apt purge libpam-ldap libnss-ldap ldap-utils sudo-ldap nss-updatedb libnss-db libpam-ccreds -y")
+        self.util.execute("apt purge libpam-ldap libnss-ldap ldap-utils sudo-ldap nss-updatedb libnss-db libpam-ccreds libsss-sudo -y")
         self.util.execute("apt autoremove -y")
 
         self.logger.info('purging successfull')

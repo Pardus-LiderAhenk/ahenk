@@ -2,7 +2,7 @@
 
 var=$(lsmod | grep usbhid)
 
-if [ -z "$var" ]
+if [[ -z "$var" ]]
 then
 echo "USB HID devices are already blocked"
 else
@@ -21,7 +21,7 @@ fi
 
 var=$(lsmod | grep psmouse)
 
-if [ -z "$var" ]
+if [[ -z "$var" ]]
 then
 echo "psmouse is already blocked"
 else

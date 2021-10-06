@@ -2,7 +2,7 @@
 
 var=$(lsof -t /dev/video0)
 
-if [ -z "$var" ]
+if [[ -z "$var" ]]
 then
 echo "Webcam is not in use"
 else
@@ -12,7 +12,7 @@ fi
 
 var=$(lsmod | awk '{print $1}'| grep uvcvideo)
 
-if [ -z "$var" ]
+if [[ -z "$var" ]]
 then
 echo "Webcam is already blocked"
 else

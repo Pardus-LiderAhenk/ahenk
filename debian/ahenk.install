@@ -22,6 +22,9 @@ usr/share/ahenk/base/timer/timer.py
 usr/share/ahenk/base/timer
 usr/share/ahenk/base/util/util.py
 usr/share/ahenk/base/util
+usr/share/ahenk/base/default_config/__init__.py
+usr/share/ahenk/base/default_config/default_config.py
+usr/share/ahenk/base/default_config
 usr/share/ahenk/base/event/event_base.py
 usr/share/ahenk/base/event/event_manager.py
 usr/share/ahenk/base/event
@@ -48,6 +51,7 @@ usr/share/ahenk/base/messaging/__init__.py
 usr/share/ahenk/base/messaging/message_response_queue.py
 usr/share/ahenk/base/messaging
 usr/share/ahenk/base/default_policy/config-files/xfce4-notifyd.xml
+usr/share/ahenk/base/default_policy/config-files/ahenk.pulseaudio.start.desktop
 usr/share/ahenk/base/default_policy/config-files
 usr/share/ahenk/base/default_policy/default_policy.py
 usr/share/ahenk/base/default_policy/__init__.py
