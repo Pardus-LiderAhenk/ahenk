@@ -157,7 +157,7 @@ class AddUser(AbstractPlugin):
             else:
                 return None, None, None
         except Exception as e:
-            return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
+            return 1, 'Could not execute command. Error Message: {0}'.format(str(e)), ''
 
 
 def handle_task(task, context):
