@@ -23,6 +23,8 @@ class Scope(object):
         self.db_service = None
         self.messenger = None
         self.scheduler = None
+        self.kafka_consumer = None
+        self.kafka_producer = None
 
     @staticmethod
     def get_instance():
@@ -113,3 +115,16 @@ class Scope(object):
 
     def get_scheduler(self):
         return self.scheduler
+
+    def get_message_consumer(self):
+        return self.kafka_consumer
+
+    def set_message_consumer(self, kafka_consumer):
+        self.kafka_consumer = kafka_consumer
+
+    def get_message_producer(self):
+        return self.kafka_producer
+
+    def set_message_producer(self, kafka_producer):
+        self.kafka_producer = kafka_producer
+

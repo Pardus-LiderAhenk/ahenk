@@ -31,6 +31,8 @@ from base.system.system import System
 from base.task.task_manager import TaskManager
 from base.util.util import Util
 from base.default_config.default_config import DefaultConfig
+from base.kafka.message_consumer import MessageConsumer
+from base.kafka.message_producer import MessageProducer
 from easygui import msgbox
 
 sys.path.append('../..')
@@ -144,6 +146,24 @@ class AhenkDaemon(BaseDaemon):
         message_response_queue.start()
         Scope.get_instance().set_response_queue(response_queue)
         return response_queue
+
+    @staticmethod
+    def init_kafka_consumer():
+        """ docstring"""
+        message_consumer = MessageConsumer('192.168.56.109:9092', 'kafka1', 'kafka1')
+        message_consumer.setDaemon(True)
+        message_consumer.start()
+        Scope.get_instance().set_message_consumer(message_consumer)
+        return message_consumer
+
+    @staticmethod
+    def init_kafka_producer():
+        """ docstring"""
+        message_producer = MessageProducer('192.168.56.109:9092')
+        Scope.get_instance().set_message_producer(message_producer)
+        #message_producer.produce_message("task-response", "key1", "kafka1")
+        #Scope.get_instance().get_message_producer().produce_message("task-response", "key1", json.dumps("{ \"name\":\"John\", \"age\":30, \"city\":\"New York\"}"))
+        return message_producer
 
     def check_registration(self):
         """ docstring"""
@@ -277,6 +297,7 @@ class AhenkDaemon(BaseDaemon):
 
     def default_settings(self):
         default_config = DefaultConfig()
+        default_config = DefaultConfig()
         default_config.check_sssd_settings()
 
     def run(self):
@@ -331,7 +352,6 @@ class AhenkDaemon(BaseDaemon):
         self.is_registered()
 
         self.disable_local_users()
-
         #self.logger.info('Ahenk was registered')
 
         self.messenger = self.init_messenger()
@@ -345,6 +365,10 @@ class AhenkDaemon(BaseDaemon):
         global_scope.put_custom_map('ahenk_daemon', ahenk_daemon)
         self.init_message_response_queue()
 
+        self.init_kafka_consumer()
+
+        self.init_kafka_producer()
+        
         # if registration.is_ldap_registered() is False:
         #    logger.debug('Attempting to registering ldap')
         #    registration.ldap_registration_request() #TODO work on message

@@ -20,6 +20,7 @@ class Messenger(ClientXMPP):
         self.configuration_manager = scope.get_configuration_manager()
         self.event_manger = scope.get_event_manager()
         self.execution_manager = scope.get_execution_manager()
+        self.producer = scope.get_message_producer()
 
         self.my_jid = str(
             self.configuration_manager.get('CONNECTION', 'uid') + '@' + self.configuration_manager.get('CONNECTION',
@@ -103,7 +104,11 @@ class Messenger(ClientXMPP):
                     self.logger.info('<<--------Sending message: {0}'.format(body))
             else:
                 self.logger.info('<<--------Sending message: {0}'.format(msg))
-            self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
+            # use XMPP for sending message
+            # self.send_message(mto=self.receiver, mbody=msg, mtype='normal')
+            # use kafka for sending message
+            Scope.get_instance().get_message_producer().produce_message("task-response", "kafka1", msg)
+
         except Exception as e:
             self.logger.error(
                 'A problem occurred while sending direct message. Error Message: {0}'.format(str(e)))
