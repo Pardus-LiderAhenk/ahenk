@@ -20,6 +20,7 @@ from base.registration.execute_cancel_sssd_authentication import ExecuteCancelSS
 from base.registration.execute_sssd_authentication import ExecuteSSSDAuthentication
 from base.registration.execute_sssd_ad_authentication import ExecuteSSSDAdAuthentication
 from base.registration.execute_cancel_sssd_ad_authentication import ExecuteCancelSSSDAdAuthentication
+from base.system.disk_info import DiskInfo
 
 class Registration:
     def __init__(self):
@@ -296,6 +297,12 @@ class Registration:
             'processor': System.Hardware.Cpu.brand(),
             'agentVersion': Util.get_agent_version(),
         }
+        
+        ssd_list, hdd_list = DiskInfo.get_all_disks()
+        if len(ssd_list) > 0:
+            params['hardware.disk.ssd.info'] = ssd_list
+        if len(hdd_list) > 0:
+            params['hardware.disk.hdd.info'] = hdd_list
 
         return json.dumps(params)
 

@@ -6,6 +6,7 @@ import json
 from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
+from base.system.disk_info import DiskInfo
 import os
 
 
@@ -66,6 +67,7 @@ class Messaging(object):
         return str(json_data)
 
     def login_msg(self, username,ip=None):
+        ssd_list, hdd_list = DiskInfo.get_all_disks()
         data = dict()
         data['type'] = 'LOGIN'
         data['username'] = username
@@ -82,12 +84,17 @@ class Messaging(object):
 
         self.logger.debug('USER IP : '+ str(ip)+ ' IPADDRESSES : '+ str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', ''))
 
-
         data['hardware.monitors'] = str(System.Hardware.monitors()),
         data['hardware.screens'] = str(System.Hardware.screens()),
         data['hardware.usbDevices'] = str(System.Hardware.usb_devices()),
         data['hardware.printers'] = str(System.Hardware.printers()),
         data['hardware.systemDefinitions'] = str(System.Hardware.system_definitions()),
+
+        if len(ssd_list) > 0:
+            data['hardware.disk.ssd.info'] = ssd_list
+
+        if len(hdd_list) > 0:
+            data['hardware.disk.hdd.info'] = hdd_list
 
         json_data = json.dumps(data)
         self.logger.debug('Login message was created')

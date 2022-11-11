@@ -3,9 +3,10 @@
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 # Author: Emre Akkaya <emre.akkaya@agem.com.tr>
 
+from psutil import disk_io_counters
 from base.plugin.abstract_plugin import AbstractPlugin
 import json
-
+from base.system.disk_info import DiskInfo
 
 class ResourceUsage(AbstractPlugin):
     def __init__(self, data, context):
@@ -19,10 +20,14 @@ class ResourceUsage(AbstractPlugin):
         try:
             device = ""
             self.logger.debug("Gathering resource usage for disk, memory and CPU.")
+
+            ssd_list, hdd_list = DiskInfo.get_all_disks()
+
             for part in self.Hardware.Disk.partitions():
                 if len(device) != 0:
                     device += ", "
                 device = device + part.device
+
             data = {'System': self.Os.name(), 'Release': self.Os.kernel_release(),
                     'Version': self.Os.distribution_version(), 'Machine': self.Os.architecture(),
                     'CPU Physical Core Count': self.Hardware.Cpu.physical_core_count(),
@@ -36,6 +41,13 @@ class ResourceUsage(AbstractPlugin):
                     'CPU Actual Hz': self.Hardware.Cpu.hz_actual(),
                     'CPU Advertised Hz': self.Hardware.Cpu.hz_advertised()
                     }
+
+            if len(ssd_list) > 0:
+                data['hardware.disk.ssd.info'] = ssd_list
+
+            if len(hdd_list) > 0:
+                data['hardware.disk.hdd.info'] = hdd_list
+            
             self.logger.debug("Resource usage info gathered.")
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Anlık kaynak kullanım bilgisi başarıyla toplandı.',
