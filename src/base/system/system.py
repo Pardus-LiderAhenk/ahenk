@@ -434,15 +434,18 @@ class System:
 
             @staticmethod
             def total():
-                return int(int(psutil.disk_usage('/')[0]) / (1000 * 1000))
+                return int(DiskInfo.total_disk())
+#                return int(int(psutil.disk_usage('/')[0]) / (1000 * 1000))
 
             @staticmethod
             def used():
-                return int(int(psutil.disk_usage('/')[1]) / (1000 * 1000))
+                return int(DiskInfo.total_disk_used())
+#                return int(int(psutil.disk_usage('/')[1]) / (1000 * 1000))
 
             @staticmethod
             def free():
-                return int(int(psutil.disk_usage('/')[2]) / (1000 * 1000))
+                return int(DiskInfo.total_disk_free())
+#                return int(int(psutil.disk_usage('/')[2]) / (1000 * 1000))
 
             @staticmethod
             def percent():

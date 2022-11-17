@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import json
+import os
 
 from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
-import os
+from base.system.disk_info import DiskInfo
 
 
 # TODO Message Factory
@@ -66,6 +67,7 @@ class Messaging(object):
         return str(json_data)
 
     def login_msg(self, username,ip=None):
+        ssd_list, hdd_list = DiskInfo.get_all_disks()
         data = dict()
         data['type'] = 'LOGIN'
         data['username'] = username
@@ -88,6 +90,12 @@ class Messaging(object):
         data['hardware.usbDevices'] = str(System.Hardware.usb_devices()),
         data['hardware.printers'] = str(System.Hardware.printers()),
         data['hardware.systemDefinitions'] = str(System.Hardware.system_definitions()),
+
+        if len(ssd_list) > 0:
+            data['hardware.disk.ssd.info'] = str(ssd_list)
+
+        if len(hdd_list) > 0:
+            data['hardware.disk.hdd.info'] = str(hdd_list)
 
         json_data = json.dumps(data)
         self.logger.debug('Login message was created')
