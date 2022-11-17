@@ -18,6 +18,8 @@ import psutil
 
 from base.scope import Scope
 from base.util.util import Util
+from base.system.disk_info import DiskInfo
+
 
 
 class System:
