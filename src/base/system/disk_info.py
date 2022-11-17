@@ -31,6 +31,18 @@ class DiskInfo():
         return total_size
 
     @staticmethod
+    def total_disk_free():
+        ssd_list, hdd_list = DiskInfo.get_all_disks()
+        total_disk_free = 0
+        if len(ssd_list) > 0:
+            for disk in ssd_list:
+                total_disk_free += int(disk['total']) - int(disk['used'])
+        if len(hdd_list) > 0:
+            for disk in hdd_list:
+                total_disk_free += int(disk['total']) - int(disk['used'])
+        return total_disk_free
+
+    @staticmethod
     def get_all_disks():
         result_code, p_out, p_err = Util.execute("lsblk -b -o NAME,TYPE,ROTA,SIZE,RM,HOTPLUG,MOUNTPOINT,FSUSED | grep -v loop | awk '$5 == \"0\" { print $0 }'")
         txt = p_out.split("\n")
