@@ -92,10 +92,10 @@ class Messaging(object):
         data['hardware.systemDefinitions'] = str(System.Hardware.system_definitions()),
 
         if len(ssd_list) > 0:
-            data['hardware.disk.ssd.info'] = str(ssd_list)
+            data['hardwareDiskSsdInfo'] = str(ssd_list)
 
         if len(hdd_list) > 0:
-            data['hardware.disk.hdd.info'] = str(hdd_list)
+            data['hardwareDiskHddInfo'] = str(hdd_list)
 
         json_data = json.dumps(data)
         self.logger.debug('Login message was created')
