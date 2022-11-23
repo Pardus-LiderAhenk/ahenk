@@ -3,6 +3,7 @@
 # Author: Tuncay ÇOLAK <tuncay.colak@tubitak.gov.tr>
 
 from base.plugin.abstract_plugin import AbstractPlugin
+from base.system.disk_info import DiskInfo
 import json
 
 
@@ -23,6 +24,8 @@ class AgentInfo(AbstractPlugin):
                     device += ", "
                 device = device + part.device
 
+            ssd_list, hdd_list = DiskInfo.get_all_disks()
+
             data = {'System': self.Os.name(), 'Release': self.Os.kernel_release(),
                     'agentVersion': self.get_agent_version(),
                     'hostname': self.Os.hostname(),
@@ -41,6 +44,13 @@ class AgentInfo(AbstractPlugin):
                     'memory': self.Hardware.Memory.total(),
                     'Device': device,
             }
+
+            if len(ssd_list) > 0:
+                data['hardwareDiskSsdInfo'] = str(ssd_list)
+
+            if len(hdd_list) > 0:
+                data['hardwareDiskHddInfo'] = str(hdd_list)
+
             self.logger.debug("Agent info gathered.")
             self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                          message='Ahenk bilgileri başarıyla güncellendi.',
