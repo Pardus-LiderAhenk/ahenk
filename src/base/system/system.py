@@ -504,20 +504,28 @@ class System:
 
             @staticmethod
             def mac_addresses():
-                mac = get_mac()
-                ':'.join(("%012X" % mac)[i:i + 2] for i in range(0, 12, 2))
-                arr = []
-                for iface in psutil.net_io_counters(pernic=True):
-                    try:
-                        addr_list = psutil.net_if_addrs()
-                        mac = addr_list[str(iface)][2][1]
-                        if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(
-                                mac) != '00:00:00:00:00:00':
-                            arr.append(mac.lower())
-                    except Exception as e:
-                        pass
+                mac_addresses = []
+                nics = psutil.net_if_addrs()
+                nics.pop('lo')  # remove loopback since it doesnt have a real mac address
 
-                return arr
+                for i in nics:
+                    for j in nics[i]:
+                        if j.family == 17:  # AF_LINK
+                            mac_addresses.append(j.address)
+                return mac_addresses
+                # mac = get_mac()
+                # ':'.join(("%012X" % mac)[i:i + 2] for i in range(0, 12, 2))
+                # arr = []
+                # for iface in psutil.net_io_counters(pernic=True):
+                #     try:
+                #         addr_list = psutil.net_if_addrs()
+                #         mac = addr_list[str(iface)][2][1]
+                #         if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(
+                #                 mac) != '00:00:00:00:00:00':
+                #             arr.append(mac.lower())
+                #     except Exception as e:
+                #         pass
+                # return arr
 
         @staticmethod
         def screen_info_json_obj(info):
