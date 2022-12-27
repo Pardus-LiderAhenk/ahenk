@@ -94,6 +94,7 @@ class Messenger(ClientXMPP):
     def send_direct_message(self, msg):
         try:
             body = json.loads(str(msg))
+            self.logger.info(str(msg))
             if body['type'] == "REGISTER" or body['type'] == "UNREGISTER":
                 is_password = False
                 for key, value in body.items():

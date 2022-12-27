@@ -107,9 +107,7 @@ class GetServices(AbstractPlugin):
                         self.add_file(service[0], "active", auto)
                     else:
                         self.add_file(service[0], 'inactive', auto)
-
-                    print(service)
-
+                    #print(service)
 
             if self.isRecordExist == 1:
                 self.execute("sed -i '$ d' " + self.file_path)

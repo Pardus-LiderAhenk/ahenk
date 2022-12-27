@@ -25,7 +25,7 @@ class GetFileContent(AbstractPlugin):
                 is_file_exists = True
                 # if the file size is less than 5K
                 file_size = self.get_size(file_path) / 1024
-                if file_size <= 5:
+                if file_size <= 5000:
                     file_content = self.read_file(file_path)
                     self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                                  message='Dosya içeriği başarıyla alındı..',

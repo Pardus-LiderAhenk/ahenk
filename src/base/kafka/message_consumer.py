@@ -20,7 +20,7 @@ class MessageConsumer(threading.Thread):
         self.topic = topic
         self.group_id = group_id
         self.consumer = KafkaConsumer(bootstrap_servers=self.broker,
-                                      group_id='python-my-group',
+                                      group_id='kafka1',
                                       # consumer_timeout_ms = 60000,
                                       auto_offset_reset='earliest',
                                       enable_auto_commit=False,
@@ -34,6 +34,7 @@ class MessageConsumer(threading.Thread):
             for message in self.consumer:
                 #print("received message = ", message.value['hostname'])
                 print("received message = ", message)
+                message_json = json.dumps(message.value)
                 try:
                     message_type = message.value['type']
                     self.logger.debug("Get message type: " + str(message_type))
@@ -43,18 +44,14 @@ class MessageConsumer(threading.Thread):
 
                     if message_type == "EXECUTE_TASK":
                         task = json.loads(str(message.value['task']))
-                        # plugin_name = task['plugin']['name']
                         parameter_map = task['parameterMap']
                         use_file_transfer = message.value['fileServerConf']
-                        is_password = False
                         for key, value in parameter_map.items():
                             if "password" in key.lower():
                                 parameter_map[key] = "********"
                                 task['parameterMap'] = parameter_map
                                 message.value['task'] = task
-                                is_password = True
                         if use_file_transfer != None:
-                            # message['fileServerConf'] = "*******"
                             file_server_conf = message.value['fileServerConf']
                             file_server_param = file_server_conf['parameterMap']
                             for key, value in file_server_param.items():
@@ -63,14 +60,9 @@ class MessageConsumer(threading.Thread):
                                     file_server_conf['parameterMap'] = file_server_param
                                     # message['fileServerConf']['parameterMap'] = file_server_param
                                     message.value['fileServerConf'] = file_server_conf
-                            is_password = True
-                        if is_password:
-                            self.logger.info('---------->Received message: {0}'.format(str(message)))
-                        else:
-                            self.logger.info('---------->Received message: {0}'.format(str(message)))
-                    ss = json.dumps(message.value)
-                    #ttt = eval(str(message.value))
-                    self.event_manger.fireEvent(message_type, ss)
+                        self.logger.info('---------->Received message: {0}'.format(str(message)))
+
+                    self.event_manger.fireEvent(message_type, message_json)
                     self.logger.debug('Fired event is: {0}'.format(message_type))
                 except Exception as e:
                     self.logger.error(
