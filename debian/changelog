@@ -1,3 +1,30 @@
+ahenk (1.2.0-1) unstable; urgency=medium
+
+  [ Tuncay ÇOLAK ]
+  * fixed log definition on local user
+
+  [ agahhulusi ]
+  * chechk_package changes and ldap configuration bug fixed
+
+  [ Tuncay ÇOLAK ]
+  * updated changelog
+  * usb rule manage has been added for client
+
+  [ agahhulusi ]
+  * ssd and hdd list function added
+  * ssd and hdd disks information added
+  * bug fixed
+  * bug fixed
+  * messaging  camel case added
+  * disk info added to agent_info
+  * macaddress method changed
+  * check package version bug fixed
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Tue, 27 Dec 2022 10:32:19 +0300
+
 ahenk (1.1.0-25) unstable; urgency=medium
 
   [ agah ]
