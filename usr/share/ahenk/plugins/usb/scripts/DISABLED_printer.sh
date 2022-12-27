@@ -3,7 +3,7 @@ var=$(lsmod | awk '{print $1}'| grep usblp)
 
 service cups stop
 
-if [ -z "$var" ]
+if [[ -z "$var" ]]
 then
 echo "USB printer devices are already blocked"
 else

@@ -12,12 +12,14 @@ import socket
 import struct
 import netifaces
 from uuid import getnode as get_mac
-
+import distro
 import cpuinfo
 import psutil
 
 from base.scope import Scope
 from base.util.util import Util
+from base.system.disk_info import DiskInfo
+
 
 
 class System:
@@ -337,19 +339,24 @@ class System:
 
         @staticmethod
         def distribution_name():
-            return platform.linux_distribution()[0]
+            #return platform.linux_distribution()[0]
+            return distro.linux_distribution()[0]
 
         @staticmethod
         def distribution_version():
-            return platform.linux_distribution()[1]
+            # return platform.linux_distribution()[1]
+            return distro.linux_distribution()[1]
 
         @staticmethod
         def distribution_id():
-            return platform.linux_distribution()[2]
+            # return platform.linux_distribution()[2]
+            return distro.linux_distribution()[2]
 
         @staticmethod
         def version():
-            return platform.version()
+            # return platform.version()
+            version = distro.lsb_release_info()['description'] +"-"+ distro.lsb_release_info()["release"]
+            return version
 
         @staticmethod
         def kernel_release():
@@ -429,15 +436,18 @@ class System:
 
             @staticmethod
             def total():
-                return int(int(psutil.disk_usage('/')[0]) / (1000 * 1000))
+                return int(DiskInfo.total_disk())
+#                return int(int(psutil.disk_usage('/')[0]) / (1000 * 1000))
 
             @staticmethod
             def used():
-                return int(int(psutil.disk_usage('/')[1]) / (1000 * 1000))
+                return int(DiskInfo.total_disk_used())
+#                return int(int(psutil.disk_usage('/')[1]) / (1000 * 1000))
 
             @staticmethod
             def free():
-                return int(int(psutil.disk_usage('/')[2]) / (1000 * 1000))
+                return int(DiskInfo.total_disk_free())
+#                return int(int(psutil.disk_usage('/')[2]) / (1000 * 1000))
 
             @staticmethod
             def percent():
@@ -494,20 +504,28 @@ class System:
 
             @staticmethod
             def mac_addresses():
-                mac = get_mac()
-                ':'.join(("%012X" % mac)[i:i + 2] for i in range(0, 12, 2))
-                arr = []
-                for iface in psutil.net_io_counters(pernic=True):
-                    try:
-                        addr_list = psutil.net_if_addrs()
-                        mac = addr_list[str(iface)][2][1]
-                        if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(
-                                mac) != '00:00:00:00:00:00':
-                            arr.append(mac.lower())
-                    except Exception as e:
-                        pass
+                mac_addresses = []
+                nics = psutil.net_if_addrs()
+                nics.pop('lo')  # remove loopback since it doesnt have a real mac address
 
-                return arr
+                for i in nics:
+                    for j in nics[i]:
+                        if j.family == 17:  # AF_LINK
+                            mac_addresses.append(j.address)
+                return mac_addresses
+                # mac = get_mac()
+                # ':'.join(("%012X" % mac)[i:i + 2] for i in range(0, 12, 2))
+                # arr = []
+                # for iface in psutil.net_io_counters(pernic=True):
+                #     try:
+                #         addr_list = psutil.net_if_addrs()
+                #         mac = addr_list[str(iface)][2][1]
+                #         if re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) and str(
+                #                 mac) != '00:00:00:00:00:00':
+                #             arr.append(mac.lower())
+                #     except Exception as e:
+                #         pass
+                # return arr
 
         @staticmethod
         def screen_info_json_obj(info):

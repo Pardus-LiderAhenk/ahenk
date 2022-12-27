@@ -178,7 +178,7 @@ class ExecuteLDAPLogin:
                 self.util.write_file(libnss_ldap_file_path, content, 'a+')
                 self.logger.info("Configuration has been made to {0}.".format(libnss_ldap_file_path))
 
-            result_code, p_out, p_err = self.util.execute("apt-get install libnss-db libpam-ccreds -y")
+            result_code, p_out, p_err = self.util.execute("apt-get install libnss-db libpam-ccreds libsss-sudo -y")
             if result_code != 0:
                 self.logger.error("Error occured while downloading libnss-db libpam-ccreds.")
             else:

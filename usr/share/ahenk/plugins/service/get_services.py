@@ -97,17 +97,16 @@ class GetServices(AbstractPlugin):
                     del service[0]
 
                 if len(service)>0 and '.service' in service[0]: # service[0] = service name, service[1] is loaded, service[2] active or not,
-                    result, out, err = self.execute(self.service_status.format(service[0])) # check service is enable or not on auto start
-                    auto='INACTIVE'
-                    if 'disabled' in out:
-                        auto='INACTIVE'
-                    elif 'enabled' in out:
-                        auto='ACTIVE'
+                    # result, out, err = self.execute(self.service_status.format(service[0])) # check service is enable or not on auto start
+                    result, out, err = self.execute("systemctl is-enabled {0}".format(service[0]))
+                    auto = 'disabled'
+                    if 'enabled' in out:
+                        auto = 'enabled'
 
                     if service[2] == 'active':
-                        self.add_file(service[0], "ACTIVE", auto)
+                        self.add_file(service[0], "active", auto)
                     else:
-                        self.add_file(service[0], 'INACTIVE',auto)
+                        self.add_file(service[0], 'inactive', auto)
 
                     print(service)
 

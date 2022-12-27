@@ -56,7 +56,7 @@ class ExecuteSSSDAuthentication:
             file_sssd.close()
 
             # Install libpam-sss sssd-common for sssd authentication
-            (result_code, p_out, p_err) = self.util.execute("sudo apt install libpam-sss sssd-common -y")
+            (result_code, p_out, p_err) = self.util.execute("sudo apt install libpam-sss sssd-common libsss-sudo -y")
 
 
             if result_code != 0:

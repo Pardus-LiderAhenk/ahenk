@@ -152,7 +152,7 @@ class Registration:
                 self.install_and_config_ad(reg_reply)
                 self.change_permissions_for_local_users()
 
-            self.create_ahenk_pulseaudio_desktop_file()
+            # self.create_ahenk_pulseaudio_desktop_file()
 
         except Exception as e:
             self.logger.error('Registration error. Error Message: {0}.'.format(str(e)))
@@ -297,12 +297,12 @@ class Registration:
             'processor': System.Hardware.Cpu.brand(),
             'agentVersion': Util.get_agent_version(),
         }
-        
+
         ssd_list, hdd_list = DiskInfo.get_all_disks()
         if len(ssd_list) > 0:
-            params['hardware.disk.ssd.info'] = ssd_list
+            params['hardware.disk.ssd.info'] = str(ssd_list)
         if len(hdd_list) > 0:
-            params['hardware.disk.hdd.info'] = hdd_list
+            params['hardware.disk.hdd.info'] = str(hdd_list)
 
         return json.dumps(params)
 
@@ -637,6 +637,12 @@ class Registration:
 
     def delete_ahenk_pulseaudio_desktop_file(self):
         ahenkpulseaudio = "/etc/xdg/autostart/ahenk.pulseaudio.desktop"
+        pulseaudio_start_file = "/etc/xdg/autostart/ahenk.pulseaudio.start.desktop"
+        if self.util.is_exist(pulseaudio_start_file):
+            self.util.delete_file(pulseaudio_start_file)
+            self.logger.info("ahenk.pulseaudio.start.desktop autostart file deleted")
+        else:
+            self.logger.info("ahenk.pulseaudio.start.desktop autostart file doesn't exist")
         if self.util.is_exist(ahenkpulseaudio):
             self.util.delete_file(ahenkpulseaudio)
             self.logger.info("ahenk.pulseaudio.desktop autostart file deleted")

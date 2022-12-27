@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 import json
+import os
 
 from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
 from base.system.disk_info import DiskInfo
-import os
 
 
 # TODO Message Factory
@@ -84,6 +84,7 @@ class Messaging(object):
 
         self.logger.debug('USER IP : '+ str(ip)+ ' IPADDRESSES : '+ str(System.Hardware.Network.ip_addresses()).replace('[', '').replace(']', ''))
 
+
         data['hardware.monitors'] = str(System.Hardware.monitors()),
         data['hardware.screens'] = str(System.Hardware.screens()),
         data['hardware.usbDevices'] = str(System.Hardware.usb_devices()),
@@ -91,10 +92,10 @@ class Messaging(object):
         data['hardware.systemDefinitions'] = str(System.Hardware.system_definitions()),
 
         if len(ssd_list) > 0:
-            data['hardware.disk.ssd.info'] = ssd_list
+            data['hardwareDiskSsdInfo'] = str(ssd_list)
 
         if len(hdd_list) > 0:
-            data['hardware.disk.hdd.info'] = hdd_list
+            data['hardwareDiskHddInfo'] = str(hdd_list)
 
         json_data = json.dumps(data)
         self.logger.debug('Login message was created')
@@ -161,7 +162,17 @@ class Messaging(object):
         data['timestamp'] = self.db_service.select_one_result('registration', 'timestamp', ' 1=1')
         json_data = json.dumps(data)
         self.logger.debug('Registration message was created')
-        self.logger.info('Registration message was created. Data content: '+ json_data)
+
+        body = json.loads(str(json_data))
+        is_password = False
+        for key, value in body.items():
+            if "password" in key.lower():
+                body[key] = "********"
+                is_password = True
+        if is_password:
+            self.logger.info('Registration message was created. Data content:  {0}'.format(body))
+
+        #self.logger.info('Registration message was created. Data content: ' + json_data)
         return json_data
 
     def ldap_registration_msg(self):

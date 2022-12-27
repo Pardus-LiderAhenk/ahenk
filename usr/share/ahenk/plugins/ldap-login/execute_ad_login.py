@@ -30,8 +30,9 @@ class ADLogin(AbstractPlugin):
             ad_username = self.data['ad_username']
             admin_password = self.data['admin_password']
             ad_port = self.data['ad_port']
+            dynamic_dns_update = self.data['dynamic_dns_update']
 
-            execution_result = self.ad_authentication.authenticate(domain_name, hostname, ip_address, admin_password, ad_username)
+            execution_result = self.ad_authentication.authenticate(domain_name, hostname, ip_address, admin_password, ad_username, dynamic_dns_update)
             if execution_result is False:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='Active Directory kullanıcısı ile oturum açma ayarlanırken hata oluştu.: Gerekli Paketleri indirilemedi.',
@@ -46,21 +47,17 @@ class ADLogin(AbstractPlugin):
                         config = configparser.ConfigParser()
                         config.read(self.ahenk_conf_path)
                         config.set('MACHINE', 'user_disabled', 'true')
-
                         with open(self.ahenk_conf_path, 'w') as configfile:
                             self.logger.info('Opening config file ')
                             config.write(configfile)
                         configfile.close()
                         self.logger.info('User disabled value Disabled')
-
                     else:
                         self.logger.info("local users will not be disabled because local_user parameter is FALSE")
                 self.shutdown()
-
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                              message='Active Directory kullanıcısı ile oturum açma başarı ile sağlandı ve istemci yeniden başlatılıyor.',
                                              content_type=self.get_content_type().APPLICATION_JSON.value)
-
         except Exception as e:
             self.logger.error(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,

@@ -14,14 +14,14 @@ function log() {
   echo "$(date) $0: $@" >> $LOG
 }
 
-if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
-  if ([ -n $PAM_SERVICE ] && [[ ( $PAM_SERVICE == *"dm" || $PAM_SERVICE == "gdm"* )]]) || ([ -n $PAM_TTY ] && [[ $PAM_TTY == ":"* ]]); then
+if [[ -n $PAM_USER ]] && [[ $PAM_USER != "root" ]]; then
+  if ([[ -n $PAM_SERVICE ]] && [[ ( $PAM_SERVICE == *"dm" || $PAM_SERVICE == "gdm"* )]]) || ([[ -n $PAM_TTY ]] && [[ $PAM_TTY == ":"* ]]); then
     SERVICE="none"
-    if [ -n $PAM_SERVICE ]; then
+    if [[ -n $PAM_SERVICE ]]; then
       SERVICE="$PAM_SERVICE"
     fi
     TTY_DISPLAY="none"
-    if [ -n $PAM_TTY ]; then
+    if [[ -n $PAM_TTY ]]; then
       TTY_DISPLAY="$PAM_TTY"
     fi
     if [[ $PAM_USER = *'\'* ]]; then
@@ -32,6 +32,6 @@ if [ -n $PAM_USER ] && [ $PAM_USER != "root" ]; then
       done
     fi
     log "logout: $PAM_USER service: $SERVICE tty: $TTY_DISPLAY"
-    sudo python3 /usr/share/ahenk/ahenkd.py logout $PAM_USER
+    python3 /usr/share/ahenk/ahenkd.py logout $PAM_USER
   fi
 fi

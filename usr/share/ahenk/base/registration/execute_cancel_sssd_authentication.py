@@ -14,7 +14,7 @@ class ExecuteCancelSSSDAuthentication:
         self.util = Util()
 
     def cancel(self):
-        self.util.execute("apt purge libpam-sss sssd-common -y")
+        self.util.execute("apt purge libpam-sss sssd-common libsss-sudo -y")
         self.util.execute("apt autoremove -y")
 
         if self.util.is_exist("/etc/sssd"):
