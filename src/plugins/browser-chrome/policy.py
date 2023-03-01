@@ -35,11 +35,12 @@ class BrowserChrome(AbstractPlugin):
             username = self.get_username()
             self.logger.info('Username: {}'.format(username))
             self.logger.debug('Writing preferences to user profile')
-            #self.write_to_profile()
-            try:
-                self.write_to_chrome_proxy()
-            except Exception as e:
-                self.logger.error(e)
+            self.write_to_profile()
+            self.write_to_chrome_proxy()
+            # try:
+            #     self.write_to_chrome_proxy()
+            # except Exception as e:
+            #     self.logger.error(e)
             self.context.create_response(code=self.message_code.POLICY_PROCESSED.value, message='Kullanıcı browser chrome  profili başarıyla uygulandı.')
         except Exception as e:
             self.logger.error('A problem occurred while handling chrome browser profile: {0}'.format(str(e)))
@@ -60,48 +61,52 @@ class BrowserChrome(AbstractPlugin):
         username = self.get_username()
         path = self.local_settings_path+self.local_settings_path_suffix
         file = self.user_js_file.format(username)
-        self.silent_remove(file)
-        user_js = open(path + file, "a")
-        preferences = json.loads(self.data)['preferencesChrome']
+        file_full_path = path + file
+        self.silent_remove(file_full_path)
+        # user_js = open(path + file, "w")
+        self.create_file(file_full_path)
+        preferences = json.loads(self.data)
+        #self.logger.debug(preferences)
         self.logger.debug('Writing preferences chrome to file ...')
-        user_js.write('{\n')
-        for pref in preferences: 
-            if pref['value'].isdigit() or str(pref['value']) == 'false' or str(pref['value']) == 'true':
-                value = pref['value']
+        content = "{\n"
+        for pref in preferences["preferencesChrome"]:
+            self.logger.debug(pref)
+            line = ""
+            if pref["value"] == "false" or pref["value"] == "true":
+                line = "   "+pref["preferenceName"]+': '+ str(pref["value"])+',\n'
+            elif type(pref["value"]).__name__ == "int":
+                line = "   "+pref["preferenceName"]+': '+ str(pref["value"])+',\n'
             else:
-                value = '\"' + pref['value'] + '\"'
-            #if ind == (len(preferences)-1):
-            #    line = '"' + str(pref['preferenceName']) + '": ' + value + '\n'
-            #else:
-            #    line = '"' + str(pref['preferenceName']) + '": ' + value + ',\n'
-            line = '"' + str(pref['preferenceName']) + '": ' + value + ',\n'
-            user_js.write(line)
-        user_js.write('\n}')
+                line = "   "+pref["preferenceName"]+': "'+ str(pref["value"])+'",\n'
+            content += line
+            
+        content += "\n}"
+        self.logger.debug(content)
+        self.write_file(file_full_path, content)
 
         self.logger.debug('User chrome preferences were wrote successfully')
-        user_js.close()
 
 
     def write_to_chrome_proxy(self):
         proxy_full_path = self.local_settings_proxy_profile + self.local_settings_proxy_file
         self.silent_remove(proxy_full_path)
         # proxy preference lenght bak varsa çalıştır yoksa passs
-        proxy_preferences = json.loads(self.data)['proxyListChrome']
-        self.logger.debug(proxy_preferences)
-        proxy_sh = self.create_file(proxy_full_path)
-        content = ""
-        for proxy in proxy_preferences:
+        # if len(proxy_preferences) > 0:
+        self.create_file(proxy_full_path)
+        proxy_preferences = json.loads(self.data)
+        content = " "
+        if len(proxy_preferences) > 0:
+            for proxy in proxy_preferences["proxyListChrome"]:
+                self.logger.debug(type(proxy))
+                self.logger.debug(str(proxy))
 
-            if proxy['value'].isdigit() or str(proxy['value']) == 'false' or str(proxy['value']) == 'true':
-                value = proxy['value']
-            else:
-                value = '\"' + proxy['value'] + '\"'
-            line = '"' + str(proxy['preferenceName']) + '": ' + value + ',\n'
-            content += line
-            self.logger.debug(content)
-        
-        self.write_file(proxy_full_path, content)
-        self.execute_script(proxy_full_path)
+                line = ""
+                line +=  str(proxy["preferenceName"])
+                content += line
+            self.write_file(proxy_full_path, content)
+            self.execute_script(proxy_full_path)
+        else:
+             self.logger.debug("Proxy preferences files is empty!!")
         # subprocess.Popen('sudo chmod +x {0}'.format(proxy_sh), shell=True)
         self.logger.debug('User proxy preferences were wrote successfully')
           
