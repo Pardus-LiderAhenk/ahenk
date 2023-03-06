@@ -88,17 +88,23 @@ class BrowserChrome(AbstractPlugin):
     def write_to_chrome_proxy(self):
         proxy_full_path = self.local_settings_proxy_profile + self.local_settings_proxy_file
         self.silent_remove(proxy_full_path)
-        # proxy preference lenght bak varsa çalıştır yoksa passs
-        # if len(proxy_preferences) > 0:
         self.create_file(proxy_full_path)
         proxy_preferences = json.loads(self.data)
-        content = " "
+        line = ""
         if len(proxy_preferences) > 0:
-            for proxy in proxy_preferences["proxyListChrome"]:
-                line = ""
-                line +=  str(proxy["preferenceName"])
-                content += line
-            self.write_file(proxy_full_path, content)
+            proxy_data =  proxy_preferences["proxyListChrome"]
+            self.logger.debug(proxy_data)
+            if proxy_data[0].get('value') == '0' :
+                line =  proxy_data[1].get('preferenceName')
+                
+            elif proxy_data[0].get('value') == '1':
+                for proxy in proxy_data[1:5]:
+                    line += str(proxy['preferenceName'] + "\n") 
+
+            elif proxy_data[0].get('value') == '2':
+                line =  proxy_data[1].get('preferenceName')    
+            
+            self.write_file(proxy_full_path, line)
             self.execute_script(proxy_full_path)
         else:
              self.logger.debug("Proxy preferences files is empty!!")
