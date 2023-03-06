@@ -63,21 +63,19 @@ class BrowserChrome(AbstractPlugin):
         file = self.user_js_file.format(username)
         file_full_path = path + file
         self.silent_remove(file_full_path)
-        # user_js = open(path + file, "w")
         self.create_file(file_full_path)
         preferences = json.loads(self.data)
-        #self.logger.debug(preferences)
         self.logger.debug('Writing preferences chrome to file ...')
         content = "{\n"
         for pref in preferences["preferencesChrome"]:
             self.logger.debug(pref)
             line = ""
             if pref["value"] == "false" or pref["value"] == "true":
-                line = "   "+pref["preferenceName"]+': '+ str(pref["value"])+',\n'
+                line = '"'+pref["preferenceName"]+'":' + str(pref["value"])+',\n'
             elif type(pref["value"]).__name__ == "int":
-                line = "   "+pref["preferenceName"]+': '+ str(pref["value"])+',\n'
+                line = '"'+pref["preferenceName"]+'":' + str(pref["value"])+',\n'
             else:
-                line = "   "+pref["preferenceName"]+': "'+ str(pref["value"])+'",\n'
+                line = '"'+pref["preferenceName"]+'":' + str(pref["value"])+'",\n'
             content += line
             
         content += "\n}"
@@ -97,9 +95,6 @@ class BrowserChrome(AbstractPlugin):
         content = " "
         if len(proxy_preferences) > 0:
             for proxy in proxy_preferences["proxyListChrome"]:
-                self.logger.debug(type(proxy))
-                self.logger.debug(str(proxy))
-
                 line = ""
                 line +=  str(proxy["preferenceName"])
                 content += line
