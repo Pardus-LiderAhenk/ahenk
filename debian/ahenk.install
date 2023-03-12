@@ -258,6 +258,10 @@ usr/share/ahenk/plugins/sudoers/safe.py
 usr/share/ahenk/plugins/sudoers/main.py
 usr/share/ahenk/plugins/sudoers/policy.py
 usr/share/ahenk/plugins/sudoers
+usr/share/ahenk/plugins/browser-chrome/safe.py
+usr/share/ahenk/plugins/browser-chrome/main.py
+usr/share/ahenk/plugins/browser-chrome/policy.py
+usr/share/ahenk/plugins/browser-chrome
 usr/share/ahenk/plugins/usb/manage-usb.py
 usr/share/ahenk/plugins/usb/scripts/ENABLED_printer.sh
 usr/share/ahenk/plugins/usb/scripts/ENABLED_usbstorage.sh
