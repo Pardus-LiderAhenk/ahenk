@@ -1,3 +1,35 @@
+ahenk (1.2.0-2) unstable; urgency=medium
+
+  [ 3bru ]
+  * added browser chrome plugin
+  * proxy settings done
+  * proxy policy plugin  function has been written
+  * chrome preference json value edited
+  * edited code
+  * added logout.py file for remove file
+  * added executable file
+  * added safe.py file
+
+  [ Tuncay ÇOLAK ]
+  * get display number to remote access
+
+  [ 3bru ]
+  * changed proxy protocol
+  * deleted logger lines for chrome browser
+  * added default settings
+
+  [ Tuncay ÇOLAK ]
+  * revert default proxy settings in safe and logout
+
+  [ 3bru ]
+  * added case for chrome proxy
+
+  [ Tuncay ÇOLAK ]
+  * safe mode for chrome plugin
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Sun, 12 Mar 2023 16:21:16 +0300
+
 ahenk (1.2.0-1) unstable; urgency=medium
 
   [ Tuncay ÇOLAK ]
