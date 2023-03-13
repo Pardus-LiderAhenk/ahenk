@@ -104,6 +104,7 @@ class BrowserChrome(AbstractPlugin):
                 line =  proxy_data[1].get('preferenceName')    
             
             self.write_file(proxy_full_path, line)
+            self.make_executable(proxy_full_path)
             self.execute_script(proxy_full_path)
         else:
              self.logger.debug("Proxy preferences files is empty!!")
