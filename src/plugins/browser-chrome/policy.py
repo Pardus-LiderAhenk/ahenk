@@ -75,11 +75,10 @@ class BrowserChrome(AbstractPlugin):
             elif type(pref["value"]).__name__ == "int":
                 line = '"'+pref["preferenceName"]+'":' + str(pref["value"])+',\n'
             else:
-                line = '"'+pref["preferenceName"]+'":' + str(pref["value"])+'",\n'
+                line = '"'+pref["preferenceName"]+'":"' + str(pref["value"])+'",\n'
             content += line
             
         content += "\n}"
-        self.logger.debug(content)
         self.write_file(file_full_path, content)
 
         self.logger.debug('User chrome preferences were wrote successfully')
@@ -117,5 +116,3 @@ class BrowserChrome(AbstractPlugin):
 def handle_policy(profile_data, context):
     browser = BrowserChrome(profile_data, context)
     browser.handle_policy()
-   
-    
