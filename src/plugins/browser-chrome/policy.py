@@ -3,24 +3,25 @@
 # Author:  Ebru Arslan  <16ebruarslan@gmail.com>
 
 import json
-import os
+import os,re
 from pathlib import Path
 from base.plugin.abstract_plugin import AbstractPlugin
 
 class BrowserChrome(AbstractPlugin):
     
     def __init__(self, data, context):
-       super(AbstractPlugin, self).__init__()
-       self.data = data
-       self.context = context
-       self.logger = self.get_logger()
-       self.message_code = self.get_message_code()
-       self.local_settings_path_suffix = 'policies/managed/'
-       self.local_settings_path = '/etc/opt/chrome/'
-       self.local_settings_proxy_profile = '/etc/profile.d/'
-       self.local_settings_proxy_file = 'liderahenk_chrome_proxy.sh'
-       self.logger.info('Parameters were initialized.')
-       self.user_js_file = "browser_chrome_preferences_{0}.json"
+        super(AbstractPlugin, self).__init__()
+        self.data = data
+        self.context = context
+        self.logger = self.get_logger()
+        self.message_code = self.get_message_code()
+        self.local_settings_path_suffix = 'policies/managed/'
+        self.local_settings_path = '/etc/opt/chrome/'
+        self.local_settings_proxy_profile = '/etc/profile.d/'
+        self.local_settings_proxy_file = 'liderahenk_chrome_proxy.sh'
+        self.user_js_file = 'liderahenk_browser_chrome_preferences.json'
+ 
+        self.logger.info('Parameters were initialized.')
 
     def create_chrome_file(self):
         try:
@@ -58,17 +59,13 @@ class BrowserChrome(AbstractPlugin):
 
 
     def write_to_profile(self):
-        username = self.get_username()
-        path = self.local_settings_path+self.local_settings_path_suffix
-        file = self.user_js_file.format(username)
-        file_full_path = path + file
+        file_full_path = self.local_settings_path+self.local_settings_path_suffix+self.user_js_file
         self.silent_remove(file_full_path)
         self.create_file(file_full_path)
         preferences = json.loads(self.data)
         self.logger.debug('Writing preferences chrome to file ...')
         content = "{\n"
         for pref in preferences["preferencesChrome"]:
-            self.logger.debug(pref)
             line = ""
             if pref["value"] == "false" or pref["value"] == "true":
                 line = '"'+pref["preferenceName"]+'":' + str(pref["value"])+',\n'
@@ -79,6 +76,7 @@ class BrowserChrome(AbstractPlugin):
             content += line
             
         content += "\n}"
+        self.logger.debug(content)
         self.write_file(file_full_path, content)
 
         self.logger.debug('User chrome preferences were wrote successfully')
@@ -92,7 +90,6 @@ class BrowserChrome(AbstractPlugin):
         line = ""
         if len(proxy_preferences) > 0:
             proxy_data =  proxy_preferences["proxyListChrome"]
-            self.logger.debug(proxy_data)
             if proxy_data[0].get('value') == '0' :
                 line =  proxy_data[1].get('preferenceName')
                 
