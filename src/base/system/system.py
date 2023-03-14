@@ -292,12 +292,15 @@ class System:
 
         @staticmethod
         def display(username):
-            system = System()
-            if "\\" in username:
-                user_parser = username.split("\\")
-                username = user_parser[1]
-            display = system.db_service.select_one_result('session', 'display', " username='{0}'".format(username))
-            return display
+            try:
+                system = System()
+                if "\\" in username:
+                    user_parser = username.split("\\")
+                    username = user_parser[1]
+                display = system.db_service.select_one_result('session', 'display', " username='{0}'".format(username))
+                return display
+            except Exception as e:
+                return None
 
         @staticmethod
         def desktop(username):

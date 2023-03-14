@@ -498,3 +498,10 @@ class Util:
             return version
         else:
             return None
+
+    # return active user in sessions list
+    @staticmethod
+    def get_active_user():
+        result_code, p_out, p_err = Util.execute("for sessionid in $(loginctl list-sessions --no-legend | awk '{ print $1 }'); do loginctl show-session -p Id -p Name -p User -p State -p Type -p Remote $sessionid | sort; done | awk -F= '/Name/ { name = $2 } /User/ { user = $2 } /State/ { state = $2 } /Type/ { type = $2 } /Remote/ { remote = $2 } /User/ && remote == \"no\" && state == \"active\" && (type == \"x11\" || type == \"wayland\") { print name }\'")
+        p_out = str(p_out).rstrip()
+        return p_out
