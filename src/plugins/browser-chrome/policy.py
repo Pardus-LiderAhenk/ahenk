@@ -19,7 +19,7 @@ class BrowserChrome(AbstractPlugin):
         self.local_settings_path = '/etc/opt/chrome/'
         self.local_settings_proxy_profile = '/etc/profile.d/'
         self.local_settings_proxy_file = 'liderahenk_chrome_proxy.sh'
-        self.user_js_file = 'liderahenk_browser_chrome_preferences.json'
+        self.user_js_file = "liderahenk_browser_chrome_preferences.json"
  
         self.logger.info('Parameters were initialized.')
 
@@ -83,34 +83,51 @@ class BrowserChrome(AbstractPlugin):
 
 
     def write_to_chrome_proxy(self):
-        proxy_full_path = self.local_settings_proxy_profile + self.local_settings_proxy_file
-        self.silent_remove(proxy_full_path)
-        self.create_file(proxy_full_path)
+        proxy_type = "0"
         proxy_preferences = json.loads(self.data)
-        line = ""
+        username = self.get_username()
         if len(proxy_preferences) > 0:
             proxy_data =  proxy_preferences["proxyListChrome"]
-            if proxy_data[0].get('value') == '0' :
-                line =  proxy_data[1].get('preferenceName')
-                
-            elif proxy_data[0].get('value') == '1':
-                for proxy in proxy_data[1:5]:
-                    line += str(proxy['preferenceName'] + "\n") 
+            self.logger.debug(proxy_data)
 
-            elif proxy_data[0].get('value') == '2':
-                line =  proxy_data[1].get('preferenceName')    
-            
-            self.write_file(proxy_full_path, line)
-            self.make_executable(proxy_full_path)
-            self.execute_script(proxy_full_path)
+            for pref in proxy_data:
+                if pref["preferenceName"] == "type":
+                    proxy_type = pref['value']
+                    
+            if proxy_type == '0':
+                self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'none''".format(username))
+                #self.execute("su - {0} -c 'gsettings set org.gnome.system.proxy mode 'none''".format("ebru_chrome"))
+            elif proxy_type == '1':
+                self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'manual''".format(username))
+                for pref in proxy_data:
+                    if pref["preferenceName"] == "httpHost":
+                        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http host '{1}''".format(username,str(pref['value'])))
+                    if pref["preferenceName"] == "httpPort":
+                        self.execute("su - {0} -c  ' gsettings set org.gnome.system.proxy.http port '{1}''".format(username,str(pref['value'])))
+                    if pref["preferenceName"] == "httpsHost":
+                        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https host '{1}''".format(username,str(pref['value'])))
+                    if pref["preferenceName"] == "httpsPort":
+                        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https port '{1}''".format(username,str(pref['value'])))
+                    if pref["preferenceName"] == "ftpHost":
+                        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp host '{1}''".format(username,str(pref['value'])))
+                    if pref["preferenceName"] == "ftpPort":
+                        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp port '{1}''".format(username,str(pref['value'])))
+                    if pref["preferenceName"] == "socksHost":
+                        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks port '{1}''".format(username,str(pref['value'])))
+                    if pref["preferenceName"] == "socksPort":
+                        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks port '{1}''".format(username,str(pref['value'])))
+            elif proxy_type == '2':
+                self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'auto''".format(username))
+                self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy autoconfig-url '{1}''".format(username,str(pref['value'])))
+                
         else:
              self.logger.debug("Proxy preferences files is empty!!")
-        # subprocess.Popen('sudo chmod +x {0}'.format(proxy_sh), shell=True)
         self.logger.debug('User proxy preferences were wrote successfully')
           
 
 #sudo chmod +x /etc/profile.d/proxy.sh
-
 def handle_policy(profile_data, context):
     browser = BrowserChrome(profile_data, context)
     browser.handle_policy()
+   
+    
