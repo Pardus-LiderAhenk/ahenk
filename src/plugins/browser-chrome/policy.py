@@ -80,6 +80,8 @@ class BrowserChrome(AbstractPlugin):
         proxy_type = "0"
         proxy_preferences = json.loads(self.data)
         username = self.get_username()
+        if username is None:
+            username = self.get_active_user()  
         if len(proxy_preferences) > 0:
             proxy_data =  proxy_preferences["proxyListChrome"]
             for pref in proxy_data:
@@ -117,6 +119,8 @@ class BrowserChrome(AbstractPlugin):
 
     def default_proxy_settings(self):
         username = self.get_username()
+        if username is None:
+            username = self.get_active_user()  
         self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy autoconfig-url '''".format(username))
         self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy ignore-hosts ['localhost', '127.0.0.0/8']".format(username))
         self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'none''".format(username))
