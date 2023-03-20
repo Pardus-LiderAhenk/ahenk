@@ -17,8 +17,6 @@ class BrowserChrome(AbstractPlugin):
         self.message_code = self.get_message_code()
         self.local_settings_path_suffix = 'policies/managed/'
         self.local_settings_path = '/etc/opt/chrome/'
-        self.local_settings_proxy_profile = '/etc/profile.d/'
-        self.local_settings_proxy_file = 'liderahenk_chrome_proxy.sh'
         self.user_js_file = "liderahenk_browser_chrome_preferences.json"
  
         self.logger.info('Parameters were initialized.')
@@ -38,10 +36,6 @@ class BrowserChrome(AbstractPlugin):
             self.logger.debug('Writing preferences to user profile')
             self.write_to_profile()
             self.write_to_chrome_proxy()
-            # try:
-            #     self.write_to_chrome_proxy()
-            # except Exception as e:
-            #     self.logger.error(e)
             self.context.create_response(code=self.message_code.POLICY_PROCESSED.value, message='Kullanıcı browser chrome  profili başarıyla uygulandı.')
         except Exception as e:
             self.logger.error('A problem occurred while handling chrome browser profile: {0}'.format(str(e)))
@@ -76,7 +70,6 @@ class BrowserChrome(AbstractPlugin):
             content += line
             
         content += "\n}"
-        self.logger.debug(content)
         self.write_file(file_full_path, content)
 
         self.logger.debug('User chrome preferences were wrote successfully')
@@ -96,7 +89,6 @@ class BrowserChrome(AbstractPlugin):
                     
             if proxy_type == '0':
                 self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'none''".format(username))
-                #self.execute("su - {0} -c 'gsettings set org.gnome.system.proxy mode 'none''".format("ebru_chrome"))
             elif proxy_type == '1':
                 self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'manual''".format(username))
                 for pref in proxy_data:
@@ -125,7 +117,6 @@ class BrowserChrome(AbstractPlugin):
         self.logger.debug('User proxy preferences were wrote successfully')
           
 
-#sudo chmod +x /etc/profile.d/proxy.sh
 def handle_policy(profile_data, context):
     browser = BrowserChrome(profile_data, context)
     browser.handle_policy()
