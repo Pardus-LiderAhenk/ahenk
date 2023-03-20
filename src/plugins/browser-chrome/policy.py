@@ -3,7 +3,7 @@
 # Author:  Ebru Arslan  <16ebruarslan@gmail.com>
 
 import json
-import os,re
+import os
 from pathlib import Path
 from base.plugin.abstract_plugin import AbstractPlugin
 
@@ -76,13 +76,12 @@ class BrowserChrome(AbstractPlugin):
 
 
     def write_to_chrome_proxy(self):
+        self.default_proxy_settings()
         proxy_type = "0"
         proxy_preferences = json.loads(self.data)
         username = self.get_username()
         if len(proxy_preferences) > 0:
             proxy_data =  proxy_preferences["proxyListChrome"]
-            self.logger.debug(proxy_data)
-
             for pref in proxy_data:
                 if pref["preferenceName"] == "type":
                     proxy_type = pref['value']
@@ -115,7 +114,22 @@ class BrowserChrome(AbstractPlugin):
         else:
              self.logger.debug("Proxy preferences files is empty!!")
         self.logger.debug('User proxy preferences were wrote successfully')
-          
+
+    def default_proxy_settings(self):
+        username = self.get_username()
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy autoconfig-url '''".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy ignore-hosts ['localhost', '127.0.0.0/8']".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'none''".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy use-same-proxy true'".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp host '''".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp port 0'".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http host '''".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http port 8080'".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https host '''".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https port 0'".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks host '''".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks port 0'".format(username))
+        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http use-authentication false'".format(username))
 
 def handle_policy(profile_data, context):
     browser = BrowserChrome(profile_data, context)
