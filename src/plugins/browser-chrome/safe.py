@@ -23,19 +23,20 @@ class Safe(AbstractPlugin):
         self.default_proxy_settings()
 
     def default_proxy_settings(self):
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy autoconfig-url '''".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy ignore-hosts ['localhost', '127.0.0.0/8']".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'none''".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy use-same-proxy true'".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp host '''".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp port 0'".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http host '''".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http port 8080'".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https host '''".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https port 0'".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks host '''".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks port 0'".format(self.username))
-        self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http use-authentication false'".format(self.username))
+        if (self.execute("su - {0} -c  'gsettings get org.gnome.system.proxy mode'".format(self.username))) != 'none':
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy autoconfig-url '''".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy ignore-hosts ['localhost', '127.0.0.0/8']".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy mode 'none''".format(self.username))
+            #self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy use-same-proxy true'".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp host '''".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.ftp port 0'".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http host '''".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http port 8080'".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https host '''".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.https port 0'".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks host '''".format(self.username))
+            self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.socks port 0'".format(self.username))
+            #self.execute("su - {0} -c  'gsettings set org.gnome.system.proxy.http use-authentication false'".format(self.username))
 
 def handle_mode(context):
     init = Safe(context)
