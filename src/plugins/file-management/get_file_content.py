@@ -4,6 +4,7 @@
 
 from base.plugin.abstract_plugin import AbstractPlugin
 import json
+import os
 
 
 class GetFileContent(AbstractPlugin):
@@ -19,6 +20,12 @@ class GetFileContent(AbstractPlugin):
             file_path = self.data['file-path']
             file_content = ""
             is_file_exists = False
+
+            if os.path.isdir(file_path):
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message='Dosya yolu bir dizin olamaz.',
+                                             content_type=self.get_content_type().APPLICATION_JSON.value)
+                return
 
             if self.is_exist(file_path):
                 self.logger.info("File exists: " + file_path)
