@@ -264,9 +264,9 @@ class Util:
     def install_with_apt_get(package_name, package_version=None):
 
         if package_version is not None:
-            command = 'apt-get install --yes --force-yes {0}={1}'.format(package_name, package_version)
+            command = 'apt-get install --yes --allow-unauthenticated {0}={1}'.format(package_name, package_version)
         else:
-            command = 'apt-get install --yes --force-yes {0}'.format(package_name)
+            command = 'apt-get install --yes --allow-unauthenticated {0}'.format(package_name)
 
         return Util.execute(command)
 
@@ -274,9 +274,9 @@ class Util:
     def uninstall_package(package_name, package_version=None):
 
         if package_version is not None:
-            command = 'apt-get purge --yes --force-yes {0}={1}'.format(package_name, package_version)
+            command = 'apt-get purge --yes --allow-unauthenticated {0}={1}'.format(package_name, package_version)
         else:
-            command = 'apt-get purge --yes --force-yes {0}'.format(package_name)
+            command = 'apt-get purge --yes --allow-unauthenticated {0}'.format(package_name)
 
         return Util.execute(command)
 
@@ -335,7 +335,7 @@ class Util:
 
     @staticmethod
     def remove_package(package_name, package_version):
-        command = "sudo apt-get --yes --force-yes purge {0}={1}".format(package_name, package_version)
+        command = "sudo apt-get --yes --allow-unauthenticated purge {0}={1}".format(package_name, package_version)
         result_code, p_out, p_err = Util.execute(command)
         return result_code, p_out, p_err
 

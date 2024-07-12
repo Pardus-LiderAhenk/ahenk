@@ -30,7 +30,7 @@ class InstallAhenk(AbstractPlugin):
             self.key_path = self.task['privateKeyPath']
 
         if self.install_method == 'APT_GET':
-            self.install_command = 'sudo apt-get install -y --force-yes ahenk'  # TODO name for ahenk
+            self.install_command = 'sudo apt-get install -y --allow-unauthenticated ahenk'  # TODO name for ahenk
 
         elif self.install_method == 'WGET':
             self.download_url = self.task['downloadUrl']
