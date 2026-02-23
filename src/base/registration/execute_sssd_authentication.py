@@ -3,6 +3,7 @@
 # Author: Hasan Kara <h.kara27@gmail.com>
 
 from base.scope import Scope
+from base.util.apt_helper import AptHelper
 from base.util.util import Util
 import re
 
@@ -56,7 +57,9 @@ class ExecuteSSSDAuthentication:
             file_sssd.close()
 
             # Install libpam-sss sssd-common for sssd authentication
-            (result_code, p_out, p_err) = self.util.execute("sudo apt install libpam-sss sssd-common libsss-sudo -y")
+            (result_code, p_out, p_err) = AptHelper.install_packages(
+                ["libpam-sss", "sssd-common", "libsss-sudo"]
+            )
 
 
             if result_code != 0:

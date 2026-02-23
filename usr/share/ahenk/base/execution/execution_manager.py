@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
+
 import os
 import json
 import time
@@ -18,8 +18,7 @@ from base.scheduler.custom.schedule_job import ScheduleTaskJob
 from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
-
-from easygui import *
+from base.agreement.confirm import show_message
 
 
 class ExecutionManager(object):
@@ -406,31 +405,14 @@ class ExecutionManager(object):
         j = json.loads(msg)
         status = str(j['status']).lower()
         directory_server = str(j['directoryServer'])
-        # user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
-        # display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
+
         if 'not_authorized' == str(status):
             self.logger.info('UnRegistration is failed. User not authorized')
-            if self.unregister_user_name is None:
-                #user_name = os.getlogin()
-                #display = Util.get_username_display()
-                user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
-                display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
-                Util.show_message(user_name, display,
-                                  'Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir.',
-                                  'Kullanıcı Yetkilendirme Hatası')
+            result_code = show_message("Ahenk Lider MYS sisteminden çıkarmak için yetkili kullanıcı haklarına sahip olmanız gerekmektedir")
         else:
-            if self.unregister_user_name is None:
-                #user_name = os.getlogin()
-                #display = Util.get_username_display()
-                user_name = self.db_service.select_one_result('session', 'username', " 1=1 order by id desc ")
-                display = self.db_service.select_one_result('session', 'display', " 1=1 order by id desc ")
-                Util.show_message(user_name, display, "Ahenk Lider MYS sisteminden çıkarılmıştır.", "")
-                if Util.show_message(user_name, display,
-                                     "Değişikliklerin etkili olması için sistem yeniden başlatılacaktır. Lütfen bekleyiniz...",
-                                     ""):
-                    registration = Scope.get_instance().get_registration()
-                    registration.purge_and_unregister(directory_server)
-            else:
+            show_message("Ahenk Lider MYS sisteminden çıkarılmıştır")
+            result_code = show_message("Değişikliklerin etkili olması için sistem yeniden başlatılacaktır. Lütfen bekleyiniz...")
+            if result_code == "success":
                 registration = Scope.get_instance().get_registration()
                 registration.purge_and_unregister(directory_server)
 

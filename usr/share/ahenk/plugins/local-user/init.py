@@ -3,6 +3,7 @@
 # Author:Mine DOGAN <mine.dogan@agem.com.tr>
 
 from base.plugin.abstract_plugin import AbstractPlugin
+from base.util.apt_helper import AptHelper
 
 
 class Init(AbstractPlugin):
@@ -15,8 +16,8 @@ class Init(AbstractPlugin):
 
     def handle_mode(self):
         if self.is_installed('whois') is False:
-            self.install_with_apt_get('whois')
-            self.logger.debug('whois has been installed with apt-get.')
+            AptHelper.install_packages(['whois'], update_cache=True, run_dpkg_configure=True)
+            self.logger.debug('whois has been installed with apt.')
 
 
 def handle_mode(context):

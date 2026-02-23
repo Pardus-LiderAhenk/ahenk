@@ -3,6 +3,7 @@
 # Author: Hasan Kara <h.kara27@gmail.com>
 
 from base.scope import Scope
+from base.util.apt_helper import AptHelper
 from base.util.util import Util
 import re
 
@@ -14,8 +15,12 @@ class ExecuteCancelSSSDAuthentication:
         self.util = Util()
 
     def cancel(self):
-        self.util.execute("apt purge libpam-sss sssd-common libsss-sudo -y")
-        self.util.execute("apt autoremove -y")
+        AptHelper.remove_packages(
+            ["libpam-sss", "sssd-common", "libsss-sudo"],
+            purge=True,
+            update_cache=True,
+            run_dpkg_configure=True,
+        )
 
         if self.util.is_exist("/etc/sssd"):
             self.util.delete_folder("/etc/sssd")

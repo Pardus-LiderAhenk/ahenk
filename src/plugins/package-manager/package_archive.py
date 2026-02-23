@@ -3,6 +3,7 @@
 # Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
 from base.plugin.abstract_plugin import AbstractPlugin
+from base.util.apt_helper import AptHelper
 
 
 class PackageArchive(AbstractPlugin):
@@ -20,7 +21,13 @@ class PackageArchive(AbstractPlugin):
             package_name = str((self.data)['packageName'])
             package_version = str((self.data)['packageVersion'])
             self.logger.debug("Installing new package... {0}".format(package_name))
-            result_code, p_result, p_err = self.install_with_apt_get(package_name, package_version)
+            versions = {package_name: package_version} if package_version else None
+            result_code, p_result, p_err = AptHelper.install_packages(
+                [package_name],
+                versions=versions,
+                update_cache=True,
+                run_dpkg_configure=True,
+            )
             if result_code == 0:
                 resultMessage += 'Paket başarıyla kuruldu - {0}={1}'.format(package_name, package_version)
                 self.logger.debug(resultMessage)

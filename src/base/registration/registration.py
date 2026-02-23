@@ -21,6 +21,8 @@ from base.registration.execute_sssd_authentication import ExecuteSSSDAuthenticat
 from base.registration.execute_sssd_ad_authentication import ExecuteSSSDAdAuthentication
 from base.registration.execute_cancel_sssd_ad_authentication import ExecuteCancelSSSDAdAuthentication
 from base.system.disk_info import DiskInfo
+from base.agreement.confirm import show_message
+
 
 class Registration:
     def __init__(self):
@@ -51,46 +53,17 @@ class Registration:
         else:
             self.register(True)
 
-    def registration_request(self, hostname,username,password):
+    def registration_request(self, hostname,username,password, is_notification=False):
 
         self.logger.debug('Requesting registration')
-        # SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,checker_func=self.is_registered, kwargs=None))
-
         self.servicename = self.conf_manager.get("CONNECTION", "servicename")
 
         self.host = hostname
         self.user_name = username
         self.user_password= password
         # self.directory_server = directoryserver
-        self.showUserNotify = False;
+        self.showUserNotify = is_notification
 
-        if(username is None and password is None and self.host is None ):
-            self.showUserNotify = True;
-            self.host = self.conf_manager.get("CONNECTION", "host")
-
-            user_name= os.getlogin()
-            self.logger.info('User : '+ str(user_name))
-            pout = Util.show_registration_message(user_name,'Makineyi Lider MYS sistemine kaydetmek için bilgileri ilgili alanlara giriniz. LÜTFEN DEVAM EDEN İŞLEMLERİ SONLANDIRDIĞINZA EMİN OLUNUZ !',
-                                                  'LIDER MYS SISTEMINE KAYIT', self.host)
-            self.logger.info('pout : ' + str(pout))
-            field_values = pout.split(' ')
-            user_registration_info = list(field_values)
-
-            if self.host == '':
-                self.host = user_registration_info[0]
-                self.user_name = user_registration_info[1]
-                self.user_password = user_registration_info[2]
-                # self.directory_server = user_registration_info[3]
-
-            else:
-                self.user_name = user_registration_info[1]
-                self.user_password = user_registration_info[2]
-                # self.directory_server = user_registration_info[2]
-
-        #anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(user_name,user_password), self.host,self.servicename)
-        #anon_messenger.connect_to_server()
-
-        self.logger.debug('Requesting registration')
         SetupTimer.start(Timer(System.Ahenk.registration_timeout(), timeout_function=self.registration_timeout,checker_func=self.is_registered, kwargs=None))
         anon_messenger = AnonymousMessenger(self.message_manager.registration_msg(self.user_name,self.user_password,self.directory_server), self.host,self.servicename)
         anon_messenger.connect_to_server()
@@ -334,7 +307,8 @@ class Registration:
             'and it is connected to XMPP server! Check your Ahenk configuration file (/etc/ahenk/ahenk.conf)')
         self.logger.error('Ahenk is shutting down...')
         print('Ahenk is shutting down...')
-        Util.show_message(os.getlogin(),':0',"Lider MYS sistemine ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
+        if self.showUserNotify == True:
+            show_message("Lider MYS sistemine ulaşılamadı. Lütfen sunucu adresini kontrol ediniz....","HATA")
         System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
 
     def purge_and_unregister(self,directory_type):

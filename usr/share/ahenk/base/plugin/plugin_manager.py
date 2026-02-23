@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 # Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
-import imp
+import importlib.util
 import os
 
 from base.scope import Scope
@@ -147,8 +147,13 @@ class PluginManager(object):
     def find_command(self, plugin_name, version, command_id):
         location = os.path.join(self.config_manager.get("PLUGIN", "pluginFolderPath"), plugin_name)
         if os.path.isdir(location) and command_id + ".py" in os.listdir(location):
-            info = imp.find_module(command_id, [location])
-            return imp.load_module(command_id, *info)
+            file_path = os.path.join(location, command_id + ".py")
+            spec = importlib.util.spec_from_file_location(command_id, file_path)
+            if spec is None or spec.loader is None:
+                return None
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         else:
             self.logger.warning('Command id -' + command_id + ' - not found')
             return None
@@ -180,8 +185,13 @@ class PluginManager(object):
     def find_policy_module(self, plugin_name):
         location = os.path.join(self.config_manager.get("PLUGIN", "pluginFolderPath"), plugin_name)
         if os.path.isdir(location) and "policy.py" in os.listdir(location):
-            info = imp.find_module("policy", [location])
-            return imp.load_module("policy", *info)
+            file_path = os.path.join(location, "policy.py")
+            spec = importlib.util.spec_from_file_location("policy", file_path)
+            if spec is None or spec.loader is None:
+                return None
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         else:
             self.logger.warning('policy.py not found Plugin Name : ' + str(plugin_name))
             return None
@@ -247,8 +257,12 @@ class PluginManager(object):
         location = os.path.join(self.config_manager.get("PLUGIN", "pluginFolderPath"), name)
         main = self.config_manager.get("PLUGIN", "mainModuleName")
         if os.path.isdir(location) and main + ".py" in os.listdir(location):
-            info = imp.find_module(main, [location])
-            main_py = imp.load_module(main, *info)
+            file_path = os.path.join(location, main + ".py")
+            spec = importlib.util.spec_from_file_location(main, file_path)
+            if spec is None or spec.loader is None:
+                return False
+            main_py = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(main_py)
             if main_py.info() is None or main_py.info()['version'] == version:
                 return True
         return False
@@ -283,8 +297,13 @@ class PluginManager(object):
         location = os.path.join(self.config_manager.get("PLUGIN", "pluginFolderPath"), plugin_name)
 
         if os.path.isdir(location) and (mode + ".py") in os.listdir(location):
-            info = imp.find_module(mode, [location])
-            return imp.load_module(mode, *info)
+            file_path = os.path.join(location, mode + ".py")
+            spec = importlib.util.spec_from_file_location(mode, file_path)
+            if spec is None or spec.loader is None:
+                return None
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         else:
             self.logger.warning('{0} not found in {1} plugin'.format((mode + '.py'), plugin_name))
             return None

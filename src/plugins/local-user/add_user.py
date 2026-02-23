@@ -49,16 +49,54 @@ class AddUser(AbstractPlugin):
 
             if not self.is_exist(self.home):
                 self.create_directory(self.home)
-            self.execute(self.add_user.format(self.home, self.username))
+            
+            # Check if user already exists - first check local system, then LDAP
+            # Check local /etc/passwd file
+            result_code_local, p_out_local, p_err_local = self.execute(["grep", "-q", "^{}:".format(self.username), "/etc/passwd"], shell=False)
+            if result_code_local == 0:
+                error_msg = 'Kullanıcı zaten yerel sistemde mevcut: {0}'.format(self.username)
+                self.logger.error(error_msg)
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message=error_msg)
+                return
+            
+            # Check if user exists in LDAP (via getent passwd - checks all NSS sources)
+            result_code, p_out, p_err = self.execute(["getent", "passwd", self.username],shell=False)
+            if result_code == 0:
+                # User found via getent but not in /etc/passwd, so it's from LDAP
+                error_msg = 'Kullanıcı zaten LDAP\'ta mevcut: {0}'.format(self.username)
+                self.logger.error(error_msg)
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message=error_msg)
+                return
+            
+            # User doesn't exist, try to add
+            result_code, p_out, p_err = self.execute(self.add_user.format(self.home, self.username))
+            if result_code != 0:
+                error_msg = 'Kullanıcı oluşturulamadı: {0}'.format(p_err.strip() if p_err else 'Bilinmeyen hata')
+                self.logger.error('Failed to add user {0}: {1}'.format(self.username, error_msg))
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message=error_msg)
+                return
             self.logger.debug('Added new user: {0}, home: {1}'.format(self.username, self.home))
 
-            self.execute(self.change_owner.format(self.username, self.home))
-            self.execute(self.change_permission.format(self.home))
+            # Set home directory ownership and permissions
+            result_code, p_out, p_err = self.execute(self.change_owner.format(self.username, self.home))
+            if result_code != 0:
+                self.logger.warning('Failed to change owner for home directory: {0}'.format(p_err.strip() if p_err else ''))
+            
+            result_code, p_out, p_err = self.execute(self.change_permission.format(self.home))
+            if result_code != 0:
+                self.logger.warning('Failed to change permission for home directory: {0}'.format(p_err.strip() if p_err else ''))
+            
             self.logger.debug('Changed owner and permission for home directory.')
 
             if self.groups != "":
-                self.execute(self.add_user_to_groups.format(self.groups, self.username))
-                self.logger.debug('Added user to these groups: {}'.format(self.groups))
+                result_code, p_out, p_err = self.execute(self.add_user_to_groups.format(self.groups, self.username))
+                if result_code != 0:
+                    self.logger.warning('Failed to add user to groups: {0}'.format(p_err.strip() if p_err else ''))
+                else:
+                    self.logger.debug('Added user to these groups: {}'.format(self.groups))
 
             if str(self.password).strip() != "":
                 result_code, p_out, p_err = self.execute_command(self.create_shadow_password.format(self.password))

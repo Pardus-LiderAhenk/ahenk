@@ -1,46 +1,30 @@
 #!/bin/bash
 
-var=$(lsmod | awk '{print $1}'| grep usb_storage)
+# Default file name for policy
+DEFAULT_FILE_NAME="99-block-storage.rules"
 
-if [[ -z "$var" ]]
-then
-echo "USB storage devices are already blocked"
-else
-rm /etc/modprobe.d/blockusbstorages.conf
-for device in /sys/bus/usb/drivers/usb-storage/* ; do
-       if [[ $device == *:* ]]
-       then
-               echo "${device##*/}"
-               echo "${device##*/}" | tee -a /sys/bus/usb/drivers/usb-storage/unbind
-       fi
+# file nane for task
+FILE_NAME="${1:-$DEFAULT_FILE_NAME}"
+
+echo 'ACTION=="add|change", SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="08", ATTR{authorized}="0"
+ACTION=="add|change", SUBSYSTEM=="usb", ENV{ID_USB_INTERFACES}=="*:08:*", ATTR{authorized}="0"
+' > /etc/udev/rules.d/$FILE_NAME
+
+udevadm control --reload-rules
+
+for dev in /dev/disk/by-id/usb-*; do
+    if [ -e "$dev" ]; then
+        umount -l "$dev" 2>/dev/null
+    fi
 done
 
-sleep 2
-
-for usb_dev in /dev/disk/by-id/usb-*; do
-    dev=$(readlink -f $usb_dev)
-    grep -q ^$dev /proc/mounts && umount -f $dev 
+for device in /sys/bus/usb/devices/*; do
+    if [ -e "$device/bInterfaceClass" ]; then
+        cls=$(cat "$device/bInterfaceClass")
+        if [ "$cls" == "08" ]; then
+             echo 0 > "$device/authorized" 2>/dev/null
+             parent=$(dirname "$device")
+             echo 0 > "$parent/authorized" 2>/dev/null
+        fi
+    fi
 done
-
-sleep 2
-
-var=$(lsmod | grep usb_storage | awk '{print $4}')
-
-if [[ ! -z "$var" ]]
-then
-IFS=',' read -ra deps <<< "$var"
-for i in "${deps[@]}"; do
-	modprobe -r "$i"
-    echo blacklist "$i" >> /etc/modprobe.d/blockusbstorages.conf
-done
-fi
-
-sleep 2
-
-modprobe -r usb_storage
-echo blacklist usb_storage >> /etc/modprobe.d/blockusbstorages.conf
-sleep 2
-fi
-
-
-

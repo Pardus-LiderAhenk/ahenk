@@ -3,6 +3,7 @@
 # Author: Hasan Kara <h.kara27@gmail.com>
 
 from base.scope import Scope
+from base.util.apt_helper import AptHelper
 from base.util.util import Util
 import re
 
@@ -105,9 +106,13 @@ class ExecuteLDAPLogin:
 
             # configure ldap-cache
             self.logger.info("Starting to ldap-cache configurations.")
-            result_code, p_out, p_err = self.util.execute("apt-get install nss-updatedb -y")
+            result_code, p_out, p_err = AptHelper.install_packages(["nss-updatedb"])
             if result_code != 0:
-                self.logger.error("Error occured while downloading nss-updatedb.")
+                self.logger.error(
+                    "Error occured while downloading nss-updatedb. {0}".format(
+                        p_err or p_out
+                    )
+                )
             else:
                 self.logger.info("nss-updatedb downloaded successfully. Configuring /etc/nsswitch.conf.")
                 file_ns_switch = open("/etc/nsswitch.conf", 'r')
@@ -178,11 +183,17 @@ class ExecuteLDAPLogin:
                 self.util.write_file(libnss_ldap_file_path, content, 'a+')
                 self.logger.info("Configuration has been made to {0}.".format(libnss_ldap_file_path))
 
-            result_code, p_out, p_err = self.util.execute("apt-get install libnss-db libpam-ccreds libsss-sudo -y")
+            result_code, p_out, p_err = AptHelper.install_packages(
+                ["libnss-db", "libpam-ccreds", "libsss-sudo"]
+            )
             if result_code != 0:
-                self.logger.error("Error occured while downloading libnss-db libpam-ccreds.")
+                self.logger.error(
+                    "Error occured while downloading libnss-db libpam-ccreds. {0}".format(
+                        p_err or p_out
+                    )
+                )
             else:
-                self.logger.error("libnss-db libpam-ccreds are downloaded.")
+                self.logger.info("libnss-db libpam-ccreds are downloaded.")
 
             # configure sudo-ldap
             sudo_ldap_conf_file_path = "/etc/sudo-ldap.conf"

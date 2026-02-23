@@ -1,37 +1,26 @@
 #!/bin/bash
 
-var=$(lsmod | grep usbhid)
+# Default file name for policy
+DEFAULT_FILE_NAME="99-block-hid.rules"
 
-if [[ -z "$var" ]]
-then
-echo "USB HID devices are already blocked"
-else
-for device in /sys/bus/usb/drivers/usbhid/* ; do
-       if [[ $device == *:* ]]
-       then
-               echo "${device##*/}"
-               echo "${device##*/}" | tee -a /sys/bus/usb/drivers/usbhid/unbind
-       fi
+# file nane for task
+FILE_NAME="${1:-$DEFAULT_FILE_NAME}"
+
+echo 'ACTION=="add|change", SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="03", ATTR{authorized}="0"
+ACTION=="add|change", SUBSYSTEM=="usb", ENV{ID_USB_INTERFACES}=="*:03:*", ATTR{authorized}="0"
+' > /etc/udev/rules.d/$FILE_NAME
+
+udevadm control --reload-rules
+
+for device in /sys/bus/usb/devices/*; do
+    if [ -e "$device/bInterfaceClass" ]; then
+        cls=$(cat "$device/bInterfaceClass")
+        if [ "$cls" == "03" ]; then
+             echo 0 > "$device/authorized" 2>/dev/null
+             parent=${device%%:*}
+             if [ -e "$parent/authorized" ]; then
+                 echo 0 > "$parent/authorized" 2>/dev/null
+             fi
+        fi
+    fi
 done
-
-sleep 2
-rmmod usbhid
-echo blacklist usbhid >> /etc/modprobe.d/blockusbhid.conf
-fi
-
-var=$(lsmod | grep psmouse)
-
-if [[ -z "$var" ]]
-then
-echo "psmouse is already blocked"
-else
-rmmod psmouse
-echo blacklist psmouse >> /etc/modprobe.d/blockusbhid.conf
-fi
-
-#for ld in `who | grep $1 | egrep -o " \(:[0-9]+\)" | egrep -o ":[0-9]+"`; do
-# export DISPLAY="$ld"
-# for hid in `sudo -u $1 xinput --list | grep slave | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+'`; do
- #    sudo -u $1 xinput set-int-prop $hid "Device Enabled" 8 0
- #done
-#done

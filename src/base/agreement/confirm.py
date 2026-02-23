@@ -1,28 +1,43 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
-import os
-import sys
-import easygui
-
-def confirm(message, title):
-    choice = easygui.buttonbox(msg=message, title=title, choices=["Tamam"])
-
-    if choice:
-        print('Y')
-    else:
-        print('N')
+from base.util.display_helper import DisplayHelper, DisplayServerType
+from base.util.util import Util
+from base.scope import Scope
 
 
-if __name__ == '__main__':
+def show_message(message, title="Liderahenk Bildiri"):
+    try:
+        session = DisplayServerType.detect_desktop_env()
+        user = Util.get_active_local_user()
 
-    if len(sys.argv) == 4:
-        try:
-            display=sys.argv[3]
-            os.environ["DISPLAY"] = display
-            confirm(sys.argv[1], sys.argv[2])
-        except Exception as e:
-            print(str(e))
-    else:
-        print('Argument fault. Check your parameters or content of parameters. Parameters: ' + str(sys.argv))
+        display = DisplayHelper.detect_user_display(user)
+        if user is None or display is None:
+            Scope.get_instance().get_logger().debug(
+                f"No display found for user={user}"
+            )
+            return "no_display"
+
+        env_string = DisplayHelper.build_env_string(
+            desktop_server_type=session,
+            user=user
+        )
+
+        command = (
+            f"su {user} -c \"{env_string} "
+            f"zenity --info --width=400 --height=200 "
+            f"--title '{title}' --text '{message}'\""
+        )
+
+        result_code, _, _ = Util.execute(command)
+
+        if result_code != 0:
+            return "error"
+        
+        return "success"
+
+    except Exception as e:
+        Scope.get_instance().get_logger().error(
+            f"Error while showing zenity message: {e}"
+        )
+        return "error"

@@ -1,23 +1,26 @@
 #!/bin/bash
 
-var=$(lsof -t /dev/video0)
+# Default file name for policy
+DEFAULT_FILE_NAME="99-block-webcam.rules"
 
-if [[ -z "$var" ]]
-then
-echo "Webcam is not in use"
-else
-kill -9 "$var"
-sleep 2
-fi
+# file nane for task
+FILE_NAME="${1:-$DEFAULT_FILE_NAME}"
 
-var=$(lsmod | awk '{print $1}'| grep uvcvideo)
+echo 'ACTION=="add|change", SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="0e", ATTR{authorized}="0"
+ACTION=="add|change", SUBSYSTEM=="usb", ENV{ID_USB_INTERFACES}=="*:0e:*", ATTR{authorized}="0"
+' > /etc/udev/rules.d/$FILE_NAME
 
-if [[ -z "$var" ]]
-then
-echo "Webcam is already blocked"
-else
-rmmod uvcvideo
-sleep 2
-fi
+udevadm control --reload-rules
 
-
+for device in /sys/bus/usb/devices/*; do
+    if [ -e "$device/bInterfaceClass" ]; then
+        cls=$(cat "$device/bInterfaceClass")
+        if [ "$cls" == "0e" ]; then
+             echo 0 > "$device/authorized" 2>/dev/null
+             parent=${device%%:*}
+             if [ -e "$parent/authorized" ]; then
+                 echo 0 > "$parent/authorized" 2>/dev/null
+             fi
+        fi
+    fi
+done

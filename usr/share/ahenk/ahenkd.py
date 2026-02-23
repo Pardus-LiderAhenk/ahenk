@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
-# Author: Volkan Şahin <volkansah.in> <bm.volkansahin@gmail.com>
 
 import os
 import queue
@@ -31,7 +30,6 @@ from base.system.system import System
 from base.task.task_manager import TaskManager
 from base.util.util import Util
 from base.default_config.default_config import DefaultConfig
-from easygui import msgbox
 
 sys.path.append('../..')
 
@@ -70,7 +68,7 @@ class AhenkDaemon(BaseDaemon):
         scheduler_ins.initialize()
         Scope.get_instance().set_scheduler(scheduler_ins)
         sc_thread = threading.Thread(target=scheduler_ins.run)
-        sc_thread.setDaemon(True)
+        sc_thread.daemon = True
         sc_thread.start()
         return scheduler_ins
 
@@ -149,34 +147,22 @@ class AhenkDaemon(BaseDaemon):
         """ docstring"""
         # max_attempt_number = int(System.Hardware.Network.interface_size()) * 3
         max_attempt_number = 2
-        # self.logger.debug()
-        # logger = Scope.getInstance().getLogger()
         registration = Scope.get_instance().get_registration()
 
         try:
-            #if registration.is_registered() is False:
-            #    self.logger.debug('Ahenk is not registered. Attempting for registration')
-            #    if registration.registration_request() == False:
-            #        self.registration_failed()
-
             while registration.is_registered() is False:
                 print("Registration attempt")
                 max_attempt_number -= 1
                 self.logger.debug('Ahenk is not registered. Attempting for registration')
-                # registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password,self.register_directory_server)
-                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password)
+                registration.registration_request(self.register_hostname,self.register_user_name,self.register_user_password, self.is_notification)
                 if max_attempt_number < 0:
                     self.logger.warning('Number of Attempting for registration is over')
-                    Util.execute("/etc/init.d/ahenk stop")
+                    Util.execute("systemctl stop ahenk.service")
                     break
-                #if max_attempt_number < 0:
-                #    self.logger.warning('Number of Attempting for registration is over')
-                #    self.registration_failed()
-                #    break
         except Exception as e:
             self.registration_failed()
             self.logger.error('Registration failed. Error message: {0}'.format(str(e)))
-            #Util.execute("/etc/init.d/ahenk stop")
+            #Util.execute("systemctl stop ahenk.service")
 
 
     def is_registered(self):
@@ -246,10 +232,11 @@ class AhenkDaemon(BaseDaemon):
         Util.create_file(System.Ahenk.fifo_file())
         Util.set_permission(System.Ahenk.fifo_file(), '600')
 
-    def set_register_user(self, hostName, username, password):
+    def set_register_user(self, hostName, username, password, is_notification=False):
         self.register_hostname=hostName
         self.register_user_name=username
         self.register_user_password=password
+        self.is_notification=is_notification
         # self.register_directory_server = directoryServer
 
     # if user_disabled is when ahenk service restarted TRUE disabled local users
@@ -361,7 +348,7 @@ if __name__ == '__main__':
     ahenk_daemon = AhenkDaemon(System.Ahenk.pid_path())
     try:
         if len(sys.argv) == 2 and (sys.argv[1] in ('start', 'stop', 'restart', 'status')):
-            ahenk_daemon.set_register_user(None, None, None)
+            ahenk_daemon.set_register_user(None, None, None, False)
             if sys.argv[1] == 'start':
                 if System.Ahenk.is_running() is True:
                     print('There is already running Ahenk service. It will be killed.[{0}]'.format(
@@ -387,14 +374,22 @@ if __name__ == '__main__':
             else:
                 print('Unknown command. Usage : %s start|stop|restart|status|clean' % sys.argv[0])
                 sys.exit(2)
-        elif len(sys.argv) > 2 and (sys.argv[1] in ('start')):
+        elif len(sys.argv) >= 5 and sys.argv[1] == "start":
             params = sys.argv[1]
             hostName = sys.argv[2]
             userName = sys.argv[3]
             password = sys.argv[4]
-            # directoryServer = sys.argv[5]
-            # ahenk_daemon.set_register_user(hostName,userName,password,directoryServer)
-            ahenk_daemon.set_register_user(hostName,userName,password)
+
+            is_notification = False
+            if len(sys.argv) >= 6 and sys.argv[5].lower() == "true":
+                is_notification = True
+
+            ahenk_daemon.set_register_user(
+                hostName,
+                userName,
+                password,
+                is_notification
+            )
             ahenk_daemon.run()
 
         else:

@@ -15,6 +15,9 @@ import uuid
 import locale
 from base.scope import Scope
 from os.path import expanduser
+import psutil
+from base.model.enum.desktop_type import DesktopType
+
 
 
 class Util:
@@ -156,31 +159,49 @@ class Util:
             return path
 
     @staticmethod
-    def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True, as_user=None, ip=None):
-
+    def execute(command, stdin=None, env=None, cwd=None, shell=True, result=True, as_user=None, ip=None, detach=False):
         try:
             if ip:
                 command = 'ssh root@{0} "{1}"'.format(ip, command)
-                Scope.get_instance().get_logger().debug('Executing command: ' +str(command))
-
             elif as_user:
                 command = 'su - {0} -c "{1}"'.format(as_user, command)
-                Scope.get_instance().get_logger().debug('Executing command: ' +str(command))
-            process = subprocess.Popen(command, stdin=stdin, env=env, cwd=cwd, stderr=subprocess.PIPE,
-                                       stdout=subprocess.PIPE, shell=shell)
 
             Scope.get_instance().get_logger().debug('Executing command: ' + str(command))
 
-            if result is True:
-                result_code = process.wait()
-                p_out = process.stdout.read().decode("unicode_escape")
-                p_err = process.stderr.read().decode("unicode_escape")
-
-                return result_code, p_out, p_err
+            if detach:
+                subprocess.Popen(
+                    command,
+                    stdin=stdin,
+                    env=env,
+                    cwd=cwd,
+                    stderr=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    shell=shell,
+                    start_new_session=True
+                )
+                return 0, "", "" 
             else:
-                return None, None, None
+                process = subprocess.Popen(
+                    command,
+                    stdin=stdin,
+                    env=env,
+                    cwd=cwd,
+                    stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    shell=shell,
+                    start_new_session=False
+                )
+
+                if result is True:
+                    result_code = process.wait()
+                    p_out = process.stdout.read().decode("unicode_escape")
+                    p_err = process.stderr.read().decode("unicode_escape")
+                    return result_code, p_out, p_err
+                else:
+                    return None, None, None
+
         except Exception as e:
-            return 1, 'Could not execute command: {0}. Error Message: {1}'.format(command, str(e)), ''
+            return 1, f'Could not execute command: {command}. Error Message: {str(e)}', ''
 
     @staticmethod
     def scopy_from_remote(source_path, destination_path, ip):
@@ -251,8 +272,7 @@ class Util:
     @staticmethod
     def install_with_dpkg(full_path):
         command_dpkg = 'dpkg -i {0}'
-        command_dep = 'apt -f install -y'
-        commands = [command_dpkg.format(full_path),command_dep]
+        commands = [command_dpkg.format(full_path)]
         for cmd in commands:
             try:
                 process = subprocess.Popen(cmd, shell=True)
@@ -260,25 +280,6 @@ class Util:
             except:
                 raise
 
-    @staticmethod
-    def install_with_apt_get(package_name, package_version=None):
-
-        if package_version is not None:
-            command = 'apt-get install --yes --force-yes {0}={1}'.format(package_name, package_version)
-        else:
-            command = 'apt-get install --yes --force-yes {0}'.format(package_name)
-
-        return Util.execute(command)
-
-    @staticmethod
-    def uninstall_package(package_name, package_version=None):
-
-        if package_version is not None:
-            command = 'apt-get purge --yes --force-yes {0}={1}'.format(package_name, package_version)
-        else:
-            command = 'apt-get purge --yes --force-yes {0}'.format(package_name)
-
-        return Util.execute(command)
 
     @staticmethod
     def is_installed(package_name):
@@ -333,11 +334,6 @@ class Util:
                 return True
         return False
 
-    @staticmethod
-    def remove_package(package_name, package_version):
-        command = "sudo apt-get --yes --force-yes purge {0}={1}".format(package_name, package_version)
-        result_code, p_out, p_err = Util.execute(command)
-        return result_code, p_out, p_err
 
     @staticmethod
     def send_notify(title, body, display, user, icon=None, timeout=5000):
@@ -348,70 +344,12 @@ class Util:
         if user != 'root':
             Util.execute('export DISPLAY={0}; su - {1} -c \'{2}\''.format(display, user, inner_command))
 
-    @staticmethod
-    def show_message(username, display, message='', title=''):
-        ask_path = Util.get_ask_path_file()+ 'confirm.py'
-        Scope.get_instance().get_logger().debug('DISPLAYYYY --------->>>>>>>>: ' + str(display))
-        if display is None:
-            display_number = Util.get_username_display()
-        else:
-            display_number = display
-        try:
-            if Util.get_desktop_env() == "gnome":
-                display_number = Util.get_username_display_gnome(username)
-            if username is not None:
-                command = 'su - {0} -c \'python3 {1} \"{2}\" \"{3}\" \"{4}\"\''.format(username, ask_path, message,
-                                                                                       title, display_number)
-                result_code, p_out, p_err = Util.execute(command)
-
-                if p_out.strip() == 'Y':
-                    return True
-                elif p_out.strip() == 'N':
-                    return False
-                else:
-                    return None
-            else:
-                return None
-        except Exception as e :
-            print("Error when showing message " + str(e))
-            return None
-
-    @staticmethod
-    def show_registration_message(login_user_name, message, title, host=None):
-        ask_path = Util.get_ask_path_file() + 'ahenkmessage.py'
-        # display_number = ":0"
-        display_number = Util.get_username_display()
-
-        if Util.get_desktop_env() == "gnome":
-            display_number = Util.get_username_display_gnome(login_user_name)
-
-        if host is None:
-            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name,
-                                                                                        ask_path, message, title, display_number)
-        else:
-            command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \'{5}\' \"'.format(login_user_name,
-                                                                                                        ask_path,
-                                                                                                        message, title,
-                                                                                                        host, display_number)
-        result_code, p_out, p_err = Util.execute(command)
-        pout = str(p_out).replace('\n', '')
-        return pout
-
-    @staticmethod
-    def show_unregistration_message(login_user_name,display_number,message,title):
-        ask_path = Util.get_ask_path_file()+ 'unregistrationmessage.py'
-        if Util.get_desktop_env() == "gnome":
-            display_number = Util.get_username_display_gnome(login_user_name)
-
-        command = 'su - {0} -c \"python3 {1} \'{2}\' \'{3}\' \'{4}\' \"'.format(login_user_name, ask_path, message, title, display_number)
-        result_code, p_out, p_err = Util.execute(command)
-        pout = str(p_out).replace('\n', '')
-        return pout
 
     @staticmethod
     def get_username_display():
         result_code, p_out, p_err = Util.execute("who | awk '{print $1, $5}' | sed 's/(://' | sed 's/)//'", result=True)
         result = []
+        display_number = None
         lines = str(p_out).split('\n')
         for line in lines:
             arr = line.split(' ')
@@ -443,16 +381,13 @@ class Util:
 
     @staticmethod
     def get_desktop_env():
-        xfce4_session = "/usr/bin/xfce4-session"
-        gnome_session = "/usr/bin/gnome-session"
-        desktop_env = None
-        result_code, p_out, p_err = Util.execute("ls {}".format(gnome_session))
-        if result_code == 0:
-            desktop_env = "gnome"
-        result_code, p_out, p_err = Util.execute("ls {}".format(xfce4_session))
-        if result_code == 0:
-            desktop_env = "xfce"
-        return desktop_env
+        desktop_sessions = DesktopType.as_list()
+        for path in desktop_sessions:
+            result_code, p_out, p_err = Util.execute(f"ls {path}")
+            if result_code == 0:
+                env = DesktopType(path).name.lower()
+                return env 
+        return None
 
     # return home directory for user. "/home/username"
     @staticmethod
@@ -505,3 +440,61 @@ class Util:
         result_code, p_out, p_err = Util.execute("for sessionid in $(loginctl list-sessions --no-legend | awk '{ print $1 }'); do loginctl show-session -p Id -p Name -p User -p State -p Type -p Remote $sessionid | sort; done | awk -F= '/Name/ { name = $2 } /User/ { user = $2 } /State/ { state = $2 } /Type/ { type = $2 } /Remote/ { remote = $2 } /User/ && remote == \"no\" && state == \"active\" && (type == \"x11\" || type == \"wayland\") { print name }\'")
         p_out = str(p_out).rstrip()
         return p_out
+    
+        
+    @staticmethod
+    def get_active_local_user():
+        from base.util.display_helper import DisplayServerType
+        """
+        Returns the username of the active local (non-SSH) graphical session.
+        """
+
+        try:
+            sessions = subprocess.check_output(
+                ["loginctl", "list-sessions", "--no-legend"],
+                text=True
+            ).splitlines()
+
+            for line in sessions:
+                parts = line.split()
+                if len(parts) < 4:
+                    continue
+
+                session_id = parts[0]
+                user = parts[2]
+                seat = parts[3]
+
+                # Only seat0
+                if seat != "seat0":
+                    continue
+
+                info = subprocess.check_output(
+                    ["loginctl", "show-session", session_id],
+                    text=True
+                )
+
+                state = None
+                session_type = None
+                session_class = None
+
+                for l in info.splitlines():
+                    if l.startswith("State="):
+                        state = l.split("=")[1]
+                    elif l.startswith("Type="):
+                        session_type = l.split("=")[1]
+                    elif l.startswith("Class="):
+                        session_class = l.split("=")[1]
+
+                if session_class != "user":
+                    continue
+
+                if state == "active" and session_type in DisplayServerType.as_list():
+                    return user
+
+            return None
+
+        except Exception:
+            return None
+
+
+    

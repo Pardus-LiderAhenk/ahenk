@@ -2,7 +2,9 @@
 
 set -e
 
-#mkdir -p /usr/share/ahenk/plugins
+AHENK_CONF="/etc/ahenk/ahenk.conf"
+MESSAGING_CONF="/etc/ahenk/config.d/messaging.conf"
+AHENK_DB="/etc/ahenk/ahenk.db"
 
 # update ahenk from 1.0.0-6 to 1.0.0-7
 if [ ! -d /etc/ahenk ]; then
@@ -12,23 +14,28 @@ if [ ! -d /etc/ahenk ]; then
 
 fi
 
-## update pardus21 sssd conf changes when update pardus from 24 to 25
-#if [ -d /etc/ahenk ]; then
-#  if [ -f /etc/default/sssd ]; then
-#    if ! grep -Fxq 'LC_ALL="tr_CY.UTF-8"' /etc/default/sssd
-#    then
-#      echo 'LC_ALL="tr_CY.UTF-8"' >> /etc/default/sssd
-#      systemctl restart sssd.service
-#    fi
-#  fi
-#
-#  if [ -f /etc/ahenk/ad_info ]; then
-#    if [ -f /etc/sssd/sssd.conf ]; then
-#       sed -i 's/ad_domain/ad_server/g' /etc/sssd/sssd.conf
-#       systemctl restart sssd.service
-#    fi
-#  fi
-#fi
+update_permissions() {
+    local file="$1"
 
-systemctl enable ahenk
-systemctl start ahenk
+    if [ -f "$file" ]; then
+        current_perms=$(stat -c "%a" "$file" 2>/dev/null)
+        
+        if [ "$current_perms" != "600" ]; then
+            chmod 600 "$file"
+            chown root:root "$file"
+        fi
+    else
+        echo "Not found: $file"
+    fi
+}
+
+update_permissions "$AHENK_CONF"
+update_permissions "$MESSAGING_CONF"
+update_permissions "$AHENK_DB"
+
+
+if [ "$1" = "configure" ]; then
+    systemctl daemon-reload || true
+    systemctl enable ahenk.service || true
+    systemctl restart ahenk.service || true
+fi

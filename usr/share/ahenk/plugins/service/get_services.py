@@ -1,9 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
 import json
-import subprocess
+from pystemd.systemd1 import Manager, Unit
 from base.plugin.abstract_plugin import AbstractPlugin
 
 
@@ -40,86 +39,70 @@ class GetServices(AbstractPlugin):
 
     def handle_task(self):
         try:
-            self.logger.debug('Executing command for service list.')
             self.get_service_status()
-
-            self.logger.debug('Command executed.')
 
             if self.is_exist(self.file_path):
                 data = {}
-                self.logger.debug(str(self.file_path))
                 md5sum = self.get_md5_file(str(self.file_path))
-                self.logger.debug('{0} renaming to {1}'.format(self.temp_file_name, md5sum))
                 self.rename_file(self.file_path, self.Ahenk.received_dir_path() + '/' + md5sum)
-                self.logger.debug('Renamed.' + self.Ahenk.received_dir_path() + '/' + md5sum)
                 data['md5'] = md5sum
                 self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
                                              message='Servis listesi başarıyla okundu.',
                                              data=json.dumps(data),
                                              content_type=self.get_content_type().TEXT_PLAIN.value)
-                self.logger.debug("Execution Info fetched succesfully. ")
-                self.logger.debug("Execution Info has sent")
             else:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='Servis listesi getirilemedi')
-            self.logger.debug('Service list created successfully')
         except Exception as e:
             self.logger.error(str(e))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='Servis listesi oluşturulurken hata oluştu: ' + str(e))
 
-    def add_file(self, name, status, auto_start):
-        if self.isRecordExist == 0:
-            self.execute('echo { \\"agent\\" : \\"'+ self.Ahenk.dn() + '\\", \\"service_list\\" :[ >> ' + self.file_path)
-            self.isRecordExist = 1
-        t_command = 'echo "{ \\"serviceName\\": \\"' + name + '\\", \\"serviceStatus\\": \\"' + status + '\\", \\"startAuto\\":\\"' + auto_start + '\\"}" >> ' + self.file_path
-        self.execute(t_command)
-        self.execute('echo , >> ' + self.file_path)
-
-    def add_agentDnToFile(self):
-        t_command = 'echo "{ \\"agent\\": \\"' + self.Ahenk.dn() +'\\"}" >> ' + self.file_path
-        self.execute(t_command)
-        self.execute('echo , >> ' + self.file_path)
-
     def get_service_status(self):
         try:
-            (result_code, p_out, p_err) = self.execute("systemctl list-units --type service --all | grep loaded")
             self.create_file(self.file_path)
-            # service_list = ServiceList()
-            lines = p_out.split('\n')
-            for line in lines:
-                line_split = line.split(' ')
-                service=[]
-                for word in line_split:
-                    if word != '' :
-                        service.append(word)
-                if len(service)>0 and '.service' not in service[0]:
-                    del service[0]
+            service_entries = []
+            manager = Manager()
+            manager.load()
+            units = manager.Manager.ListUnits()
+            for unit in units:
+                unit_name = unit[0].decode()
+                load_state = unit[2].decode()
+                active_state = unit[3].decode()
+                if not unit_name.endswith('.service') or load_state != 'loaded':
+                    continue
 
-                if len(service)>0 and '.service' in service[0]: # service[0] = service name, service[1] is loaded, service[2] active or not,
-                    # result, out, err = self.execute(self.service_status.format(service[0])) # check service is enable or not on auto start
-                    result, out, err = self.execute("systemctl is-enabled {0}".format(service[0]))
-                    auto = 'disabled'
-                    if 'enabled' in out:
-                        auto = 'enabled'
+                unit_proxy = Unit(unit_name.encode())
+                unit_proxy.load()
+                auto_state = unit_proxy.Unit.UnitFileState.decode()
+                auto = 'enabled' if auto_state == 'enabled' else 'disabled'
 
-                    if service[2] == 'active':
-                        self.add_file(service[0], "active", auto)
-                    else:
-                        self.add_file(service[0], 'inactive', auto)
+                if active_state == 'active':
+                    service_entries.append(
+                        {
+                            "serviceName": unit_name,
+                            "serviceStatus": "active",
+                            "startAuto": auto,
+                        }
+                    )
+                else:
+                    service_entries.append(
+                        {
+                            "serviceName": unit_name,
+                            "serviceStatus": "inactive",
+                            "startAuto": auto,
+                        }
+                    )
 
-                    print(service)
-
-
-            if self.isRecordExist == 1:
-                self.execute("sed -i '$ d' " + self.file_path)
-                self.execute('echo "]}" >> ' + self.file_path)
+            payload = {
+                "agent": self.Ahenk.dn(),
+                "service_list": service_entries,
+            }
+            with open(self.file_path, 'w') as f:
+                f.write(json.dumps(payload))
 
         except Exception as e:
-            print(str(e))
             self.logger.error(str(e))
-
-
 
 
 def handle_task(task, context):

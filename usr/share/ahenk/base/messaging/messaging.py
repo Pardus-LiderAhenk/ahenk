@@ -8,6 +8,7 @@ from base.scope import Scope
 from base.system.system import System
 from base.util.util import Util
 from base.system.disk_info import DiskInfo
+from base.agreement.confirm import show_message
 
 
 # TODO Message Factory
@@ -195,31 +196,10 @@ class Messaging(object):
         data['password'] = str(self.conf_manager.get('CONNECTION', 'password'))
         # unregistration from commandline..
         if(usernameForCheck==None and passwordForCheck==None):
-            # user_name = self.db_service.select_one_result('session', 'username')
-            user_name = Util.get_as_user()
-            display = self.db_service.select_one_result('session', 'display')
-            #user_name = os.getlogin()
-            #display = Util.get_username_display()
-            self.logger.debug('User : ' + str(user_name))
-            pout = Util.show_unregistration_message(user_name,display,
-                                              'Makineyi etki alanından çıkarmak için zorunlu alanları giriniz. Lütfen DEVAM EDEN İŞLEMLERİNİZİ sonlandırdığınıza emin olunuz !',
-                                              'ETKI ALANINDAN ÇIKARMA')
-            self.logger.debug('pout : ' + str(pout))
-            field_values = pout.split(' ')
-            user_registration_info = list(field_values)
-            if len(user_registration_info) > 1 :
-                data['userName'] = user_registration_info[0];
-                data['userPassword'] = user_registration_info[1];
-            else:
-                return None
+            result_code = show_message('Makinenin etki alanından çıkarılabilmesi için yetkili kullanıcı adı ve parolanın girilmesi gerekmektedir')   
         else:
             data['userName'] = usernameForCheck;
             data['userPassword'] = passwordForCheck;
-
-        #data['macAddresses'] = str(self.conf_manager.get('REGISTRATION', 'macAddresses'))
-        #data['ipAddresses'] = str(self.conf_manager.get('REGISTRATION', 'ipAddresses'))
-        #data['hostname'] = str(self.conf_manager.get('REGISTRATION', 'hostname'))
-        # data['username'] = str(pwd.getpwuid( os.getuid() )[ 0 ])
         data['timestamp'] = Util.timestamp()
         json_data = json.dumps(data)
         self.logger.debug('Unregister message was created')

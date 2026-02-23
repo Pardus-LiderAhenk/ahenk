@@ -1,12 +1,11 @@
 Source: ahenk
 Section: utils
 Priority: optional
-Maintainer: İsmail Başaran <ismail.basaran@tubitak.gov.tr>
-Uploaders: Yunusemre Şentürk <yunusemre.senturk@pardus.org.tr>
-Build-Depends: debhelper (>=9), dh-python, python3-all
-Standards-Version: 3.9.8
+Maintainer: Tuncay Çolak <tuncay.colak@tubitak.gov.tr>
+Build-Depends: debhelper-compat (= 12)
+Standards-Version: 4.6.1
 Homepage: http://www.liderahenk.org.tr
-X-Python3-Version: >= 3.2
+
 
 Package: ahenk
 Architecture: all
@@ -16,28 +15,29 @@ Depends: ${misc:Depends},
          python3-netifaces,
          python3-paramiko,
          python3-psutil,
-         python3-sleekxmpp,
+         python3-pystemd,
+         python3-slixmpp,
          python3-watchdog,
          python3-easygui,
          libpam-script,
-         acct,
-         chkconfig,
          x11vnc,
          conky,
          conky-all,
          nmap,
          whois,
          cpulimit,
-         policykit-1,
+         pkexec,
+         polkitd,
          sudo,
          rsyslog,
          rsyslog-relp,
          quota,
          quotatool,
          ahenk-register,
-         openssh-server
+         openssh-server,
+         iptables
 Replaces: libpam-runtime
-Description: The client side of the Lider Ahenk Project
- Lider Ahenk is an open source project which provides solutions
+Description: The client side of the Liderahenk Project
+ Liderahenk is an open source project which provides solutions
  to manage, monitor and audit unlimited number of different
  systems and users on a network.

@@ -1,3 +1,85 @@
+ahenk (2.0.0) unstable; urgency=medium
+
+  [ agahhulusi ]
+  * file management is updated
+  * bug fixed file management
+
+  [ ahmet-karaca ]
+  * Update apt-get commands --allow-unauthenticated
+
+  [ agahhulusi ]
+  * updated for pardus 25
+  * task send and recieve message done
+
+  [ Tuncay ÇOLAK ]
+  * execute_sssd_ad_authentication.py edited online with Bitbucket
+  * sssd_ad.conf edited online with Bitbucket
+  * display helper added
+
+  [ agahhulusi ]
+  * %12 test coverage added
+
+  [ Tuncay ÇOLAK ]
+  * apt command changed: deleted get
+  * get active user
+  * deleted log in comand runner
+  * apt command is updated
+
+  [ haydar.urdogan ]
+  * update service handling to use pystemd for improved service status retrieval
+
+  [ Tuncay ÇOLAK ]
+  * deleted unused metot
+
+  [ ahmet-karaca ]
+  * usb rules bug fixed
+
+  [ agahhulusi ]
+  * apt command turn to python library with apt_helper.py
+
+  [ Tuncay ÇOLAK ]
+  * remote access for gnome wayland with rdp
+  * added verification dialog
+
+  [ ahmet-karaca ]
+  * conflict resolved
+
+  [ agahhulusi ]
+  * local-user error notification changed
+
+  [ Sertan Orenay ]
+  * Refactor Allow & Block Port modules in Network Management
+
+  [ Tuncay ÇOLAK ]
+  * acct and chkconfig packages removed in control file
+
+  [ agahhulusi ]
+  * bug fixed shell security to execute
+
+  [ Tuncay ÇOLAK ]
+  * execute_conky.py edited online with Bitbucket
+  * init.py edited online with Bitbucket
+  * execute_conky.py edited online with Bitbucket
+  * init.py edited online with Bitbucket
+  * deleted log
+
+  [ ahmet-karaca ]
+  * Refactor USB device management
+
+  [ Tuncay ÇOLAK ]
+  * updated change password for root
+  * fixed packages
+  * registration notification is fixed
+  * usb rules and logout user are fixed
+
+  [ Agah Hulusi ÖZ ]
+  * execute_sssd_ad_authentication.py edited online with Bitbucket
+
+  [ Tuncay ÇOLAK ]
+  * Syncing /usr/share/ahenk to src and recreating ahenk.install
+
+ -- tcolak <tcolak@pardus>  Tue, 30 Dec 2025 14:24:37 +0300
+
 ahenk (1.2.0-2) unstable; urgency=medium
 
   [ 3bru ]

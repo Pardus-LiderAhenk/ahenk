@@ -3,7 +3,7 @@
 # Author: İsmail BAŞARAN <ismail.basaran@tubitak.gov.tr> <basaran.ismaill@gmail.com>
 
 import os
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from os import listdir
 from os.path import isfile, join
 
@@ -35,7 +35,7 @@ class ConfigManager(object):
             for f in files:
                 config_files.append(join(self.configurationFolderPath, f))
 
-        parser = SafeConfigParser()
+        parser = ConfigParser()
         configValues = parser.read(config_files)
 
         return parser

@@ -30,7 +30,18 @@ class InstallAhenk(AbstractPlugin):
             self.key_path = self.task['privateKeyPath']
 
         if self.install_method == 'APT_GET':
-            self.install_command = 'sudo apt-get install -y --force-yes ahenk'  # TODO name for ahenk
+            self.install_command = (
+                'sudo python3 -c "'
+                "import apt, sys; import apt.progress.text as p; "
+                "cache=apt.Cache(); cache.update(); cache.open(None); "
+                "pkg=cache.get('ahenk'); "
+                "sys.exit('package ahenk not found') if pkg is None else None; "
+                "needs_install=not pkg.is_installed; "
+                "pkg.mark_install(); "
+                "cache.commit(fetch_progress=p.AcquireProgress(), install_progress=p.InstallProgress()) "
+                "if needs_install else None"
+                '"'
+            )  # TODO name for ahenk
 
         elif self.install_method == 'WGET':
             self.download_url = self.task['downloadUrl']

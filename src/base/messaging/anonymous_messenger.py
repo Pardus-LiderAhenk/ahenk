@@ -11,11 +11,15 @@ from base.system.system import System
 
 import pwd
 import os
+import asyncio
 
 from helper import system as sysx
 
-from sleekxmpp import ClientXMPP
+from slixmpp import ClientXMPP
+from slixmpp.exceptions import IqError, IqTimeout
 from base.scope import Scope
+from base.agreement.confirm import show_message
+
 
 sys.path.append('../..')
 
@@ -33,13 +37,12 @@ class AnonymousMessenger(ClientXMPP):
         if host is not None and servicename is not None:
             self.host = str(host)
             self.service = str(servicename)
-            self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
+        else:
+            self.host = str(socket.gethostbyname(self.configuration_manager.get('CONNECTION', 'host')))
+            self.service = str(self.configuration_manager.get('CONNECTION', 'servicename'))
+        self.port = int(self.configuration_manager.get('CONNECTION', 'port'))
 
-        # self.host = str(socket.gethostbyname(self.configuration_manager.get('CONNECTION', 'host')))
-        # self.service = str(self.configuration_manager.get('CONNECTION', 'servicename'))
-        # self.port = str(self.configuration_manager.get('CONNECTION', 'port'))
-
-        ClientXMPP.__init__(self, self.service, None)
+        super().__init__(self.service, None)
 
         self.message = message
         self.receiver_resource = self.configuration_manager.get('CONNECTION', 'receiverresource')
@@ -62,10 +65,13 @@ class AnonymousMessenger(ClientXMPP):
         self.add_event_handler("message", self.recv_direct_message)
         self.logger.debug('Event handlers were added')
 
-    def session_start(self, event):
+    async def session_start(self, event):
         self.logger.debug('Session was started')
-        self.get_roster()
         self.send_presence()
+        try:
+            await self.get_roster()
+        except (IqError, IqTimeout) as e:
+            self.logger.error('Roster retrieval failed. Error Message: {0}'.format(str(e)))
 
         if self.message is not None:
             self.send_direct_message(self.message)
@@ -83,14 +89,89 @@ class AnonymousMessenger(ClientXMPP):
 
     def connect_to_server(self):
         try:
-            self.logger.debug('Connecting to server...')
-            self['feature_mechanisms'].unencrypted_plain = True
-            self.connect((self.host, self.port), use_tls=self.use_tls)
-            self.process(block=True)
-            self.logger.debug('Connection were established successfully')
-            return True
+            self.logger.debug('Connecting to server... Host: {0}, Port: {1}'.format(self.host, self.port))
+            
+            # Configure plain auth for slixmpp
+            try:
+                self.register_plugin('feature_mechanisms')
+                if 'feature_mechanisms' in self.plugin:
+                    self['feature_mechanisms'].unencrypted_plain = True
+                    self.logger.debug('Plain auth enabled')
+            except Exception as plugin_error:
+                self.logger.warning('Could not configure plain auth: {0}'.format(str(plugin_error)))
+            
+            # Standard slixmpp API usage pattern
+            
+            try:
+                # Get or create event loop
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_closed():
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                
+                # Connect to server (returns Future)
+                self.logger.debug('Starting connection...')
+                future = self.connect(host=self.host, port=int(self.port))
+                
+                # Wait for connection to complete
+                loop.run_until_complete(future)
+                self.logger.debug('Socket connected, waiting for session_start event...')
+                
+                # Wait for session_start event (timeout: 30 seconds)
+                try:
+                    self.logger.debug('Waiting for session_start event...')
+                    loop.run_until_complete(self.wait_until('session_start', timeout=30))
+                    self.logger.debug('Session started successfully!')
+                    
+                    # For blocking mode, wait until session_end or timeout
+                    # Note: disconnect() will be called from recv_direct_message when response received
+                    try:
+                        self.logger.debug('Waiting for session_end event (or timeout)...')
+                        # Store loop reference for disconnect handling
+                        self._event_loop = loop
+                        loop.run_until_complete(self.wait_until('session_end', timeout=300))
+                        self.logger.debug('Session ended')
+                    except asyncio.TimeoutError:
+                        self.logger.warning('Wait timeout reached for session_end')
+                    except Exception as wait_error:
+                        self.logger.error('Wait error: {0}'.format(str(wait_error)))
+                    finally:
+                        # Clean up event loop reference
+                        if hasattr(self, '_event_loop'):
+                            delattr(self, '_event_loop')
+                        # Stop the event loop if still running
+                        try:
+                            if not loop.is_closed():
+                                # Cancel all pending tasks
+                                pending = asyncio.all_tasks(loop)
+                                for task in pending:
+                                    task.cancel()
+                                # Stop the loop
+                                loop.stop()
+                        except Exception as cleanup_error:
+                            self.logger.warning('Error during cleanup: {0}'.format(str(cleanup_error)))
+                    
+                    self.logger.debug('Connection established successfully')
+                    return True
+                except asyncio.TimeoutError:
+                    self.logger.error('Connection failed - session_start timeout (XMPP stream did not start)')
+                    return False
+                except Exception as session_error:
+                    self.logger.error('Session start error: {0}'.format(str(session_error)))
+                    return False
+            except Exception as e:
+                self.logger.error('Connection error: {0}'.format(str(e)))
+                import traceback
+                self.logger.error(traceback.format_exc())
+                return False
         except Exception as e:
             self.logger.error('Connection to server is failed! Error Message: {0}'.format(str(e)))
+            import traceback
+            self.logger.error(traceback.format_exc())
             return False
 
     def recv_direct_message(self, msg):
@@ -115,22 +196,35 @@ class AnonymousMessenger(ClientXMPP):
 
             if 'not_authorized' == str(status):
                 self.logger.debug('[REGISTRATION IS FAILED]. User not authorized')
-                if self.registration.showUserNotify == True:
-                    Util.show_message(os.getlogin(), ':0','Ahenk Lider MYS\`ye alınamadı !! Sadece yetkili kullanıcılar kayıt yapabilir.', 'Kullanıcı Yetkilendirme Hatası')
+                show_message('Bilgisayar Lider MYS ye alınamadı! Sadece yetkili kullanıcılar kayıt yapabilir.', 'Kullanıcı Yetkilendirme Hatası')
                 self.logger.debug('Disconnecting...')
                 self.disconnect()
+                # Stop event loop if it exists
+                if hasattr(self, '_event_loop'):
+                    try:
+                        loop = self._event_loop
+                        if not loop.is_closed():
+                            loop.call_soon_threadsafe(loop.stop)
+                    except Exception as e:
+                        self.logger.warning('Error stopping event loop: {0}'.format(str(e)))
             elif 'registered' == str(status) or 'registered_without_ldap' == str(status):
                 try:
                     self.logger.info('Registred from server. Registration process starting.')
                     self.event_manager.fireEvent('REGISTRATION_SUCCESS', j)
-                    if self.registration.showUserNotify == True:
-                        msg = str(self.host) + " Etki Alanına hoş geldiniz."
-                        Util.show_message(os.getlogin(), ':0', msg, "UYARI")
-                        msg = "Değişikliklerin etkili olması için sistem yeniden başlayacaktır. Sistem yeniden başlatılıyor...."
-                        Util.show_message(os.getlogin(), ':0', msg, "UYARI")
+                    if self.registration.showUserNotify is True:
+                        show_message(f'{self.host} Etki Alanına hoş geldiniz.' \
+                                    '\n\nDeğişikliklerin etkili olması için sistem yeniden başlatılacaktır. ', 'UYARI')
                     time.sleep(3)
                     self.logger.info('Disconnecting...')
                     self.disconnect()
+                    # Stop event loop if it exists
+                    if hasattr(self, '_event_loop'):
+                        try:
+                            loop = self._event_loop
+                            if not loop.is_closed():
+                                loop.call_soon_threadsafe(loop.stop)
+                        except Exception as e:
+                            self.logger.warning('Error stopping event loop: {0}'.format(str(e)))
                     self.logger.info('Rebooting...')
                     #System.Process.kill_by_pid(int(System.Ahenk.get_pid_number()))
                     #sys.exit(2)
@@ -139,14 +233,21 @@ class AnonymousMessenger(ClientXMPP):
                 except Exception as e:
                     self.logger.error('Error Message: {0}.'.format(str(e)))
                     if self.registration.showUserNotify == True:
-                        Util.show_message(os.getlogin(), ':0',str(e))
+                        show_message(f'Bilgisayar Lider MYS ye alınamadı. Hata: {e}')
                     self.logger.debug('Disconnecting...')
                     self.disconnect()
+                    # Stop event loop if it exists
+                    if hasattr(self, '_event_loop'):
+                        try:
+                            loop = self._event_loop
+                            if not loop.is_closed():
+                                loop.call_soon_threadsafe(loop.stop)
+                        except Exception as e:
+                            self.logger.warning('Error stopping event loop: {0}'.format(str(e)))
             elif 'already_exists' == str(status):
                 self.logger.debug('[REGISTRATION IS FAILED] - Hostname already in use!')
                 if self.registration.showUserNotify == True:
-                    Util.show_message(os.getlogin(), ':0',
-                                      '{0} bilgisayar adı zaten kullanılmaktadır. Lütfen bilgisayar adını değiştirerek tekrar deneyiniz'.format(System.Os.hostname()),
+                    show_message('{0} bilgisayar adı zaten kullanılmaktadır. Lütfen bilgisayar adını değiştirerek tekrar deneyiniz'.format(System.Os.hostname()),
                                       'Bilgisayar İsimlendirme Hatası')
                 self.logger.debug('Disconnecting...')
                 self.disconnect()
@@ -155,10 +256,17 @@ class AnonymousMessenger(ClientXMPP):
                 self.logger.info('[REGISTRATION IS FAILED] - New registration request will send')
                 #self.event_manager.fireEvent('REGISTRATION_ERROR', str(j))
                 if self.registration.showUserNotify == True:
-                    Util.show_message(os.getlogin(), ':0', 'Ahenk Lider MYS\`ye alınamadı !! Kayıt esnasında hata oluştu. Lütfen sistem yöneticinize başvurunuz.',
-                       'Sistem Hatası')
+                    show_message('Ahenk Lider MYS ye alınamadı. Kayıt esnasında hata oluştu. Lütfen sistem yöneticinize başvurunuz', 'Sistem Hatası')
                 self.logger.debug('Disconnecting...')
                 self.disconnect()
+                # Stop event loop if it exists
+                if hasattr(self, '_event_loop'):
+                    try:
+                        loop = self._event_loop
+                        if not loop.is_closed():
+                            loop.call_soon_threadsafe(loop.stop)
+                    except Exception as e:
+                        self.logger.warning('Error stopping event loop: {0}'.format(str(e)))
             else:
                 self.event_manager.fireEvent(message_type, str(msg['body']))
                 self.logger.debug('Fired event is: {0}'.format(message_type))

@@ -7,8 +7,8 @@ ad_host_name=$2
 echo "samba-common samba-common/workgroup string  WORKGROUP" | sudo debconf-set-selections
 echo "samba-common samba-common/dhcp boolean false" | sudo debconf-set-selections
 echo "samba-common samba-common/do_debconf boolean true" | sudo debconf-set-selections
-#apt-get -y install samba-common
-DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" samba-common
+#apt -y install samba-common
+DEBIAN_FRONTEND=noninteractive python3 /usr/share/ahenk/base/util/apt_helper.py --update-cache samba-common
 
 cat > /root/debconf-krb5.conf <<EOF
 
@@ -21,6 +21,6 @@ krb5-config         krb5-config/admin_server            string      ${ad_host_na
 EOF
 export DEBIAN_FRONTEND=noninteractive
 cat /root/debconf-krb5.conf | debconf-set-selections
-apt-get install krb5-user -y
+DEBIAN_FRONTEND=noninteractive python3 /usr/share/ahenk/base/util/apt_helper.py krb5-user
 
 

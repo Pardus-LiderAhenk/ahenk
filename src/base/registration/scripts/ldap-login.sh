@@ -55,6 +55,6 @@ Variables:
  package = libpam-ldap" >> /var/cache/debconf/passwords.dat
 
 echo $ldap_user_pwd > /etc/pam_ldap.secret
-apt update
-apt-get install libpam-ldap libnss-ldap ldap-utils -y
-SUDO_FORCE_REMOVE=yes apt-get install sudo-ldap -y
+DEBIAN_FRONTEND=noninteractive python3 /usr/share/ahenk/base/util/apt_helper.py --update-only
+DEBIAN_FRONTEND=noninteractive python3 /usr/share/ahenk/base/util/apt_helper.py libpam-ldap libnss-ldap ldap-utils
+DEBIAN_FRONTEND=noninteractive SUDO_FORCE_REMOVE=yes python3 /usr/share/ahenk/base/util/apt_helper.py sudo-ldap

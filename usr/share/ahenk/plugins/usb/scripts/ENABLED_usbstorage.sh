@@ -1,16 +1,13 @@
 #!/bin/bash
 
-while read line           
-do           
-	IFS=' ' read -a module <<< "$line"
-    modprobe "${module[1]}"           
-done < /etc/modprobe.d/blockusbstorages.conf
+# Default file name for policy
+DEFAULT_FILE_NAME="99-block-storage.rules"
 
-echo "" | tee -a /etc/modprobe.d/blockusbstorages.conf
+# file nane for task
+FILE_NAME="${1:-$DEFAULT_FILE_NAME}"
 
-modprobe usb_storage
+rm -f /etc/udev/rules.d/$FILE_NAME
+udevadm control --reload-rules
 
-for usb_dev in /dev/disk/by-id/usb-*; do
-    dev=$(readlink -f $usb_dev)
-    grep -q ^$dev /proc/mounts && mount -f $dev 
-done
+udevadm trigger --subsystem-match=usb
+udevadm trigger --action=add

@@ -14,6 +14,7 @@ from base.timer.setup_timer import SetupTimer
 from base.timer.timer import Timer
 from base.util.util import Util
 from base.default_policy.default_policy import DefaultPolicy
+from base.model.enum.desktop_type import DisplayManagerUser
 
 
 class CommandRunner(object):
@@ -73,7 +74,7 @@ class CommandRunner(object):
 
                 if str(json_data['event']) == 'login' and self.check_last_login():
                     username = json_data['username']
-                    if username != "Debian-gdm" and username != "gdm":
+                    if username not in DisplayManagerUser.all_users():
                         display = json_data['display']
                         desktop = json_data['desktop']
 
@@ -164,13 +165,11 @@ class CommandRunner(object):
 
                 elif str(json_data['event']) == 'logout':
                     username = json_data['username']
-                    if username != "Debian-gdm" and username != "gdm":
+                    if username not in DisplayManagerUser.all_users():
                         self.execute_manager.remove_user_executed_policy_dict(username)
                         self.plugin_manager.process_mode('logout', username)
                         self.plugin_manager.process_mode('safe', username)
-                        if username != "Debian-gdm":
-                            self.db_service.delete('session', '1=1')
-                        # TODO delete all user records while initializing
+                        self.db_service.delete('session', '1=1')
                         self.logger.info('logout event is handled for user: {0}'.format(username))
                         ip = None
                         if 'ip' in json_data:
