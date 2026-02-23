@@ -5,6 +5,7 @@
 import json
 
 from base.plugin.abstract_plugin import AbstractPlugin
+from base.util.apt_helper import AptHelper
 
 
 class Conky(AbstractPlugin):
@@ -92,7 +93,9 @@ class Conky(AbstractPlugin):
         for package in packages:
             if self.is_installed(package) is False:
                 self.logger.debug('Could not found {0}. It will be installed'.format(package))
-                result_code, p_out, p_err = self.install_with_apt_get(package)
+                result_code, p_out, p_err = AptHelper.install_packages(
+                    [package], update_cache=True, run_dpkg_configure=True
+                )
                 if result_code == 0:
                     self.logger.debug('{0} installed successfully'.format(package))
                 else:

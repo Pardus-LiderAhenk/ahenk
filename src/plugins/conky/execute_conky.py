@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Author: Edip YILDIZ
 
 from base.model.enum.content_type import ContentType
 import json
 from base.plugin.abstract_plugin import AbstractPlugin
+from base.util.display_helper import DisplayHelper, DisplayServerType
 
 class RunConkyCommand(AbstractPlugin):
     def __init__(self, data, context):
@@ -13,135 +13,147 @@ class RunConkyCommand(AbstractPlugin):
         self.context = context
         self.logger = self.get_logger()
         self.message_code = self.get_message_code()
+        
+        # Configuration paths
         self.conky_config_file_dir = '/etc/conky'
         self.conky_config_global_autorun_file = '/etc/xdg/autostart/conky.desktop'
-        self.conky_config_file_path = self.conky_config_file_dir + '/conky.conf'
+        self.conky_config_file_path = f'{self.conky_config_file_dir}/conky.conf'
+        
         self.logger.debug('[Conky] Parameters were initialized.')
-        self.conky_autorun_content = '[Desktop Entry] \n' \
-                                     'Comment[tr]= \n' \
-                                     'Comment= \n' \
-                                     'Exec=conky_wp \n' \
-                                     'GenericName[tr]= \n' \
-                                     'GenericName= \n' \
-                                     'Icon=system-run \n' \
-                                     'MimeType= \n' \
-                                     'Name[tr]= \n' \
-                                     'Name= \n' \
-                                     'Path= \n' \
-                                     'StartupNotify=true \n' \
-                                     'Terminal=false \n' \
-                                     'TerminalOptions= \n' \
-                                     'Type=Application \n' \
-                                     'X-DBUS-ServiceName= \n' \
-                                     'X-DBUS-StartupType= \n' \
-                                     'X-KDE-SubstituteUID=false \n' \
-                                     'X-KDE-Username= \n'
-
-        self.conky_wrapper_file= '/usr/bin/conky_wp'
-
-        self.conky_wrapper_content = '#!/bin/bash \n' \
-                                  ' killall conky \n' \
-                                  ' sleep 5 \n' \
-                                  ' /usr/bin/conky -q \n'
+        
+        # Autorun content
+        self.conky_autorun_content = (
+            '[Desktop Entry] \n'
+            'Comment[tr]= \n'
+            'Comment= \n'
+            'Exec=conky_wp \n'
+            'GenericName[tr]= \n'
+            'GenericName= \n'
+            'Icon=system-run \n'
+            'MimeType= \n'
+            'Name[tr]= \n'
+            'Name= \n'
+            'Path= \n'
+            'StartupNotify=true \n'
+            'Terminal=false \n'
+            'TerminalOptions= \n'
+            'Type=Application \n'
+            'X-DBUS-ServiceName= \n'
+            'X-DBUS-StartupType= \n'
+            'X-KDE-SubstituteUID=false \n'
+            'X-KDE-Username= \n'
+        )
+        
+        self.conky_wrapper_file = '/usr/bin/conky_wp'
+        self.conky_wrapper_content = (
+            '#!/bin/bash \n'
+            'killall conky \n'
+            'sleep 5 \n'
+            '/usr/bin/conky -q \n'
+        )
 
     def remove_conky_message(self):
         self.execute("killall conky")
-        if self.is_exist(self.conky_config_global_autorun_file) == True:
+        if self.is_exist(self.conky_config_global_autorun_file):
             self.delete_file(self.conky_config_global_autorun_file)
-        self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                     message='Conky measajları kaldırıldı',
-                                     content_type=ContentType.APPLICATION_JSON.value)
+        
+        self.context.create_response(
+            code=self.message_code.TASK_PROCESSED.value,
+            message='Conky mesajları kaldırıldı',
+            content_type=ContentType.APPLICATION_JSON.value
+        )
 
     def execute_conky(self, conky_message):
         self.logger.debug("[CONKY] Executing conky.")
-        try:
-            if self.is_installed('conky') is False:
-                self.logger.info('[Conky] Could not found Conky. It will be installed')
-                self.logger.debug('[Conky] Conky installing with using apt-get')
-                self.install_with_apt_get('conky')
-                self.logger.info('[Conky] Could installed')
 
-            self.logger.debug('[Conky] Some processes found which names are conky. They will be killed.')
-            self.execute('killall conky')
-        except:
-            self.logger.error('[Conky] Conky install-kill problem.')
-            raise
-        if self.is_exist(self.conky_config_file_dir) == False:
-            self.logger.debug('[Conky] Creating directory for conky config at ' + self.conky_config_file_dir)
+        username = self.get_active_local_user()
+        user_display = DisplayHelper.detect_user_display(username)
+
+        if username is None or user_display is None:
+            self.logger.warning('[Conky] No display found: No logged-in user.')
+            self.context.create_response(
+                code=self.message_code.TASK_ERROR.value,
+                message='Display bulunamadı: Oturum açmış kullanıcı yok.',
+                content_type=ContentType.APPLICATION_JSON.value
+            )
+            return
+        
+        if DisplayServerType.detect_desktop_env() == DisplayServerType.WAYLAND.value:
+            self.logger.warning('[Conky] Wayland display server detected. Conky is not supported on Wayland.')
+            self.context.create_response(
+                code=self.message_code.TASK_ERROR.value,
+                message='Conky Wayland display sunucusunda desteklenmiyor.',
+                content_type=ContentType.APPLICATION_JSON.value
+            )
+            return
+
+        self.execute('killall conky')
+
+        # Create configuration directory if it doesn't exist
+        if not self.is_exist(self.conky_config_file_dir):
+            self.logger.debug(f'[Conky] Creating directory: {self.conky_config_file_dir}')
             self.create_directory(self.conky_config_file_dir)
 
-        if self.is_exist(self.conky_config_file_path) == True:
-            self.logger.debug('[Conky] Old config file will be renamed.')
-            self.rename_file(self.conky_config_file_path, self.conky_config_file_path + '_old')
-            self.logger.debug('[Conky] Old config file will be renamed to ' + (self.conky_config_file_path + 'old'))
+        # Rename old config file if it exists
+        if self.is_exist(self.conky_config_file_path):
+            self.logger.debug('[Conky] Renaming old config file.')
+            self.rename_file(self.conky_config_file_path, f'{self.conky_config_file_path}_old')
 
+        # Create and write new config file
         self.create_file(self.conky_config_file_path)
         self.write_file(self.conky_config_file_path, conky_message)
-        self.logger.debug('[Conky] Config file was filled by context.')
+        self.logger.debug('[Conky] Config file updated.')
 
-        # creating wrapper file if is not exist. wrapper for using conky command..its need for ETA
-        if self.is_exist(self.conky_wrapper_file) == False:
-            self.logger.debug('[Conky] Creating directory for conky wrapper file at ' + self.conky_wrapper_file)
+        # Create wrapper file if it doesn't exist
+        if not self.is_exist(self.conky_wrapper_file):
+            self.logger.debug(f'[Conky] Creating wrapper file: {self.conky_wrapper_file}')
             self.create_file(self.conky_wrapper_file)
-            self.write_file(self.conky_wrapper_file,self.conky_wrapper_content)
+            self.write_file(self.conky_wrapper_file, self.conky_wrapper_content)
+            self.execute(f'chmod +x {self.conky_wrapper_file}')
 
-        if self.is_exist(self.conky_wrapper_file) == True:
-            self.execute('chmod +x ' + self.conky_wrapper_file)
-
-        # creating autorun file if is not exist
-        if self.is_exist(self.conky_config_global_autorun_file) == False:
-            self.logger.debug('[Conky] Creating directory for conky autorun file at ' + self.conky_config_global_autorun_file)
+        # Create autorun file if it doesn't exist
+        if not self.is_exist(self.conky_config_global_autorun_file):
+            self.logger.debug(f'[Conky] Creating autorun file: {self.conky_config_global_autorun_file}')
             self.create_file(self.conky_config_global_autorun_file)
             self.write_file(self.conky_config_global_autorun_file, self.conky_autorun_content)
-        # users = self.Sessions.user_name()
-        user = self.get_username()
-        desktop_env = self.get_desktop_env()
-        self.logger.info("Get desktop environment is {0}".format(desktop_env))
-        # for user in users:
-        #     user_display = self.Sessions.display(user)
-        #     if desktop_env == "gnome":
-        #         user_display = self.get_username_display_gnome(user)
-        #     if user_display is None:
-        #         self.logger.debug('[Conky] executing for display none for user  '+ str(user))
-        #         self.execute('conky -q', result=False)
-        #     else:
-        #         self.logger.debug('[Conky] user display ' + str(user_display) +' user '+ str(user))
-        #         conky_cmd = 'su ' + str(user) + ' -c ' + ' "conky --display=' + str(user_display) + ' " '
-        #         self.logger.debug('[Conky] executing command:  ' + str(conky_cmd))
-        #         self.execute(conky_cmd, result=False)
 
-        user_display = self.Sessions.display(user)
-        if desktop_env == "gnome":
-            user_display = self.get_username_display_gnome(user)
+        
+        # Execute conky command
         if user_display is None:
-            self.logger.debug('[Conky] executing for display none for user  ' + str(user))
+            self.logger.debug(f'[Conky] Executing for display none for user: {username}')
             self.execute('conky -q', result=False)
         else:
-            self.logger.debug('[Conky] user display ' + str(user_display) + ' user ' + str(user))
-            # as_user is the user that run command.
+            self.logger.debug(f'[Conky] Executing command for user display: {user_display}')
             as_user = self.get_as_user()
-            conky_cmd = 'su ' + str(as_user) + ' -c ' + ' "conky --display=' + str(user_display) + ' " '
-            self.logger.debug('[Conky] executing command:  ' + str(conky_cmd))
+            conky_cmd = f'su {as_user} -c "conky --display={user_display}"'
+            self.logger.debug(f'[Conky] Executing command: {conky_cmd}')
             self.execute(conky_cmd, result=False)
-        #self.execute('conky ', result=False)
-        self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                     message='Conky başarıyla oluşturuldu.',
-                                     data=json.dumps({'Result': conky_message}),
-                                     content_type=ContentType.APPLICATION_JSON.value)
+
+        self.context.create_response(
+            code=self.message_code.TASK_PROCESSED.value,
+            message='Conky başarıyla oluşturuldu.',
+            data=json.dumps({'Result': conky_message}),
+            content_type=ContentType.APPLICATION_JSON.value
+        )
 
     def handle_task(self):
+
         try:
             conky_message = self.data['conkyMessage']
             remove_conky_message = self.data['removeConkyMessage']
             if remove_conky_message:
                 self.remove_conky_message()
             else:
+                 # Check if Wayland is being used
+               
                 self.execute_conky(conky_message)
         except Exception as e:
-            self.logger.error(" error on handle conky task. Error: " + str(e))
-            self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Conky mesajı olusturulurken hata oluştu:' + str(e),
-                                         content_type=ContentType.APPLICATION_JSON.value)
+            self.logger.error(f"Error handling conky task: {e}")
+            self.context.create_response(
+                code=self.message_code.TASK_ERROR.value,
+                message=f'Conky mesajı oluşturulurken hata oluştu: {e}',
+                content_type=ContentType.APPLICATION_JSON.value
+            )
 
 def handle_task(task, context):
     cls = RunConkyCommand(task, context)

@@ -71,9 +71,13 @@ class PackageSources(AbstractPlugin):
                     error_message += " Paket deposu silinirken hata oluştu: " + str(p_err)
             self.logger.debug("Removed repositories")
 
-            # Update package lists
-            self.execute('apt-get update')
-            self.logger.debug("Updated package lists")
+            # Update package lists via apt helper
+            from base.util.apt_helper import AptHelper
+            return_code_update, result_update, error_update = AptHelper.update_cache()
+            if return_code_update == 0:
+                self.logger.debug("Updated package lists")
+            else:
+                self.logger.error(f"Packages could not be updated: {error_update}")
 
             # Read package repositories
             command = '/bin/bash {0}package-manager/scripts/sourcelist.sh'.format(self.Ahenk.plugins_path())

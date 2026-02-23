@@ -4,8 +4,9 @@
 
 import os
 from glob import glob
-
+import apt
 from base.plugin.abstract_plugin import AbstractPlugin
+from base.util.apt_helper import AptHelper
 
 
 class Packages(AbstractPlugin):
@@ -50,11 +51,11 @@ class Packages(AbstractPlugin):
 
                             self.logger.debug('{0} Source added'.format(source))
 
-                            return_code_update, result_update, error_update = self.execute('apt-get update')
+                            return_code_update, result_update, error_update = AptHelper.update_cache()
                             if return_code_update == 0:
                                 self.logger.debug('Packages were updated')
                             else:
-                                self.logger.error('Packages could not updated')
+                                self.logger.error(f'Packages could not be updated: {error_update}')
                                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                              message='{0}\n Kaynaklar güncellenmeye çalışırken hata oluştu. Hata Mesajı: {1}'.format(
                                                                  cn, str(error_update)))
@@ -68,8 +69,12 @@ class Packages(AbstractPlugin):
                         if item['tag'] == 'Yükle' or item['tag'] == 'Install':
                             self.logger.debug(
                                 "Installing new package... {0}".format(item['packageName']))
-                            result_code, p_result, p_err = self.install_with_apt_get(item['packageName'],
-                                                                                     item['version'])
+                            result_code, p_result, p_err = AptHelper.install_packages(
+                                packages=[item['packageName']],
+                                update_cache=True,
+                                run_dpkg_configure=True,
+                                versions=None,
+                            )
                             if result_code == 0:
                                 self.logger.debug(
                                     "Package installed : {0}={1}".format(item['packageName'],
@@ -85,18 +90,21 @@ class Packages(AbstractPlugin):
                                                                  cn, str(p_err)))
                                 return
                         elif item['tag'] == 'Kaldır' or item['tag'] == 'Uninstall':
-                            result_code, p_result, p_err = self.uninstall_package(item['packageName'],
-                                                                                  item['version'])
+                            result_code, p_result, p_err = AptHelper.remove_packages(
+                                [item['packageName']],
+                                purge=True,
+                                update_cache=True,
+                                run_dpkg_configure=True,
+                            )
 
                             if result_code == 0:
                                 self.logger.debug(
-                                    "Package installed : {0}={1}".format(item['packageName'],
-                                                                         item['version']))
+                                    "Package uninstalled : {0}".format(item['packageName']))
                             else:
                                 self.logger.error(
-                                    "Package could not be installed : {0}={1}".format(
+                                    "Package could not be uninstalled : {0}. Err:{1}".format(
                                         item['packageName'],
-                                        item['version']))
+                                        p_err))
                                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                                              message='{0}\n Paket kaldırılırken '
                                                                      'hata oluştu. Hata Mesajı: {1}'.format(

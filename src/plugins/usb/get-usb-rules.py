@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from base.plugin.abstract_plugin import AbstractPlugin
 import json
 
+from base.plugin.abstract_plugin import AbstractPlugin
 
 class GetUsbRules(AbstractPlugin):
     def __init__(self, task, context):
@@ -43,30 +43,44 @@ class GetUsbRules(AbstractPlugin):
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                         message='USB kuralları getirilirken hata oluştu: {0}'.format(str(e)))
     
-    def get_usb_item(self, line, type):
-        line_parser_list = line.rstrip().split(', ')
+    def get_usb_item(self, line, rule_type):
+        line = line.strip()
+        if not line or line.startswith("#"): return
+
         item_obj = {}
-        authorized_str = 'ATTR{authorized}="1"'
-        if type == "blacklist":
-            authorized_str = 'ATTR{authorized}="0"'
-        if authorized_str in line_parser_list:
-            for item in line_parser_list:
-                if "ATTR{manufacturer}" in item:
-                    manufacturer = item.split("==")[1]
-                    manufacturer = manufacturer.replace('"', '')
-                    item_obj["vendor"] = manufacturer
-                if "ATTR{product}" in item:
-                    model = item.split("==")[1]
-                    model = model.replace('"', '')
-                    item_obj["model"] = model
-                if "ATTR{serial}" in item:
-                    serial_mumber = item.split("==")[1]
-                    serial_mumber = serial_mumber.replace('"', '')
-                    item_obj["serialNumber"] = serial_mumber
-        if len(item_obj):
-            self.usb_rule_list.append(item_obj)
+        is_valid_item = False
 
+        if rule_type == "whitelist":
+            if 'ENV{AHENK_OK}="1"' in line and 'ATTR{authorized}' not in line:
+                is_valid_item = True
+        elif rule_type == "blacklist":
+            if 'ATTR{authorized}="0"' in line and 'ENV{AHENK_OK}' not in line:
+                is_valid_item = True
 
+        if is_valid_item:
+            parts = line.split(', ')
+            for item in parts:
+                if 'ATTR{manufacturer}' in item or 'ATTRS{manufacturer}' in item:
+                    try:
+                        val = item.split('==', 1)[1].replace('"', '').strip()
+                        item_obj["vendor"] = val
+                    except Exception:
+                        pass
+                elif 'ATTR{product}' in item or 'ATTRS{product}' in item:
+                    try:
+                        val = item.split('==', 1)[1].replace('"', '').strip()
+                        item_obj["model"] = val
+                    except Exception:
+                        pass
+                elif 'ATTR{serial}' in item or 'ATTRS{serial}' in item:
+                    try:
+                        val = item.split('==', 1)[1].replace('"', '').strip()
+                        item_obj["serialNumber"] = val
+                    except Exception:
+                        pass
+            
+            if item_obj:
+                self.usb_rule_list.append(item_obj)
 
 def handle_task(task, context):
     manage = GetUsbRules(task, context)

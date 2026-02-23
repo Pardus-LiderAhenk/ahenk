@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Author: Cemre ALPSOY <cemre.alpsoy@agem.com.tr>
 
 import json
 

@@ -654,28 +654,36 @@ class System:
 
             @staticmethod
             def vendor():
-                return cpuinfo.get_cpu_info()['vendor_id']
+                info = cpuinfo.get_cpu_info()
+                return info.get('vendor_id', info.get('vendor_id_raw', 'Unknown'))
 
             @staticmethod
             def brand():
-                return cpuinfo.get_cpu_info()['brand']
+                info = cpuinfo.get_cpu_info()
+                # Try 'brand' first, then 'brand_raw', then fallback
+                return info.get('brand', info.get('brand_raw', info.get('hardware_raw', 'Unknown')))
 
             @staticmethod
             def hz_advertised():
-                return cpuinfo.get_cpu_info()['hz_advertised']
+                info = cpuinfo.get_cpu_info()
+                return info.get('hz_advertised', info.get('hz_advertised_raw', 'Unknown'))
 
             @staticmethod
             def hz_actual():
-                return cpuinfo.get_cpu_info()['hz_actual']
+                info = cpuinfo.get_cpu_info()
+                return info.get('hz_actual', info.get('hz_actual_raw', 'Unknown'))
 
             @staticmethod
             def bit():
-                return cpuinfo.get_cpu_info()['bits']
+                info = cpuinfo.get_cpu_info()
+                return info.get('bits', info.get('arch', 'Unknown'))
 
             @staticmethod
             def family():
-                return cpuinfo.get_cpu_info()['family']
+                info = cpuinfo.get_cpu_info()
+                return info.get('family', 'Unknown')
 
             @staticmethod
             def model():
-                return cpuinfo.get_cpu_info()['model']
+                info = cpuinfo.get_cpu_info()
+                return info.get('model', info.get('model_raw', 'Unknown'))

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ "$1" = "remove" ]; then
+    systemctl stop ahenk.service || true
+    systemctl disable ahenk.service || true
+fi

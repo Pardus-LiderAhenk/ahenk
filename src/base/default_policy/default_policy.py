@@ -56,7 +56,7 @@ class DefaultPolicy:
                 Util.create_file("{0}/.config/autostart/{1}-autostart-for-profile.desktop".format(homedir, exec_command))
                 content = "[Desktop Entry]\n\n" \
                           "Type=Application\n\n" \
-                          "Exec={0}{1} www.liderahenk.org".format(firefox_path, exec_command)
+                          "Exec={0}{1} www.liderahenk.org.tr".format(firefox_path, exec_command)
                 Util.write_file("{0}/.config/autostart/{1}-autostart-for-profile.desktop".format(homedir, exec_command), content)
                 self.logger.info("Autorun config is written to {0}-autostart-for-profile.desktop.".format(exec_command))
                 gid = self.util.file_group(homedir)

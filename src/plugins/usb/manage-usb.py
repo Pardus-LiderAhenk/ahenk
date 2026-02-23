@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Author:Mine DOGAN <mine.dogan@agem.com.tr>
 
 from base.plugin.abstract_plugin import AbstractPlugin
 
@@ -35,9 +34,9 @@ class ManageUsb(AbstractPlugin):
 
             if self.has_attr_json(self.task, 'webcam') is True:
                 if self.webcam == '1':
-                    self.execute(self.script.format('ENABLED_webcam.sh'), result=True)
+                    self.execute(self.script.format('ENABLED_webcam.sh 99-ahenk-task-block-webcam.rules'), result=True)
                 elif self.webcam == '0':
-                    self.execute(self.script.format('DISABLED_webcam.sh'), result=True)
+                    self.execute(self.script.format('DISABLED_webcam.sh 99-ahenk-task-block-webcam.rules'), result=True)
 
                 self.logger.debug('Applied permission change for parameter "webcam"')
             else:
@@ -45,9 +44,9 @@ class ManageUsb(AbstractPlugin):
 
             if self.has_attr_json(self.task, 'printer') is True:
                 if self.printer == '1':
-                    self.execute(self.script.format('ENABLED_printer.sh'), result=True)
+                    self.execute(self.script.format('ENABLED_printer.sh 99-ahenk-task-block-printer.rules'), result=True)
                 elif self.printer == '0':
-                    self.execute(self.script.format('DISABLED_printer.sh'), result=True)
+                    self.execute(self.script.format('DISABLED_printer.sh 99-ahenk-task-block-printer.rules'), result=True)
 
                 self.logger.debug('Applied permission change for parameter "printer"')
             else:
@@ -55,9 +54,9 @@ class ManageUsb(AbstractPlugin):
 
             if self.has_attr_json(self.task, 'storage') is True:
                 if self.storage == '1':
-                    self.execute(self.script.format('ENABLED_usbstorage.sh'), result=True)
+                    self.execute(self.script.format('ENABLED_usbstorage.sh 99-ahenk-task-block-storage.rules'), result=True)
                 elif self.storage == '0':
-                    self.execute(self.script.format('DISABLED_usbstorage.sh'), result=True)
+                    self.execute(self.script.format('DISABLED_usbstorage.sh 99-ahenk-task-block-storage.rules'), result=True)
 
                 self.logger.debug('Applied permission change for parameter "storage"')
             else:
@@ -65,9 +64,9 @@ class ManageUsb(AbstractPlugin):
 
             if self.has_attr_json(self.task, 'mouseKeyboard') is True:
                 if self.mouse_keyboard == '1':
-                    self.execute(self.script.format('ENABLED_usbhid.sh'), result=True)
+                    self.execute(self.script.format('ENABLED_usbhid.sh 99-ahenk-task-block-hid.rules'), result=True)
                 elif self.mouse_keyboard == '0':
-                    self.execute(self.script.format('DISABLED_usbhid.sh'), result=True)
+                    self.execute(self.script.format('DISABLED_usbhid.sh 99-ahenk-task-block-hid.rules'), result=True)
 
                 self.logger.debug('Applied permission change for parameter "mouseKeyboard"')
             else:

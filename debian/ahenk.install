@@ -21,7 +21,9 @@ usr/share/ahenk/base/system
 usr/share/ahenk/base/timer/setup_timer.py
 usr/share/ahenk/base/timer/timer.py
 usr/share/ahenk/base/timer
+usr/share/ahenk/base/util/display_helper.py
 usr/share/ahenk/base/util/util.py
+usr/share/ahenk/base/util/apt_helper.py
 usr/share/ahenk/base/util
 usr/share/ahenk/base/default_config/__init__.py
 usr/share/ahenk/base/default_config/default_config.py
@@ -29,10 +31,8 @@ usr/share/ahenk/base/default_config
 usr/share/ahenk/base/event/event_base.py
 usr/share/ahenk/base/event/event_manager.py
 usr/share/ahenk/base/event
-usr/share/ahenk/base/agreement/ahenkmessage.py
 usr/share/ahenk/base/agreement/agreement.py
 usr/share/ahenk/base/agreement/ask.py
-usr/share/ahenk/base/agreement/unregistrationmessage.py
 usr/share/ahenk/base/agreement/confirm.py
 usr/share/ahenk/base/agreement
 usr/share/ahenk/base/scheduler/scheduler_factory.py
@@ -110,7 +110,9 @@ usr/share/ahenk/base/model/plugin.py
 usr/share/ahenk/base/model/enum/content_type.py
 usr/share/ahenk/base/model/enum/message_code.py
 usr/share/ahenk/base/model/enum/__init__.py
+usr/share/ahenk/base/model/enum/desktop_type.py
 usr/share/ahenk/base/model/enum/message_type.py
+usr/share/ahenk/base/model/enum/script_type.py
 usr/share/ahenk/base/model/enum
 usr/share/ahenk/base/model/policy.py
 usr/share/ahenk/base/model
@@ -185,7 +187,6 @@ usr/share/ahenk/plugins/network-manager/allow_port.py
 usr/share/ahenk/plugins/network-manager/add_host.py
 usr/share/ahenk/plugins/network-manager/add_domain.py
 usr/share/ahenk/plugins/network-manager
-usr/share/ahenk/plugins/conky/ask.py
 usr/share/ahenk/plugins/conky/execute_xmessage.py
 usr/share/ahenk/plugins/conky/safe.py
 usr/share/ahenk/plugins/conky/main.py
@@ -211,8 +212,10 @@ usr/share/ahenk/plugins/disk-quota/api/disk_quota_ltsp.py
 usr/share/ahenk/plugins/disk-quota/api
 usr/share/ahenk/plugins/disk-quota/policy.py
 usr/share/ahenk/plugins/disk-quota
+usr/share/ahenk/plugins/remote-access/vnc_remote_desktop.py
 usr/share/ahenk/plugins/remote-access/setup-vnc-server.py
 usr/share/ahenk/plugins/remote-access/main.py
+usr/share/ahenk/plugins/remote-access/rdp_remote_desktop.py
 usr/share/ahenk/plugins/remote-access
 usr/share/ahenk/plugins/service/service_management.py
 usr/share/ahenk/plugins/service/init.py
@@ -296,7 +299,6 @@ usr/share/ahenk/plugins/package-manager/repositories.py
 usr/share/ahenk/plugins/package-manager/init.py
 usr/share/ahenk/plugins/package-manager/show_package_archive.py
 usr/share/ahenk/plugins/package-manager/main.py
-usr/share/ahenk/plugins/package-manager/get_execution_info.py
 usr/share/ahenk/plugins/package-manager
 usr/share/ahenk/plugins/network-inventory/installahenk.py
 usr/share/ahenk/plugins/network-inventory/multiple-file-transfer.py

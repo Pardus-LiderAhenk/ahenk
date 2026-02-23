@@ -4,6 +4,7 @@
 import subprocess
 
 from base.scope import Scope
+from base.util.apt_helper import AptHelper
 from base.util.util import Util
 from base.system.system import System
 import time
@@ -20,12 +21,13 @@ class ExecuteSSSDAdAuthentication:
         try:
 
             # Installation of required packages
-            (result_code, p_out, p_err) = self.util.execute(
-                "sudo apt-get -y install realmd")
+            (result_code, p_out, p_err) = AptHelper.install_packages(
+                ["realmd"], update_cache=True, run_dpkg_configure=True
+            )
             if (result_code == 0):
                 self.logger.info("İndirmeler Başarılı")
             else:
-                self.logger.error("İndirmeler Başarısız : " + str(p_err))
+                self.logger.error("İndirmeler Başarısız : " + str(p_err or p_out))
 
             # Split datas that Lider send
             self.logger.info(host_name)
@@ -65,27 +67,7 @@ class ExecuteSSSDAdAuthentication:
                 self.logger.error("ad_info oluşturma komutu başarısız : " + str(p_err))
 
             self.logger.info("Authenticate starting....")
-            # Configure /etc/dhcp/dhclient.conf
-            dhclient_conf_path = "/etc/dhcp/dhclient.conf"
-            dhc_conf = self.util.read_file_by_line(dhclient_conf_path, "r")
-            dhc_conf_temp = open(dhclient_conf_path, 'w')
-
-            for lines in dhc_conf:
-                if (lines == "#prepend domain-name-servers 127.0.0.1;\n"):
-                    lines = lines.replace(lines, ("prepend domain-name-servers {};\n".format(ip_address)))
-                dhc_conf_temp.write(lines)
-            dhc_conf_temp.close()
-
-            file_default_dhcp = open(dhclient_conf_path, 'r')
-            file_data = file_default_dhcp.read()
-
-            if ("prepend domain-name-servers {};\n".format(ip_address)) not in file_data:
-                file_data = file_data + "\n" + ("prepend domain-name-servers {};".format(ip_address))
-
-            file_default_dhcp.close()
-            file_default_dhcp = open(dhclient_conf_path, 'w')
-            file_default_dhcp.write(file_data)
-            file_default_dhcp.close()
+           
 
             # Configure /etc/resolv.conf
             resolve_conf_path = "/etc/resolv.conf"
@@ -134,12 +116,23 @@ class ExecuteSSSDAdAuthentication:
                 self.logger.error("Script başarısız oldu : " + str(p_err))
 
             # Installation of required packages
-            (result_code, p_out, p_err) = self.util.execute(
-                "sudo apt-get -y install sssd sssd-tools adcli packagekit samba-common-bin samba-libs libsss-sudo")
+            (result_code, p_out, p_err) = AptHelper.install_packages(
+                [
+                    "sssd",
+                    "sssd-tools",
+                    "adcli",
+                    "packagekit",
+                    "samba-common-bin",
+                    "samba-libs",
+                    "libsss-sudo",
+                ],
+                update_cache=True,
+                run_dpkg_configure=True,
+            )
             if (result_code == 0):
                 self.logger.info("İndirmeler Başarılı")
             else:
-                self.logger.error("İndirmeler Başarısız : " + str(p_err))
+                self.logger.error("İndirmeler Başarısız : " + str(p_err or p_out))
 
             # Configure pam.d/common-session
             pamd_common_session_path = "/etc/pam.d/common-session"
@@ -201,12 +194,13 @@ class ExecuteSSSDAdAuthentication:
             if dynamic_dns_update == True:
                 self.logger.info("dynamicDNSUpdate is Activated")
                 # Installation of required packages
-                (result_code, p_out, p_err) = self.util.execute(
-                    "sudo apt-get -y install dnsutils")
+                (result_code, p_out, p_err) = AptHelper.install_packages(
+                    ["dnsutils"], update_cache=True, run_dpkg_configure=True
+                )
                 if (result_code == 0):
                     self.logger.info("İndirmeler Başarılı")
                 else:
-                    self.logger.error("İndirmeler Başarısız : " + str(p_err))
+                    self.logger.error("İndirmeler Başarısız : " + str(p_err or p_out))
 
                 # Configure sssd template
                 sssd_config_template_path = "/usr/share/ahenk/base/registration/config-files/sssd_ad_dns.conf"
@@ -337,10 +331,6 @@ class ExecuteSSSDAdAuthentication:
             if self.util.is_exist(default_sssd_path):
                 self.util.delete_file(default_sssd_path)
                 self.logger.info("delete sssd org conf")
-
-            if "LC_ALL=\"tr_CY.UTF-8\"" not in file_data:
-                file_data = file_data + "\n" + "LC_ALL=\"tr_CY.UTF-8\""
-                self.logger.info("/etc/default/sssd is configured")
 
             file_default_sssd.close()
             file_default_sssd = open(default_sssd_path, 'w')

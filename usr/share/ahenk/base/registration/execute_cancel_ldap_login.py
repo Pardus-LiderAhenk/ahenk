@@ -3,6 +3,7 @@
 # Author: Hasan Kara <h.kara27@gmail.com>
 
 from base.scope import Scope
+from base.util.apt_helper import AptHelper
 from base.util.util import Util
 import re
 
@@ -15,9 +16,22 @@ class ExecuteCancelLDAPLogin:
 
     def cancel(self):
         self.logger.info('Purge ldap packages')
-        self.util.execute("apt-get install sudo -y")
-        self.util.execute("apt purge libpam-ldap libnss-ldap ldap-utils sudo-ldap nss-updatedb libnss-db libpam-ccreds libsss-sudo -y")
-        self.util.execute("apt autoremove -y")
+        AptHelper.install_packages(["sudo"])
+        AptHelper.remove_packages(
+            [
+                "libpam-ldap",
+                "libnss-ldap",
+                "ldap-utils",
+                "sudo-ldap",
+                "nss-updatedb",
+                "libnss-db",
+                "libpam-ccreds",
+                "libsss-sudo",
+            ],
+            purge=True,
+            update_cache=True,
+            run_dpkg_configure=True,
+        )
 
         self.logger.info('purging successfull')
 

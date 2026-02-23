@@ -8,7 +8,7 @@ def info():
     inf['name'] = 'remote-access'
     inf['version'] = '1.0.0'
     inf['support'] = 'debian'
-    inf['description'] = 'Remote Access provides controlling remote Ahenk machine simultaneously. It uses VNC technology.'
+    inf['description'] = 'Remote Access provides controlling remote Ahenk machine simultaneously. It uses VNC and RDP technology.'
     inf['task'] = True
     inf['user_oriented'] = False
     inf['machine_oriented'] = False
