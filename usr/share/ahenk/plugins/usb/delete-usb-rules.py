@@ -11,8 +11,8 @@ class DeleteUsbRule(AbstractPlugin):
         self.context = context
         self.logger = self.get_logger()
         self.message_code = self.get_message_code()
-        self.whitelist_path = "/etc/udev/rules.d/99-ahenk-task-whitelist.rules"
-        self.blacklist_path = "/etc/udev/rules.d/99-ahenk-task-blacklist.rules"
+        self.whitelist_path = "/etc/udev/rules.d/99-whitelist.rules"
+        self.blacklist_path = "/etc/udev/rules.d/99-blacklist.rules"
  
     def handle_task(self):
         try:

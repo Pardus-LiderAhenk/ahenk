@@ -220,6 +220,10 @@ class Messenger(ClientXMPP):
     def recv_direct_message(self, msg):
         if msg['type'] in ['normal']:
             try:
+                from_jid=str(msg['from']).split('/')[0]
+                authorized_jid = self.configuration_manager.get('CONNECTION', 'receiverjid') + '@' + self.configuration_manager.get('CONNECTION', 'servicename')
+                if from_jid != authorized_jid:
+                    return
                 j = json.loads(str(msg['body']))
                 message_type = j['type']
                 self.logger.debug("Get message type: "+str(message_type))

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default file name for policy
-DEFAULT_FILE_NAME="99-block-hid.rules"
+DEFAULT_FILE_NAME="99-block-usbhid.rules"
 
 # file nane for task
 FILE_NAME="${1:-$DEFAULT_FILE_NAME}"

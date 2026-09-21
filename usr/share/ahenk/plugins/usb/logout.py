@@ -19,7 +19,7 @@ class Logout(AbstractPlugin):
             "/etc/udev/rules.d/99-block-webcam.rules",
             "/etc/udev/rules.d/99-block-printer.rules",
             "/etc/udev/rules.d/99-block-storage.rules",
-            "/etc/udev/rules.d/99-block-hid.rules"
+            "/etc/udev/rules.d/99-block-usbhid.rules"
         ]
 
     def wake_up_usb_devices(self):
@@ -57,4 +57,4 @@ class Logout(AbstractPlugin):
 
 def handle_mode(context):
     logout = Logout(context)
-    logout.handle_logout_mode()
+    #logout.handle_logout_mode()

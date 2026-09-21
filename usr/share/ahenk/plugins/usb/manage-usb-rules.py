@@ -22,8 +22,8 @@ class UsbRule(AbstractPlugin):
         self.command_authorized = "echo '{0}' > {1}authorized"
         self.command_serial_is_exist = 'if test -e {0}serial; then echo "exist"; else echo "not found"; fi'
         self.logger.debug('Parameters were initialized.')
-        self.whitelist_path = "/etc/udev/rules.d/99-ahenk-task-whitelist.rules"
-        self.blacklist_path = "/etc/udev/rules.d/99-ahenk-task-blacklist.rules"
+        self.whitelist_path = "/etc/udev/rules.d/99-whitelist.rules"
+        self.blacklist_path = "/etc/udev/rules.d/99-blacklist.rules"
 
     def handle_task(self):
         try:

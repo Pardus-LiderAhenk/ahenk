@@ -70,27 +70,27 @@ class ExecuteSSSDAdAuthentication:
            
 
             # Configure /etc/resolv.conf
-            resolve_conf_path = "/etc/resolv.conf"
-            resolve_conf = self.util.read_file_by_line(resolve_conf_path, "r")
-            resolve_conf_temp = open(resolve_conf_path, 'w')
+            #resolve_conf_path = "/etc/resolv.conf"
+            #resolve_conf = self.util.read_file_by_line(resolve_conf_path, "r")
+            #resolve_conf_temp = open(resolve_conf_path, 'w')
 
-            for lines in resolve_conf:
-                if (lines == ("nameserver {}\n".format(ip_address))):
-                    continue
-                lines = lines.replace(lines, ("#" + lines))
-                resolve_conf_temp.write(lines)
-            resolve_conf_temp.close()
-            file_default_resolve = open(resolve_conf_path, 'r')
-            file_data = file_default_resolve.read()
+            #for lines in resolve_conf:
+            #    if (lines == ("nameserver {}\n".format(ip_address))):
+            #        continue
+            #    lines = lines.replace(lines, ("#" + lines))
+            #    resolve_conf_temp.write(lines)
+            #resolve_conf_temp.close()
+            #file_default_resolve = open(resolve_conf_path, 'r')
+            #file_data = file_default_resolve.read()
 
-            if ("nameserver {}\n".format(ip_address)) not in file_data:
-                file_data = file_data + "\n" + ("nameserver {}\n".format(ip_address))
-                self.logger.info("/etc/resolv.conf is configured")
+            #if ("nameserver {}\n".format(ip_address)) not in file_data:
+            #    file_data = file_data + "\n" + ("nameserver {}\n".format(ip_address))
+            #    self.logger.info("/etc/resolv.conf is configured")
 
-            file_default_resolve.close()
-            file_default_resolve = open(resolve_conf_path, 'w')
-            file_default_resolve.write(file_data)
-            file_default_resolve.close()
+            #file_default_resolve.close()
+            #file_default_resolve = open(resolve_conf_path, 'w')
+            #file_default_resolve.write(file_data)
+            #file_default_resolve.close()
 
             # Configure /etc/hosts
             host_path = "/etc/hosts"

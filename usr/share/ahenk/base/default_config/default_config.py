@@ -15,23 +15,10 @@ class DefaultConfig:
 
     def check_sssd_settings(self):
         # configure sssd for language environment
-        sssd_language_conf = "/etc/default/sssd"
         sssd_conf_path = "/etc/sssd/sssd.conf"
         ad_info = "/etc/ahenk/ad_info"
         registration = Scope.get_instance().get_registration()
-        if registration.is_registered() and Util.is_exist(sssd_language_conf):
-            file_default_sssd = open(sssd_language_conf, 'r')
-            file_data = file_default_sssd.read()
-            file_default_sssd.close()
-
-            if "LC_ALL=\"tr_CY.UTF-8\"" not in file_data:
-                file_data = file_data + "\n" + "LC_ALL=\"tr_CY.UTF-8\""
-                self.logger.info("added language environment for sssd")
-                file_default_sssd = open(sssd_language_conf, 'w')
-                file_default_sssd.write(file_data)
-                file_default_sssd.close()
-                Util.execute("systemctl restart sssd.service")
-
+        
         if registration.is_registered() and Util.is_exist(sssd_conf_path) and Util.is_exist(ad_info):
             sssd_conf_data = Util.read_file_by_line(sssd_conf_path)
 

@@ -54,6 +54,10 @@ class Usb(AbstractPlugin):
             script = 'ENABLED_webcam.sh' if self.parameters['webcam'] == '1' else 'DISABLED_webcam.sh'
             self.execute(self.script.format(script), result=True)
 
+        if self.has_attr_json(self.parameters, 'microphone') is True:
+            script = 'ENABLED_microphone.sh' if self.parameters['microphone'] == '1' else 'DISABLED_microphone.sh'
+            self.execute(self.script.format(script), result=True)
+
         if self.has_attr_json(self.parameters, 'printer') is True:
             script = 'ENABLED_printer.sh' if self.parameters['printer'] == '1' else 'DISABLED_printer.sh'
             self.execute(self.script.format(script), result=True)
